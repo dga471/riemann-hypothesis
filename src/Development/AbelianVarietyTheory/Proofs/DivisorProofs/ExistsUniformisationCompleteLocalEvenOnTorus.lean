@@ -65,6 +65,21 @@ open GlobalTheory.Mum
 
 noncomputable section
 
+local instance (priority := high) {S T : Scheme.{0}} (f : T ⟶ S) :
+    (Over.pullback f).Monoidal := inferInstance
+local instance (priority := high) {S T : Scheme.{0}} (f : T ⟶ S) :
+    (Over.pullback f).LaxMonoidal := inferInstance
+local instance (priority := high) {S T : Scheme.{0}} (f : T ⟶ S) :
+    (Over.pullback f).LaxBraided := inferInstance
+local instance (priority := high) {S T : Scheme.{0}} (f : T ⟶ S) (G : Over S) [GrpObj G] :
+    GrpObj ((Over.pullback f).obj G) := inferInstance
+local instance (priority := high) {S T : Scheme.{0}} (f : T ⟶ S) (G : Over S) [GrpObj G] [IsCommMonObj G] :
+    IsCommMonObj ((Over.pullback f).obj G) := inferInstance
+local instance (priority := high) {R : Type} [CommRing R] (I : Ideal R) (n : ℕ) (G : Over (Sp R)) [GrpObj G] :
+    GrpObj (thickObj R I n G) := inferInstance
+local instance (priority := high) {R : Type} [CommRing R] (I : Ideal R) (n : ℕ) (G : Over (Sp R)) [GrpObj G] [IsCommMonObj G] :
+    IsCommMonObj (thickObj R I n G) := inferInstance
+
 namespace GlobalTheory.Mum.UnifEven
 
 open GlobalTheory.UU GlobalTheory.LN

@@ -54,6 +54,16 @@ open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.S
 open Classical
 open ReciprocityTheory.ChartRestriction.G.Out
 attribute [local instance] Over.cartesianMonoidalCategory
+noncomputable local instance (priority := high) {S T : AlgebraicGeometry.Scheme.{0}} (f : T ⟶ S) :
+    (CategoryTheory.Over.pullback f).Monoidal := inferInstance
+noncomputable local instance (priority := high) {S T : AlgebraicGeometry.Scheme.{0}} (f : T ⟶ S) :
+    (CategoryTheory.Over.pullback f).LaxMonoidal := inferInstance
+noncomputable local instance (priority := high) {S T : AlgebraicGeometry.Scheme.{0}} (f : T ⟶ S) :
+    (CategoryTheory.Over.pullback f).LaxBraided := inferInstance
+noncomputable local instance (priority := high) {S T : AlgebraicGeometry.Scheme.{0}} (f : T ⟶ S) (G : CategoryTheory.Over S) [CategoryTheory.GrpObj G] :
+    CategoryTheory.GrpObj ((CategoryTheory.Over.pullback f).obj G) := inferInstance
+noncomputable local instance (priority := high) {S T : AlgebraicGeometry.Scheme.{0}} (f : T ⟶ S) (G : CategoryTheory.Over S) [CategoryTheory.GrpObj G] [CategoryTheory.IsCommMonObj G] :
+    CategoryTheory.IsCommMonObj ((CategoryTheory.Over.pullback f).obj G) := inferInstance
 
 namespace GlobalTheory.SplitReduction
 
