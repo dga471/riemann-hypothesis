@@ -53,6 +53,16 @@ noncomputable section
 
 namespace GlobalTheory.NL
 
+@[reducible] local instance (priority := high) instAlgebraOLRA {l : ℕ} [Fact l.Prime]
+    (LL : Formalism.BasicNotions.Loc.FinExt l) :
+    Algebra (↥(Formalism.BasicNotions.Loc.OL LL)) (Formalism.BasicNotions.Loc.RA LL) :=
+  Algebra.TensorProduct.leftAlgebra
+
+@[reducible] local instance (priority := high) instAlgebraOLRW {l : ℕ} [Fact l.Prime]
+    (LL : Formalism.BasicNotions.Loc.FinExt l) :
+    Algebra (↥(Formalism.BasicNotions.Loc.OL LL)) (Formalism.BasicNotions.Loc.RW LL) :=
+  Algebra.TensorProduct.leftAlgebra
+
 open Formalism.BasicNotions Formalism.BasicNotions.Loc Formalism.WeaklyAdmissibleFiltrations TensorProduct GlobalTheory.HWL
 
 section Generic

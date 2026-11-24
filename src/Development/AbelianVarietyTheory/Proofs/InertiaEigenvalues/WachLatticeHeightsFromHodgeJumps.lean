@@ -57,6 +57,28 @@ import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Tactic.ReduceModChar
 import Mathlib.Topology.Sheaves.Init
 
+attribute [-instance]
+  isWellOrder_lt instWellQuasiOrderedLEOfWellFoundedLT
+  LieRinehartAlgebra.toIsScalarTower
+  LieAlgebra.toModule RightPreLieAlgebra.toModule LeftPreLieAlgebra.toModule
+  IntermediateField.smulCommClass_right IntermediateField.smulCommClass_left
+  NormedSpace.toModule NormedAlgebra.toAlgebra
+  Subalgebra.normedCommRing Subalgebra.seminormedRing
+  Subalgebra.seminormedCommRing Subalgebra.normedRing
+  Submodule.normedSpace Submodule.seminormedAddCommGroup
+  Submodule.normedAddCommGroup SubalgebraClass.toNormedAlgebra
+  Subalgebra.isScalarTower_left Subalgebra.isScalarTower_mid
+  Submonoid.instIsScalarTowerSubtypeMem Submonoid.instSMulCommClassSubtypeMem_1
+  Subalgebra.smulCommClass_right Subalgebra.smulCommClass_left
+  MulSemiringAction.toDistribMulAction
+  RingHomClass.toLinearMapClassNNRat RingHomClass.toLinearMapClassRat
+  NonUnitalAlgHomClass.instLinearMapClass
+  NonUnitalAlgHomClass.instSemilinearMapClassOfNonUnitalAlgSemiHomClassOfClassRingHom
+  Algebra.TensorProduct.instNonUnitalSemiring Algebra.TensorProduct.instNonUnitalRing
+  FiniteDimensional.finiteDimensional_subalgebra
+attribute [local instance high]
+  Submodule.module TensorProduct.leftModule Algebra.TensorProduct.leftAlgebra
+
 @[expose] public section
 
 open Formalism.WeaklyAdmissibleFiltrations Formalism.BasicNotions Formalism.BasicNotions.Loc TensorProduct GlobalTheory.NL Formalism.MainNotions.DeltaInvariantLattices
@@ -427,8 +449,6 @@ theorem indep_lead {L M ι : Type} [Field L] [AddCommGroup M] [Module L M] {w : 
   exact hi.units_smul fun _ => Units.mk0 _ hc
 
 
-set_option synthInstance.maxHeartbeats 400000 in
-set_option maxHeartbeats 2000000 in
 theorem heights_from_jumps : ∀ (D : Formalism.BasicNotions.D7) (HW : HWOf D.loc) (F : FonOf D.loc D.locA HW) (Cm : CmpOf D.loc D.locA HW F), P5 D HW F := by
   intro D HW F Cm l _ K s LL h T Mi hi hT hJ
   set W := (HW l).W K s LL h with hW

@@ -82,7 +82,11 @@ import Development.AbelianVarietyTheory.Proofs.FoundationProofs.LocalGaloisRepIn
 import Development.AbelianVarietyTheory.Proofs.FoundationProofs.NatCastPowNeZero
 
 attribute [-instance]
-  NormedSpace.toModule Submodule.normedSpace Submodule.seminormedAddCommGroup
+  isWellOrder_lt instWellQuasiOrderedLEOfWellFoundedLT
+  NormedSpace.toModule NormedAlgebra.toAlgebra
+  Subalgebra.normedCommRing Subalgebra.seminormedRing
+  Subalgebra.seminormedCommRing Subalgebra.normedRing
+  Submodule.normedSpace Submodule.seminormedAddCommGroup
   Submodule.normedAddCommGroup SubalgebraClass.toNormedAlgebra
   Subalgebra.isScalarTower_left Subalgebra.isScalarTower_mid
   Submonoid.instIsScalarTowerSubtypeMem Submonoid.instSMulCommClassSubtypeMem_1
@@ -540,8 +544,6 @@ theorem B1_le_Z1f (P : LocPrime l) {m : ℕ} (T : ↥Gw →* GL (Fin m) O)
   · simp [h, Formalism.WeaklyAdmissibleFiltrations.actVB, TensorProduct.sub_tmul]
 
 
-set_option synthInstance.maxHeartbeats 100000 in
-set_option maxHeartbeats 1600000 in
 theorem card_local [IsDiscreteValuationRing O] [IsTopologicalRing O] (hO : IsAdic (IsLocalRing.maximalIdeal O))
     (hfin : Formalism.GaloisCohomology.LocalFinitenessK) (P : LocPrime l) {m : ℕ} (T : ↥Gw →* GL (Fin m) O)
     (hT : Continuous fun g => ((T g : GL (Fin m) O) : Matrix (Fin m) (Fin m) O))
@@ -828,8 +830,6 @@ theorem noInv (h : IsotypicValuationAtRing bkP i s) (v : PlE D.host) (x : Fin D.
       Matrix (Fin D.R.r) (Fin D.R.r) (X.O0 i)).map (algebraMap (X.O0 i) (FractionRing (X.O0 i)))).mulVec x = x) : x = 0 :=
   h.2.2.1 v _ (N.plOm.2 v) x fun g hg => by rw [← Tgl_coe]; exact hx ⟨g, hg⟩
 
-set_option maxHeartbeats 8000000 in
-set_option synthInstance.maxHeartbeats 100000 in
 open Formalism.BasicNotions.Loc Formalism.MainNotions.N Formalism.WeaklyAdmissibleFiltrations in
 theorem h1fDim_eq (h : GalHyp bkP i s) (u : placesOver D.host.E (X.l i)) [Fintype (EmbV bkP i u.1 u.2)] :
     (h1fDim bkP i s u : ℤ) =

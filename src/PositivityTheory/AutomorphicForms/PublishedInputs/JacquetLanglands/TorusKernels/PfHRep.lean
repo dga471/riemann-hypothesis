@@ -55,6 +55,7 @@ import Development.AutomorphicArithmetic.AutomorphicVarieties.IdeleGenerators.Co
 @[expose] public section
 
 noncomputable section
+attribute [-instance] Submodule.seminormedAddCommGroup
 
 open NumberField IsDedekindDomain Neutral.B1 Formalism.L2.Host Formalism.ConjugateSelfDual Polynomial UpperTheory.V UpperTheory.V.Af UpperTheory.V.Sd Matrix
 open GlobalTheory.CuspRep (SmIrr Af invT finId pFin locGL finGL GA chiDet)
