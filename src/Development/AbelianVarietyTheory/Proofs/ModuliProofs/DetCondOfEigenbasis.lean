@@ -50,7 +50,7 @@ import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.T
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.ChartPullbacks.CubePullbacks.CubePull
 import Std.Tactic.BVDecide.Normalize.Prop
 
-@[expose] public section
+public section
 
 noncomputable section
 

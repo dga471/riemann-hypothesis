@@ -42,7 +42,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.FirstCohomology.DimSplitPf
 public import Mathlib.AlgebraicGeometry.Morphisms.UniversallyOpen
 
-@[expose] public section
+public section
 
 open AlgebraicGeometry CategoryTheory Limits
 

@@ -5,7 +5,7 @@ public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDesc
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.CechPrimitive
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsDerOfIsPushout
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsIsSymmOfSquare
-public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsSquareOfIsGrpPullback
+import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsSquareOfIsGrpPullback
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.IsLieCombZero
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.LogDerivativePrincipalPolarisationIndependent
 import Mathlib.Algebra.Order.Floor.Extended

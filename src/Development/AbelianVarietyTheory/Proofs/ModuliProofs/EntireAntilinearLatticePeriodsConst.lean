@@ -52,7 +52,7 @@ public import Mathlib.Analysis.Calculus.Deriv.Shift
 public import Mathlib.Analysis.Calculus.MeanValue
 public import Mathlib.Analysis.Complex.Liouville
 
-@[expose] public section
+public section
 
 open Complex Matrix
 open scoped ContDiff BigOperators Real

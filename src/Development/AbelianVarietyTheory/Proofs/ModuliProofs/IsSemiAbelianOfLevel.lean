@@ -46,7 +46,7 @@ import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Tactic.ReduceModChar
 public import Development.AbelianVarietyTheory.BlockTheory.CMModuli.AlgebraLevelSetting
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

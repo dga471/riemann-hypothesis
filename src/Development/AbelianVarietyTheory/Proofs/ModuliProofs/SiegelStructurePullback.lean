@@ -41,7 +41,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.AmplePt
 import Development.AbelianVarietyTheory.Definitions.ModuliSpaces.GoodClass
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

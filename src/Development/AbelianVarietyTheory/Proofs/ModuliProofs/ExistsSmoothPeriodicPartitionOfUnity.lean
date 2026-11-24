@@ -52,7 +52,7 @@ public import Mathlib.Analysis.Calculus.BumpFunction.Basic
 public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
 public import Mathlib.Geometry.Manifold.ContMDiffMap
 
-@[expose] public section
+public section
 
 open Complex Matrix
 open scoped ContDiff BigOperators Real Topology Pointwise Manifold

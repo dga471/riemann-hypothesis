@@ -55,7 +55,7 @@ public import Mathlib.Algebra.Module.Torsion.Basic
 public import Mathlib.RingTheory.Flat.TorsionFree
 public import Mathlib.RingTheory.LocalRing.Module
 
-@[expose] public section
+public section
 
 open scoped nonZeroDivisors
 

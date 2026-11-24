@@ -7,11 +7,24 @@ public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.CompactSpace
 public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.ContinuousOnValue
 public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.ExistsEtaleCoordsVanishing
 public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.ExistsLinearLift
-public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.ExistsTestFunctionsSubsetOfMemNhds
+import Development.AbelianVarietyTheory.Proofs.ToricGeometry.ExistsTestFunctionsSubsetOfMemNhds
 public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.ExistsUniquePointOfRingHom
-public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.HolFamilyOfIsPullback
+import Development.AbelianVarietyTheory.Proofs.ToricGeometry.HolFamilyOfIsPullback
 public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.IsTopologicalGroupComplexPoints
 public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.TopLePreimageOfValAtNeZero
+public import Development.AbelianVarietyTheory.Proofs.HomogeneousIdeals.ContinuousAevalMvPolynomial
+public import Mathlib.RingTheory.Etale.Basic
+public import Mathlib.Analysis.Calculus.Deriv.Basic
+public import Mathlib.RingTheory.RingHom.Etale
+public import Mathlib.Analysis.Analytic.Polynomial
+public import Mathlib.Analysis.Analytic.ChangeOrigin
+public import Mathlib.Analysis.Analytic.Composition
+public import Mathlib.Analysis.Analytic.Constructions
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Topology.OpenPartialHomeomorph.IsImage
+public import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -58,7 +71,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.TypeStar
 import Std.Tactic.BVDecide.Normalize.Prop
 
-@[expose] public section
+public section
 
 noncomputable section
 

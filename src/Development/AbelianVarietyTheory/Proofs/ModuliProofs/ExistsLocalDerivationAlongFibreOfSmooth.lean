@@ -2,8 +2,9 @@ module
 
 public import Development.AbelianVarietyTheory.Definitions.ModuliSpaces.IsSymm
 public import Mathlib.RingTheory.Smooth.Basic
-public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsDerivationExtendOfFormallySmooth
+import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsDerivationExtendOfFormallySmooth
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsLocalDerivationExtensionOfAffine
+public import Mathlib.Algebra.TrivSqZeroExt.Basic
 import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsLocalDerivationLiftSmoothOverField
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield

@@ -51,7 +51,7 @@ import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Tactic.ReduceModChar
 import Mathlib.Topology.Sheaves.Init
 
-@[expose] public section
+public section
 
 namespace GlobalTheory.CocycleSplit
 

@@ -65,7 +65,7 @@ public import Mathlib.Analysis.Calculus.ContDiff.RCLike
 public import Mathlib.Analysis.Calculus.Implicit
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 
-@[expose] public section
+public section
 
 open Filter Topology
 

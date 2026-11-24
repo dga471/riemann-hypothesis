@@ -50,7 +50,7 @@ public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.SemiabelianSchemes.CubicalStructures.CubeSymmetricSwapFirst
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.SemiabelianSchemes.SplitTori.SplitTorusAff
 
-@[expose] public section
+public section
 
 universe u
 

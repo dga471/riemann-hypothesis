@@ -56,7 +56,7 @@ import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.TypeStar
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

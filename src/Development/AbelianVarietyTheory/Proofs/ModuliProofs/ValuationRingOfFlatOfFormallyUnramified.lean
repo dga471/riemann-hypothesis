@@ -46,7 +46,7 @@ public import Mathlib.RingTheory.Flat.TorsionFree
 public import Mathlib.RingTheory.LocalRing.Module
 public import Mathlib.RingTheory.Unramified.Finite
 
-@[expose] public section
+public section
 
 open scoped TensorProduct
 

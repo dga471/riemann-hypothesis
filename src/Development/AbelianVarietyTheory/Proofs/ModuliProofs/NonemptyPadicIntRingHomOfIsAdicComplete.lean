@@ -55,7 +55,7 @@ import Mathlib.Topology.Connected.Separation
 import Mathlib.Topology.MetricSpace.Ultra.TotallySeparated
 public import Mathlib.Data.ZMod.QuotientRing
 
-@[expose] public section
+public section
 
 open IsLocalRing
 

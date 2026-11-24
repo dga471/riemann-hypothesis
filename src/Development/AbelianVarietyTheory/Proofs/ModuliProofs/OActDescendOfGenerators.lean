@@ -45,7 +45,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.SabPull
 public import Mathlib.CategoryTheory.Monoidal.Cartesian.Grp
 
-@[expose] public section
+public section
 
 noncomputable section
 

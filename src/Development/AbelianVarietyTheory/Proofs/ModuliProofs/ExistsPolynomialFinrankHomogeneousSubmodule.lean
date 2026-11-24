@@ -2,7 +2,7 @@ module
 
 public import Mathlib.LinearAlgebra.Dimension.Finrank
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
-public import Development.AbelianVarietyTheory.Proofs.CoherentCohomologyProofs.MonomialCountAndBinomialEstimates
+import Development.AbelianVarietyTheory.Proofs.CoherentCohomologyProofs.MonomialCountAndBinomialEstimates
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -50,8 +50,12 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Topology.Sheaves.Init
 public import Mathlib.LinearAlgebra.Dimension.Constructions
 public import Mathlib.RingTheory.Polynomial.Pochhammer
+public import Mathlib.Algebra.Order.Antidiag.Finsupp
+public import Mathlib.Data.Finsupp.Weight
+public import Mathlib.Data.Set.Card
+public import Mathlib.Algebra.Order.Antidiag.FinsuppEquiv
 
-@[expose] public section
+public section
 
 namespace GlobalTheory
 

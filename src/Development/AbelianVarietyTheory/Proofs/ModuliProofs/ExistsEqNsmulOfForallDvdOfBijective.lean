@@ -51,7 +51,7 @@ import Mathlib.Topology.Sheaves.Init
 public import Mathlib.Algebra.Group.AddChar
 public import Mathlib.Algebra.Group.Subgroup.Finite
 
-@[expose] public section
+public section
 
 namespace GlobalTheory
 

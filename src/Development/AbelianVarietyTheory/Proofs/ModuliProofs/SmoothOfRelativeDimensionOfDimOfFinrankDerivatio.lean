@@ -4,7 +4,30 @@ public import Mathlib.AlgebraicGeometry.Morphisms.Smooth
 public import Mathlib.Basic.Complex.Basic
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.IsCompletedStrictHens
 public import Development.AbelianVarietyTheory.Proofs.CoherentCohomologyProofs.RingKrullDimQuotientEqOfMemMinimalPrimes
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.SpanFinrankMaximalIdealLeNcardOfLeSupSq
+public import Mathlib.FieldTheory.Perfect
+public import Mathlib.RingTheory.Ideal.Height
+public import Mathlib.RingTheory.RegularLocalRing.Defs
+public import Mathlib.RingTheory.Smooth.Locus
+public import Mathlib.RingTheory.Smooth.StandardSmooth
+public import Mathlib.Algebra.Module.SpanRankOperations
+public import Mathlib.RingTheory.KrullDimension.NonZeroDivisors
+public import Mathlib.RingTheory.Smooth.Fiber
+public import ReciprocityTheory.CommutativeAlgebra.MaximalIdealSquares.RingKrullDimQuotientSpanSingletonAddOne
+public import Mathlib.RingTheory.Etale.Field
+public import Mathlib.RingTheory.Kaehler.TensorProduct
+public import Mathlib.RingTheory.Smooth.StandardSmoothCotangent
+public import Mathlib.RingTheory.Smooth.StandardSmoothOfFree
+public import Mathlib.RingTheory.Henselian
+public import Mathlib.RingTheory.SimpleRing.Principal
+public import ReciprocityTheory.CommutativeAlgebra.ChainConnInDim
+public import Mathlib.RingTheory.FiniteType
+public import Mathlib.RingTheory.IntegralClosure.Algebra.Defs
+public import Mathlib.RingTheory.Ideal.GoingUp
+public import Mathlib.RingTheory.Jacobson.Ring
+public import ReciprocityTheory.CommutativeAlgebra.CohenMacaulay.LocDim
+public import Mathlib.RingTheory.Localization.Submodule
+public import Mathlib.RingTheory.KrullDimension.Basic
+import Development.AbelianVarietyTheory.Proofs.FoundationProofs.SpanFinrankMaximalIdealLeNcardOfLeSupSq
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

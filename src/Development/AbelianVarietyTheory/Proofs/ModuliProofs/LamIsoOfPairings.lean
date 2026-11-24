@@ -51,7 +51,7 @@ import Mathlib.Tactic.ReduceModChar
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.LBPull
 import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsGenOfInvariant
 
-@[expose] public section
+public section
 
 noncomputable section
 
