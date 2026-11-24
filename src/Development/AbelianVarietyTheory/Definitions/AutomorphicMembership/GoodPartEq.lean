@@ -52,6 +52,10 @@ variable {B : Base} {C : Cols B} {a : Late B C} (b : Late B C) {G : Type} [Group
 variable {Ks : Type} [Field Ks] [NumberField Ks] [iK : Algebra Ks a.D.what₂.LL]
 set_option linter.style.haveILetI false
 
+local elab "exact_kern " t:term : tactic => do
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => do
+    Lean.Elab.Term.elabTerm t none
+
 section Spaces
 
 
@@ -64,7 +68,7 @@ theorem goodPart_eq : @goodPart b.D = @goodPartB B C a b := by
   funext V S θ M J χ e
   delta goodPart
   rewrite [mult_eq a b]
-  with_unfolding_all apply Eq.refl (@goodPartB B C a b V S θ M J χ e)
+  exact_kern Eq.refl (@goodPartB B C a b V S θ M J χ e)
 
 
 variable (a) in
@@ -76,7 +80,7 @@ theorem partFull_eq : @partFull b.D = @partFullB B C a b := by
   funext V S θ M J χ Sb c
   delta partFull
   rewrite [mult_eq a b]
-  with_unfolding_all apply Eq.refl (@partFullB B C a b V S θ M J χ Sb c)
+  exact_kern Eq.refl (@partFullB B C a b V S θ M J χ Sb c)
 
 end Spaces
 
@@ -116,31 +120,34 @@ variable {A : FamIn a.D.what₂.LL G Pl0 T a.D.R.m} (R : RealDat a.D A Ks) {F : 
 
 theorem eeat_eq : R.EEat = (@RealDat.EEat (@Late.D B C b) G ‹Group G› ‹Fintype G› Pl0 T (@famM B C a b G ‹Group G› ‹Fintype G› Pl0 T A) Ks ‹Field Ks› ‹@NumberField Ks ‹Field Ks›› (@alg B C a b Ks ‹Field Ks› iK) (@real B C a b G ‹Group G› ‹Fintype G› Pl0 T Ks ‹Field Ks› ‹@NumberField Ks ‹Field Ks›› iK A R)) := by
   funext P
-  with_unfolding_all apply congrArg (fun m : type_of% (@goodPart a.D) =>
+  exact_kern congrArg (fun m : type_of% (@goodPart a.D) =>
     m R.θ (R.MY 0) (levS _ (R.βY 0) (R.dat0 P)) (levChi _ (R.βY 0) (R.dat0 P)) R.e0) (goodPart_eq b a)
 
 theorem wall_eq : R.Wall = (by with_unfolding_all exact ((letI := alg b iK; (real b R).Wall) :)) := by
   funext i σ
-  with_unfolding_all apply congrArg (fun m : type_of% (@Mult.Mult a.D) =>
+  exact_kern congrArg (fun m : type_of% (@Mult.Mult a.D) =>
     m R.θ (R.MW i σ) (levS _ (R.βW i) (R.datWp i R.triv)) (levChi _ (R.βW i) (R.datWp i R.triv))) (mult_eq b a)
 
 theorem wat_eq : R.Wat = (by with_unfolding_all exact ((letI := alg b iK; (real b R).Wat) :)) := by
   funext i σ P
-  with_unfolding_all apply congrArg (fun m : type_of% (@goodPart a.D) =>
+  exact_kern congrArg (fun m : type_of% (@goodPart a.D) =>
     m R.θ (R.MW i σ) (levS _ (R.βW i) (R.datWp i P)) (levChi _ (R.βW i) (R.datWp i P)) (R.eWf i σ)) (goodPart_eq b a)
 
 theorem thDn_eq : R.thDn = (@RealDat.thDn (@Late.D B C b) G ‹Group G› ‹Fintype G› Pl0 T (@famM B C a b G ‹Group G› ‹Fintype G› Pl0 T A) Ks ‹Field Ks› ‹@NumberField Ks ‹Field Ks›› (@alg B C a b Ks ‹Field Ks› iK) (@real B C a b G ‹Group G› ‹Fintype G› Pl0 T Ks ‹Field Ks› ‹@NumberField Ks ‹Field Ks›› iK A R)) :=
-  by with_unfolding_all apply io_congr R (multT_eq b a) (fun m y x => thDnW (@m) R y x) R.ioY R.ioX
+  by exact_kern io_congr R (multT_eq b a) (fun m y x => thDnW (@m) R y x) R.ioY R.ioX
 
 theorem pTh_eq : R.PTh = (@RealDat.PTh (@Late.D B C b) G ‹Group G› ‹Fintype G› Pl0 T (@famM B C a b G ‹Group G› ‹Fintype G› Pl0 T A) Ks ‹Field Ks› ‹@NumberField Ks ‹Field Ks›› (@alg B C a b Ks ‹Field Ks› iK) (@real B C a b G ‹Group G› ‹Fintype G› Pl0 T Ks ‹Field Ks› ‹@NumberField Ks ‹Field Ks›› iK A R)) :=
-  by with_unfolding_all apply congrArg (fun (d : type_of% R.thDn) (t : T) (g : (R.HX t).H →ₗ[ℂ] R.HE.H) =>
+  by exact_kern congrArg (fun (d : type_of% R.thDn) (t : T) (g : (R.HX t).H →ₗ[ℂ] R.HE.H) =>
     ∀ x, R.HE.e (g x) = postOn (R.MY 0) R.e0 (PiTensorProduct.lift.symm (d t x))) (thDn_eq b R)
 
 theorem pThF_eq : R.PThF = (by with_unfolding_all exact ((letI := alg b iK; (real b R).PThF) :)) := by
   funext i t th
-  have e := congrArg (fun W : type_of% R.Wall => ∀ x, th x ∈ W i (sg0 a.D A)) (wall_eq b R)
-  refine propext ?_
-  with_unfolding_all apply and_congr (Iff.of_eq e) Iff.rfl
+  exact_kern congrArg (fun W : type_of% R.Wall =>
+    (∀ x, th x ∈ W i (sg0 a.D A)) ∧
+      ∃ thP, Lift.IsThetaP (R.νV i t) (R.fdV i t) (fun g h f => thetaKO (R.ωP i t) h g f) (R.ptP i t) (R.ioP i)
+          (LinearMap.range (R.extV i t)) thP ∧
+        ∀ x (v : ∀ ρ, lowT (R.MW i (sg0 a.D A)) ρ),
+          th x (fun ρ => v ρ) = thP ((R.extV i t).rangeRestrict x) (PiTensorProduct.tprod ℂ v)) (wall_eq b R)
 
 end Two
 
@@ -152,25 +159,25 @@ variable {A : FamIn a.D.what₂.LL G Pl0 T a.D.R.m} {R : RealDat a.D A Ks} {F : 
 omit [Field Ks] [NumberField Ks] iK in
 theorem levIs_tr {L : Links.LevCh a.D T} {μ0 : T} (h : L.Is μ0) : (levCh b L).Is μ0 := by
   constructor
-  case mu0 => with_unfolding_all apply h.mu0
-  case eta => with_unfolding_all apply h.eta
-  case xi => with_unfolding_all apply h.xi
-  case xi_inj => with_unfolding_all apply h.xi_inj
-  case xi_base => with_unfolding_all apply h.xi_base
-  case xi_fin => with_unfolding_all apply h.xi_fin
-  case xi_triv => with_unfolding_all apply h.xi_triv
-  case xi_tame => with_unfolding_all apply h.xi_tame
-  case Pg => with_unfolding_all apply h.Pg
-  case Q_pl => with_unfolding_all apply h.Q_pl
-  case Q_off => with_unfolding_all apply h.Q_off
-  case Q_de => with_unfolding_all apply h.Q_de
-  case Q_ram => with_unfolding_all apply h.Q_ram
-  case chi => with_unfolding_all apply h.chi
-  case xiR => with_unfolding_all apply h.xiR
-  case βY => with_unfolding_all apply h.βY
-  case βX => with_unfolding_all apply h.βX
-  case βV => with_unfolding_all apply h.βV
-  case βW => with_unfolding_all apply h.βW
+  case mu0 => exact_kern h.mu0
+  case eta => exact_kern h.eta
+  case xi => exact_kern h.xi
+  case xi_inj => exact_kern h.xi_inj
+  case xi_base => exact_kern h.xi_base
+  case xi_fin => exact_kern h.xi_fin
+  case xi_triv => exact_kern h.xi_triv
+  case xi_tame => exact_kern h.xi_tame
+  case Pg => exact_kern h.Pg
+  case Q_pl => exact_kern h.Q_pl
+  case Q_off => exact_kern h.Q_off
+  case Q_de => exact_kern h.Q_de
+  case Q_ram => exact_kern h.Q_ram
+  case chi => exact_kern h.chi
+  case xiR => exact_kern h.xiR
+  case βY => exact_kern h.βY
+  case βX => exact_kern h.βX
+  case βV => exact_kern h.βV
+  case βW => exact_kern h.βW
 
 theorem isFam_tr (h : R.IsFam) : letI := alg b iK; (real b R).IsFam := by
   letI := alg b iK
@@ -178,45 +185,45 @@ theorem isFam_tr (h : R.IsFam) : letI := alg b iK; (real b R).IsFam := by
   case tie =>
     unfold RealDat.fam_tie
     rw [famTie_eq a b]
-    with_unfolding_all apply h.tie
-  case Sb => with_unfolding_all apply h.Sb
-  case roots => with_unfolding_all apply h.roots
-  case pl_onto => with_unfolding_all apply h.pl_onto
-  case degR => with_unfolding_all apply h.degR
-  case degL => with_unfolding_all apply h.degL
-  case muVal => with_unfolding_all apply h.muVal
-  case etaVal => with_unfolding_all apply h.etaVal
+    exact_kern h.tie
+  case Sb => exact_kern h.Sb
+  case roots => exact_kern h.roots
+  case pl_onto => exact_kern h.pl_onto
+  case degR => exact_kern h.degR
+  case degL => exact_kern h.degL
+  case muVal => exact_kern h.muVal
+  case etaVal => exact_kern h.etaVal
 
 theorem isModels_tr (h : R.IsModels) : letI := alg b iK; (real b R).IsModels := by
   letI := alg b iK
   constructor
-  case inf => with_unfolding_all apply h.inf
-  case vpos => with_unfolding_all apply h.vpos
-  case cX => with_unfolding_all apply h.cX
-  case cV => with_unfolding_all apply h.cV
-  case prX => with_unfolding_all apply h.prX
-  case HX => with_unfolding_all apply h.HX
-  case HV => with_unfolding_all apply h.HV
+  case inf => exact_kern h.inf
+  case vpos => exact_kern h.vpos
+  case cX => exact_kern h.cX
+  case cV => exact_kern h.cV
+  case prX => exact_kern h.prX
+  case HX => exact_kern h.HX
+  case HV => exact_kern h.HV
   case HE =>
     unfold RealDat.models_HE
     rw [← eeat_eq b R]
-    with_unfolding_all apply h.HE
+    exact_kern h.HE
   case HW =>
     unfold RealDat.models_HW
     rw [← wall_eq b R]
-    with_unfolding_all apply h.HW
-  case gE => with_unfolding_all apply h.gE
-  case gW => with_unfolding_all apply h.gW
-  case jX => with_unfolding_all apply h.jX
-  case jV => with_unfolding_all apply h.jV
-  case νY => with_unfolding_all apply h.νY
-  case νY' => with_unfolding_all apply h.νY'
-  case ν0 => with_unfolding_all apply h.ν0
-  case νX => with_unfolding_all apply h.νX
-  case νV => with_unfolding_all apply h.νV
-  case νW => with_unfolding_all apply h.νW
-  case BV => with_unfolding_all apply h.BV
-  case order => with_unfolding_all apply h.order
+    exact_kern h.HW
+  case gE => exact_kern h.gE
+  case gW => exact_kern h.gW
+  case jX => exact_kern h.jX
+  case jV => exact_kern h.jV
+  case νY => exact_kern h.νY
+  case νY' => exact_kern h.νY'
+  case ν0 => exact_kern h.ν0
+  case νX => exact_kern h.νX
+  case νV => exact_kern h.νV
+  case νW => exact_kern h.νW
+  case BV => exact_kern h.BV
+  case order => exact_kern h.order
 
 
 
@@ -225,41 +232,41 @@ theorem isChainW_tr (h : R.IsChainW) : letI := alg b iK; (real b R).IsChainW := 
   constructor
   case ωY =>
     intro t k hk
-    with_unfolding_all apply weilDatum_imp b _ _ _ _ _ _ (h.ωY t k hk)
+    exact_kern weilDatum_imp b _ _ _ _ _ _ (h.ωY t k hk)
   case ωX =>
     intro t
-    with_unfolding_all apply weilDatum_imp b _ _ _ _ _ _ (h.ωX t)
+    exact_kern weilDatum_imp b _ _ _ _ _ _ (h.ωX t)
   case vY =>
     unfold RealDat.chain_vY IsStepVecOf IsVacO IsThetaAt
     rw [vacuum_eq a b, thetaFun_eq a b, placeModel_eq a b]
-    with_unfolding_all apply h.vY
+    exact_kern h.vY
   case vX =>
     unfold RealDat.chain_vX IsStepVecOf IsVacO IsThetaAt
     rw [vacuum_eq a b, thetaFun_eq a b, placeModel_eq a b]
-    with_unfolding_all apply h.vX
+    exact_kern h.vX
   case ptY =>
     intro t k hk P
-    with_unfolding_all apply thetaFun_imp b _ _ _ _ (h.ptY t k hk P)
+    exact_kern thetaFun_imp b _ _ _ _ (h.ptY t k hk P)
   case ptX =>
     intro t P
-    with_unfolding_all apply thetaFun_imp b _ _ _ _ (h.ptX t P)
+    exact_kern thetaFun_imp b _ _ _ _ (h.ptX t P)
   case ItY =>
     unfold RealDat.cw_ItY RealDat.PItY
     rw [itW_eq a b]
-    with_unfolding_all apply h.ItY
+    exact_kern h.ItY
   case ItX =>
     unfold RealDat.cw_ItX RealDat.PItX
     rw [itW_eq a b]
-    with_unfolding_all apply h.ItX
+    exact_kern h.ItX
   case ioY =>
-    with_unfolding_all apply cast (io_congr R (multT_eq b a)
+    exact_kern cast (io_congr R (multT_eq b a)
       (fun m y _ => ∀ t k, k + 1 < a.D.R.m → OrZero (pIoYW (@m) R t k) (y t k)) R.ioY R.ioX) h.ioY
   case ioX =>
-    with_unfolding_all apply cast (io_congr R (multT_eq b a)
+    exact_kern cast (io_congr R (multT_eq b a)
       (fun m _ x => ∀ t, OrZero (pIoXW (@m) R t) (x t)) R.ioY R.ioX) h.ioX
   case Th =>
     have e := congrArg (fun p : type_of% R.PTh => ∀ t, OrZero (p t) (R.Th t)) (pTh_eq b R)
-    with_unfolding_all apply e.mp h.Th
+    exact_kern e.mp h.Th
 
 
 
@@ -268,19 +275,19 @@ theorem isThPW_tr (h : R.IsThPW) : letI := alg b iK; (real b R).IsThPW := by
   constructor
   case ωP =>
     intro i t
-    with_unfolding_all apply weilDatum_imp b _ _ _ _ _ _ (h.ωP i t)
+    exact_kern weilDatum_imp b _ _ _ _ _ _ (h.ωP i t)
   case vP =>
     unfold RealDat.thP_vP IsThPVecOf IsVacO IsThetaAt
     rw [vacuum_eq a b, thetaFun_eq a b, placeModel_eq a b]
-    with_unfolding_all apply h.vP
+    exact_kern h.vP
   case pt_theta =>
     intro i t P
-    with_unfolding_all apply thetaFun_imp b _ _ _ _ (h.pt_theta i t P)
-  case ioP => with_unfolding_all apply h.ioP
+    exact_kern thetaFun_imp b _ _ _ _ (h.pt_theta i t P)
+  case ioP => exact_kern h.ioP
   case thF =>
     have e := congrArg (fun p : type_of% R.PThF => ∀ i t, OrZero (p i t) (R.thF i t)) (pThF_eq b R)
-    with_unfolding_all apply e.mp h.thF
-  case thG => with_unfolding_all apply h.thG
+    exact_kern e.mp h.thF
+  case thG => exact_kern h.thG
 
 
 
@@ -290,20 +297,20 @@ theorem exAt_tr (h : R.ExAt) : letI := alg b iK; (real b R).ExAt := by
   case ItY =>
     unfold RealDat.ex_ItY RealDat.PItY
     rw [itW_eq a b]
-    with_unfolding_all apply h.ItY
+    exact_kern h.ItY
   case ItX =>
     unfold RealDat.ex_ItX RealDat.PItX
     rw [itW_eq a b]
-    with_unfolding_all apply h.ItX
-  case ioY => with_unfolding_all apply cast (congrArg (fun m : type_of% (@MultT a.D) => ∀ t k, k + 1 < a.D.R.m → ∃ y, pIoYW (@m) R t k y) (multT_eq b a)) h.ioY
-  case ioX => with_unfolding_all apply cast (congrArg (fun m : type_of% (@MultT a.D) => ∀ t, ∃ y, pIoXW (@m) R t y) (multT_eq b a)) h.ioX
-  case Th => with_unfolding_all apply cast (congrArg (fun p : type_of% R.PTh => ∀ t, ∃ y, p t y) (pTh_eq b R)) h.Th
-  case ioP => with_unfolding_all apply h.ioP
-  case thF => with_unfolding_all apply cast (congrArg (fun p : type_of% R.PThF => ∀ i t, ∃ y, p i t y) (pThF_eq b R)) h.thF
-  case thG => with_unfolding_all apply h.thG
+    exact_kern h.ItX
+  case ioY => exact_kern cast (congrArg (fun m : type_of% (@MultT a.D) => ∀ t k, k + 1 < a.D.R.m → ∃ y, pIoYW (@m) R t k y) (multT_eq b a)) h.ioY
+  case ioX => exact_kern cast (congrArg (fun m : type_of% (@MultT a.D) => ∀ t, ∃ y, pIoXW (@m) R t y) (multT_eq b a)) h.ioX
+  case Th => exact_kern cast (congrArg (fun p : type_of% R.PTh => ∀ t, ∃ y, p t y) (pTh_eq b R)) h.Th
+  case ioP => exact_kern h.ioP
+  case thF => exact_kern cast (congrArg (fun p : type_of% R.PThF => ∀ i t, ∃ y, p i t y) (pThF_eq b R)) h.thF
+  case thG => exact_kern h.thG
 
 theorem lLevelW_tr (h : R.LLevelW F) : letI := alg b iK; (real b R).LLevelW (face b F) := by
-  with_unfolding_all apply cast (congrArg (fun W : type_of% R.Wat => ∀ c i σ, R.WS F c i σ = (W i σ (R.levL F c σ)).comap (R.HW i σ).e) (wat_eq b R)) h
+  exact_kern cast (congrArg (fun W : type_of% R.Wat => ∀ c i σ, R.WS F c i σ = (W i σ (R.levL F c σ)).comap (R.HW i σ).e) (wat_eq b R)) h
 
 end Two
 

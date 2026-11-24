@@ -51,44 +51,48 @@ attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
 variable {B : Base} {C : Cols B} {a : Late B C} (b : Late B C) {G : Type} [Group G] [Fintype G] {Pl0 T0 : Type}
 
+local elab "exact_kern " t:term : tactic => do
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => do
+    Lean.Elab.Term.elabTerm t none
+
 abbrev setCd (c : CDHaar) : Late B C := { b with G := { b.G with cd := c } }
 
 theorem lawsM_tr {T : Core a.D} (h : LawsM T) : LawsM (core b T) := by
   have key : ∀ c : CDHaar, c = a.G.cd → LawsM (core (setCd b c) T) := by
     rintro _ rfl
     constructor
-    case pins => with_unfolding_all exact h.pins
-    case half => with_unfolding_all exact h.half
-    case evalWD => with_unfolding_all exact h.evalWD
-    case unf => with_unfolding_all exact h.unf
-    case unTest => with_unfolding_all exact h.unTest
-    case chiTriv => with_unfolding_all exact h.chiTriv
-    case dictU => with_unfolding_all exact h.dictU
-    case spaceW => with_unfolding_all exact h.spaceW
-    case levelK => with_unfolding_all exact h.levelK
-    case xiAbs => with_unfolding_all exact h.xiAbs
-    case muUnit => with_unfolding_all exact h.muUnit
-    case muCont => with_unfolding_all exact h.muCont
-    case finVol => with_unfolding_all exact h.finVol
-    case cuspFD => with_unfolding_all exact h.cuspFD
-    case supDef => with_unfolding_all exact h.supDef
-    case cuspidalL2Subspace => with_unfolding_all exact h.cuspidalL2Subspace
-    case l2Def => with_unfolding_all exact h.l2Def
-    case unitIndep => with_unfolding_all exact h.unitIndep
-    case ptNe => with_unfolding_all exact h.ptNe
-  with_unfolding_all exact key b.G.cd (cd_eq _ _)
+    case pins => exact_kern h.pins
+    case half => exact_kern h.half
+    case evalWD => exact_kern h.evalWD
+    case unf => exact_kern h.unf
+    case unTest => exact_kern h.unTest
+    case chiTriv => exact_kern h.chiTriv
+    case dictU => exact_kern h.dictU
+    case spaceW => exact_kern h.spaceW
+    case levelK => exact_kern h.levelK
+    case xiAbs => exact_kern h.xiAbs
+    case muUnit => exact_kern h.muUnit
+    case muCont => exact_kern h.muCont
+    case finVol => exact_kern h.finVol
+    case cuspFD => exact_kern h.cuspFD
+    case supDef => exact_kern h.supDef
+    case cuspidalL2Subspace => exact_kern h.cuspidalL2Subspace
+    case l2Def => exact_kern h.l2Def
+    case unitIndep => exact_kern h.unitIndep
+    case ptNe => exact_kern h.ptNe
+  exact_kern key b.G.cd (cd_eq _ _)
 
 theorem lawsJ_tr {T : CoreJ a.D} (h : LawsJ T) : LawsJ (coreJ b T) := by
   constructor
-  case toLawsM => with_unfolding_all exact lawsM_tr b h.toLawsM
-  case cUnit => with_unfolding_all exact h.cUnit
-  case muVal => with_unfolding_all exact h.muVal
-  case muConj => with_unfolding_all exact h.muConj
-  case intAll => with_unfolding_all exact h.intAll
-  case modelW => with_unfolding_all exact h.modelW
-  case familyUniformisationBasePointOrthogonal => with_unfolding_all exact h.familyUniformisationBasePointOrthogonal
-  case kfHalf => with_unfolding_all exact h.kfHalf
-  case adPin => with_unfolding_all exact h.adPin
+  case toLawsM => exact_kern lawsM_tr b h.toLawsM
+  case cUnit => exact_kern h.cUnit
+  case muVal => exact_kern h.muVal
+  case muConj => exact_kern h.muConj
+  case intAll => exact_kern h.intAll
+  case modelW => exact_kern h.modelW
+  case familyUniformisationBasePointOrthogonal => exact_kern h.familyUniformisationBasePointOrthogonal
+  case kfHalf => exact_kern h.kfHalf
+  case adPin => exact_kern h.adPin
 
 variable {A : FamIn a.D.what₂.LL G Pl0 T0 a.D.R.m}
 
@@ -134,32 +138,32 @@ theorem omPins_tr {O : OMDat T R i Tp tup} {κ v₀ ι x₀} (h : O.Pins κ v₀
   case lift =>
     have lift := h.lift
     apply (config := { synthAssignedInstances := false }) ThPinsR.mk
-    case field => with_unfolding_all exact lift.field
-    case std => with_unfolding_all exact lift.std
-    case v0 => with_unfolding_all exact lift.v0
-    case lev => with_unfolding_all exact lift.lev
+    case field => exact_kern lift.field
+    case std => exact_kern lift.std
+    case v0 => exact_kern lift.v0
+    case lev => exact_kern lift.lev
     case c0 =>
       obtain ⟨x, y, z, h1, h2⟩ := lift.c0
-      refine ⟨(by with_unfolding_all exact (x :)), (by with_unfolding_all exact (y :)), (by with_unfolding_all exact (z :)), ?_, (by with_unfolding_all exact (h2 :))⟩
-      with_unfolding_all exact famTie_imp b _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ h1
+      refine ⟨(by exact_kern x), (by exact_kern y), (by exact_kern z), ?_, (by exact_kern h2)⟩
+      exact_kern famTie_imp b _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ h1
   case tuple =>
     intro t
     have ht := h.tuple t
     apply (config := { synthAssignedInstances := false }) ThPinsT.mk
-    case reps => with_unfolding_all exact ht.reps
-    case B => with_unfolding_all exact ht.B
-    case xi => with_unfolding_all exact ht.xi
-    case phi => with_unfolding_all exact ht.phi
-    case half => with_unfolding_all exact ht.half
-  case act => with_unfolding_all exact h.act
-  case bad => with_unfolding_all exact h.bad
-  case reps => with_unfolding_all exact h.reps
-  case ep => with_unfolding_all exact h.ep
-  case io => with_unfolding_all exact h.io
-  case w => with_unfolding_all exact h.w
-  case cov => with_unfolding_all exact h.cov
-  case cxi => with_unfolding_all exact h.cxi
-  case model₂ => with_unfolding_all exact h.model₂
+    case reps => exact_kern ht.reps
+    case B => exact_kern ht.B
+    case xi => exact_kern ht.xi
+    case phi => exact_kern ht.phi
+    case half => exact_kern ht.half
+  case act => exact_kern h.act
+  case bad => exact_kern h.bad
+  case reps => exact_kern h.reps
+  case ep => exact_kern h.ep
+  case io => exact_kern h.io
+  case w => exact_kern h.w
+  case cov => exact_kern h.cov
+  case cxi => exact_kern h.cxi
+  case model₂ => exact_kern h.model₂
 
 end Theta
 
@@ -168,18 +172,18 @@ variable {T : CoreJ a.D} [iK : Algebra T.Q.c.F a.D.what₂.LL] {R : RealDat a.D 
 def fwTie {κ v₀} (x : FWTie T R κ v₀) :
     @FWTie b.D G _ _ Pl0 T0 (famM b A) (coreJ b T) (by with_unfolding_all exact (alg b iK :)) (by with_unfolding_all exact (real b R :)) (fun i => by with_unfolding_all exact (wt b (κ (by with_unfolding_all exact (i :))) :)) (by with_unfolding_all exact (v₀ :)) :=
   @FWTie.mk b.D G _ _ Pl0 T0 (famM b A) (coreJ b T) ((by with_unfolding_all exact ((alg b iK) :))) ((by with_unfolding_all exact ((real b R) :))) (fun i => (by with_unfolding_all exact ((wt b (κ ((i)))) : _))) ((by with_unfolding_all exact (v₀ :)))
-    (alg_eq := (by with_unfolding_all exact (x.alg_eq :)))
-    (e := (by with_unfolding_all exact (x.e :)))
-    (ks := (by with_unfolding_all exact (x.ks :)))
-    (kap := (by with_unfolding_all exact (x.kap :)))
-    (pt := (by with_unfolding_all exact (x.pt :)))
-    (nrm_eq := (by with_unfolding_all exact (x.nrm_eq :)))
+    (alg_eq := (by exact_kern x.alg_eq))
+    (e := (by exact_kern x.e))
+    (ks := (by exact_kern x.ks))
+    (kap := (by exact_kern x.kap))
+    (pt := (by exact_kern x.pt))
+    (nrm_eq := (by exact_kern x.nrm_eq))
     (laws := lawsJ_tr b x.laws)
-    (chiR := (by with_unfolding_all exact (x.chiR :)))
-    (hv₀ := (by with_unfolding_all exact (x.hv₀ :)))
-    (x0 := (by with_unfolding_all exact (x.x0 :)))
-    (ev0 := (by with_unfolding_all exact (x.ev0 :)))
-    (ev := (by with_unfolding_all exact (x.ev :)))
+    (chiR := (by exact_kern x.chiR))
+    (hv₀ := (by exact_kern x.hv₀))
+    (x0 := (by exact_kern x.x0))
+    (ev0 := (by exact_kern x.ev0))
+    (ev := (by exact_kern x.ev))
 
 def geoHalf {ph : Fin a.D.R.m → ℂ} (x : GeoHalf T R ph) :
     @GeoHalf b.D G _ _ Pl0 T0 (famM b A) (coreJ b T) ((@alg B C a b (↥(@ReciprocityTheory.ChartRestriction.G.Geo.Tor.Coeff.F (@Formalism.HC.HostRaw.E (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instField (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instNF (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (instCMHost (@Late.D B C a)) (@Par.H (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.l (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.c (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))))) (@IntermediateField.toField Rat Complex Rat.instField Complex.instField (@DivisionRing.toRatAlgebra Complex (@Field.toDivisionRing Complex Complex.instField) Complex.instCharZero) (@ReciprocityTheory.ChartRestriction.G.Geo.Tor.Coeff.F (@Formalism.HC.HostRaw.E (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instField (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instNF (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (instCMHost (@Late.D B C a)) (@Par.H (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.l (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.c (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))))) iK)) ((@real B C a b G ‹Group G› ‹Fintype G› Pl0 T0 (↥(@ReciprocityTheory.ChartRestriction.G.Geo.Tor.Coeff.F (@Formalism.HC.HostRaw.E (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instField (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instNF (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (instCMHost (@Late.D B C a)) (@Par.H (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.l (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.c (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))))) (@IntermediateField.toField Rat Complex Rat.instField Complex.instField (@DivisionRing.toRatAlgebra Complex (@Field.toDivisionRing Complex Complex.instField) Complex.instCharZero) (@ReciprocityTheory.ChartRestriction.G.Geo.Tor.Coeff.F (@Formalism.HC.HostRaw.E (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instField (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (@Formalism.HC.HostRaw.instNF (@Late.D B C a).R.toFrame (@Formalism.HC.HostAx.toHostRaw (@Late.D B C a).R.toFrame (@Host.toHostAx (@Late.D B C a).R (@Late.D B C a).host))) (instCMHost (@Late.D B C a)) (@Par.H (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.l (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))) (@Par.c (@Late.D B C a) (@Core.Q (@Late.D B C a) (@CoreJ.toCore (@Late.D B C a) T))))) (inferInstance) iK A R)) ((ph)) :=
@@ -187,13 +191,13 @@ def geoHalf {ph : Fin a.D.R.m → ℂ} (x : GeoHalf T R ph) :
     (κ := fun i => (by with_unfolding_all exact ((wt b (x.κ ((i)))) : _)))
     (v₀ := (by with_unfolding_all exact (x.v₀ :)))
     (fw := (by with_unfolding_all exact ((fwTie b x.fw) :)))
-    (bar := (by with_unfolding_all exact (x.bar :)))
+    (bar := (by exact_kern x.bar))
     (O := fun i => (by with_unfolding_all exact ((omDat b (x.O ((i)))) : _)))
-    (pins := fun i => (by with_unfolding_all exact ((And.intro (x.pins ((i))).1 (omPins_tr b (x.pins ((i))).2)) : _)))
-    (rhoGeo := (by with_unfolding_all exact (x.rhoGeo :)))
-    (equivAll := (by with_unfolding_all exact (x.equivAll :)))
-    (cTie := (by with_unfolding_all exact (x.cTie :)))
-    (phase := (by with_unfolding_all exact (x.phase :)))
+    (pins := fun i => (by exact_kern And.intro (x.pins ((i))).1 (omPins_tr b (x.pins ((i))).2)))
+    (rhoGeo := (by exact_kern x.rhoGeo))
+    (equivAll := (by exact_kern x.equivAll))
+    (cTie := (by exact_kern x.cTie))
+    (phase := (by exact_kern x.phase))
 
 set_option maxHeartbeats 16000000 in
 theorem inGeo_tr {ph : Fin a.D.R.m → ℂ} {x : GeoHalf T R ph} (h : InGeo x) :
