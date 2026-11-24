@@ -351,23 +351,68 @@ attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
 variable {D : D7} (Z : New D)
 
+abbrev reD' (D : D7) (Z : New D) : D7 :=
+  { D with
+    s := mix D.s Z.Z.s
+    s_split := D.s_split
+    s_HH := Z.Z.s_HH
+    s_Cu := Z.Z.s_Cu
+    s_PlF := Z.Z.s_PlF
+    s_Cu_isom := Z.Z.s_Cu_isom
+    sEE := Z.Z.sEE
+    div := (reD D Z).div }
 
+def formsRe_atT {u : D.what₂.Word} (A : AtTTied (D := D) u) : AtTTied (D := reD' D Z) u := { A with }
+
+def formsRe_cls {u : D.what₂.Word} {i : ℕ} {hi : i ≤ D.R.m} (K : ClsTied (D := D) u i hi) :
+    ClsTied (D := reD' D Z) u i hi := { K with }
+
+def formsRe_val {u : D.what₂.Word} {eV : (D.mem u).A.vT ≃ PlT D u} {i : ℕ} {hi : i ≤ D.R.m}
+    {K : ClsTied (D := D) u i hi} (W : ValTied (D := D) u eV i hi K) :
+    ValTied (D := reD' D Z) u eV i hi (formsRe_cls Z K) := { W with }
+
+def formsRe_lv {u : D.what₂.Word} {A : AtTTied (D := D) u} {i : ℕ} {hi : i ≤ D.R.m}
+    (P : LvTied (D := D) u A i hi) : LvTied (D := reD' D Z) u (formsRe_atT Z A) i hi := { P with }
+
+def formsRe_clsP {u : D.what₂.Word} (K : ClsPTied (D := D) u) : ClsPTied (D := reD' D Z) u := { K with }
+
+def formsRe_valP {u : D.what₂.Word} {K : ClsPTied (D := D) u} (W : ValPTied (D := D) u K) :
+    ValPTied (D := reD' D Z) u (formsRe_clsP Z K) := { W with }
+
+def formsRe_til {u : D.what₂.Word} {A : AtTTied (D := D) u} {K : ClsPTied (D := D) u}
+    {P : LvTied (D := D) u A D.R.m le_rfl} (Tl : TilTied (D := D) u A K P) :
+    TilTied (D := reD' D Z) u (formsRe_atT Z A) (formsRe_clsP Z K) (formsRe_lv Z P) := { Tl with }
+
+def formsRe_tilAd {u : D.what₂.Word} {A : AtTTied (D := D) u} {K : ClsPTied (D := D) u}
+    {P : LvTied (D := D) u A D.R.m le_rfl} {Tl : TilTied (D := D) u A K P}
+    {Km : ClsTied (D := D) u D.R.m le_rfl} (Ta : TilAd (D := D) Tl Km) :
+    TilAd (D := reD' D Z) (formsRe_til Z Tl) (formsRe_cls Z Km) := { Ta with }
+
+def formsRe_chart {T : ℕ} {bad : Set (HeightOneSpectrum (𝓞 D.host.F))} {i : ℕ} {hi : i ≤ D.R.m}
+    {cl : Type} {stab : cl → Type} [∀ c, Group (stab c)]
+    {lat : cl → Submodule (𝓞 D.host.E) (Fin (D.R.N i) → D.host.E)}
+    (K : LevelChart D T bad i hi stab lat) : LevelChart (reD' D Z) T bad i hi stab lat := { K with }
+
+def formsRe_lvG {u : D.what₂.Word} {T : ℕ} {res : ∀ v : (D.mem u).A.vT, 𝓞 D.host.E →+* (D.mem u).A.Fv v}
+    {i : ℕ} {hi : i ≤ D.R.m} {lat : (D.mem u).C.cls i → Submodule (𝓞 D.host.E) (Fin (D.R.N i) → D.host.E)}
+    (L : LevelCompatibleLattices (D := D) (u := u) (D.fm u) T res i hi lat) :
+    LevelCompatibleLattices (D := reD' D Z) (u := u) (D.fm u) T res i hi lat := { L with }
 
 def formsRe {u : D.what₂.Word} {Ch : ℕ → Type} {chOf : ∀ i, (D.mem u).C.cls i → Ch i} (T : FormsTiedSym D u Ch chOf) :
     FormsTiedSym (reD D Z) u Ch chOf :=
-  { T with
-    atT := { T.atT with }
-    cls := fun i hi h => { T.cls i hi h with }
-    val := fun i hi h => { T.val i hi h with }
-    lv := fun i hi => { T.lv i hi with }
-    ch := fun i h1 h2 β => { T.ch i h1 h2 β with }
+  ({ T with
+    atT := formsRe_atT Z T.atT
+    cls := fun i hi h => formsRe_cls Z (T.cls i hi h)
+    val := fun i hi h => formsRe_val Z (T.val i hi h)
+    lv := fun i hi => formsRe_lv Z (T.lv i hi)
+    ch := fun i h1 h2 β => formsRe_chart Z (T.ch i h1 h2 β)
     valC := fun i h1 h2 => { T.valC i h1 h2 with }
     dilC := fun i h1 h2 => { T.dilC i h1 h2 with }
-    lvC := fun i h1 h2 => { T.lvC i h1 h2 with }
-    clsP := { T.clsP with }
-    valP := { T.valP with }
-    til := { T.til with }
-    tilAd := { T.tilAd with } }
+    lvC := fun i h1 h2 => formsRe_lvG Z (T.lvC i h1 h2)
+    clsP := formsRe_clsP Z T.clsP
+    valP := formsRe_valP Z T.valP
+    til := formsRe_til Z T.til
+    tilAd := formsRe_tilAd Z T.tilAd } : FormsTiedSym (reD' D Z) u Ch chOf)
 
 end GlobalTheory.Mem.SRe.ColRe
 
@@ -393,11 +438,22 @@ variable {D : D7} (Z : New D)
 
 
 
+def hermRe_base (B : Formalism.L2.Herm.HermColsCh D) : Formalism.L2.Herm.HermColsCh (reD' D Z) := { B with }
+
+def hermRe_atT {B : Formalism.L2.Herm.HermColsCh D} {u : D.what₂.Word}
+    (A : Formalism.L2.Herm.AtT D u (B.vT u) (B.Fv u)) :
+    Formalism.L2.Herm.AtT (reD' D Z) u ((hermRe_base Z B).vT u) ((hermRe_base Z B).Fv u) := { A with }
+
+theorem hermRe_ad {B : Formalism.L2.Herm.HermColsCh D} {A : ∀ u, Formalism.L2.Herm.AtT D u (B.vT u) (B.Fv u)}
+    (Ad : Formalism.L2.Herm.SymmetricAdelicCompatibility D B A) :
+    Formalism.L2.Herm.SymmetricAdelicCompatibility (reD' D Z) (hermRe_base Z B) (fun u => hermRe_atT Z (A u)) :=
+  { Ad with }
+
 def hermRe (H : Formalism.L2.Herm.ColsHermS D) : Formalism.L2.Herm.ColsHermS (reD D Z) :=
-  { H with
-    base := { H.base with }
-    atT := fun u => { H.atT u with }
-    ad := { H.ad with } }
+  ({ H with
+    base := hermRe_base Z H.base
+    atT := fun u => hermRe_atT Z (H.atT u)
+    ad := hermRe_ad Z H.ad } : Formalism.L2.Herm.ColsHermS (reD' D Z))
 
 end GlobalTheory.Mem.SRe.ColRe
 
@@ -423,37 +479,16 @@ variable {D : D7} (Z : New D)
 
 
 
-def colsRe (C : ColsTiedSym D) : ColsTiedSym (reD D Z) := (by with_unfolding_all exact ((@ColsTiedSym.mk (reD D Z) (hermRe Z C.herm) ((by with_unfolding_all exact ((fun u => formsRe Z (C.forms u)) :)))
-    ((by with_unfolding_all exact (C.eV :)))
-    ((by with_unfolding_all exact (C.piU :)))
-    ((by with_unfolding_all exact (C.res :)))
-    ((by with_unfolding_all exact (C.car0 :)))
-    ((by with_unfolding_all exact (C.carC :)))
-    ((by with_unfolding_all exact (C.carM :)))
-    ((by with_unfolding_all exact (C.carP :)))
-    ((by with_unfolding_all exact (C.lattice₂ :)))
-    ((by with_unfolding_all exact (C.pr :)))
-    ((by with_unfolding_all exact (C.prk :)))
-    ((by with_unfolding_all exact (C.prC :)))
-    ((by with_unfolding_all exact (C.z0 :)))
-    ((by with_unfolding_all exact (C.ga :)))
-    ((by with_unfolding_all exact (C.sp :)))
-    ((by with_unfolding_all exact (C.piG :)))
-    ((by with_unfolding_all exact (C.fr0 :)))
-    ((by with_unfolding_all exact (C.gl_const :)))
-    ((by with_unfolding_all exact (C.chi :)))
-    ((by with_unfolding_all exact (C.frame_level_zero_const :)))
-    ((by with_unfolding_all exact (C.frP_const :)))) :))
+def colsRe (C : ColsTiedSym D) : ColsTiedSym (reD D Z) :=
+  ({ C with
+    herm := (hermRe Z C.herm : Formalism.L2.Herm.ColsHermS (reD' D Z))
+    forms := fun u => (formsRe Z (C.forms u) : FormsTiedSym (reD' D Z) u _ _) } : ColsTiedSym (reD' D Z))
 
 
 
 theorem sameF_colsRe (C : ColsTiedSym D) :
-    SameForms0LevelsAndValues Z (fun u => (C.forms u).to0) (fun u => ((colsRe Z C).forms u).to0) := by
-  intro u
-  refine ⟨?_, ?_, ?_⟩
-  · exact (by with_unfolding_all exact ((Eq.refl (C.forms u).to0.cls0.lev) :))
-  · exact (by with_unfolding_all exact ((Eq.refl (C.forms u).to0.cls0.y) :))
-  · exact (by with_unfolding_all exact ((Eq.refl (C.forms u).to0.val0.eY) :))
+    SameForms0LevelsAndValues Z (fun u => (C.forms u).to0) (fun u => ((colsRe Z C).forms u).to0) :=
+  fun _ => ⟨rfl, rfl, rfl⟩
 
 
 
@@ -681,7 +716,7 @@ theorem realOf (h1 : Vol.DiscreteSeriesExist) (h2 : Vol.FormalDegreeFormula₂) 
   intro D hv hs hd
   refine ⟨?_, ?_, ?_, hv⟩
   · rw [Vol.cdScaleTie_iff, hs]
-    exact _root_.GlobalTheory.Mem.Vol.Scale.cdScaleIs_trueScale D.cd
+    exact GlobalTheory.Mem.Vol.ScaleExists.trueScale_isScale D.cd
   · intro τ
     unfold Formalism.L2.Theta.IsDsig
     rw [hs, hd τ]
