@@ -239,6 +239,10 @@ section -- clump:auto
 
 set_option maxSynthPendingDepth 1
 
+-- Use `sheafIsAbelian`, the instance Mathlib's `Sheaf.H` API is stated for, instead of the
+-- definitionally equal `TopCat.Sheaf.instAbelian`: the kernel is slow to identify the two.
+attribute [-instance] TopCat.Sheaf.instAbelian
+
 namespace GroundTheory.Arith.SchemeCoh
 
 open AlgebraicGeometry CategoryTheory Opposite TopologicalSpace Limits
@@ -287,16 +291,20 @@ lemma cechK_succ_le {ι : Type u} (𝔘 : ι → X.Opens) (p n : ℕ) :
 lemma towerComp_formalτQ_val (q n : ℕ) : ∀ (c : ℕ) (y : formalQ I F q (n + c)),
     ((towerComp (E := fun m => formalQ I F q m) (formalτQ I F q) n c y : formalQ I F q n) :
       Sheaf.H.{u} (modulesAb (idealPow I F (n + 1))) (q + 1)) =
-      H.linearMap A (transMap I F n c) (q + 1) y
-  | 0, y => by
+      H.linearMap A (transMap I F n c) (q + 1) y := by
+  intro c
+  induction c with
+  | zero =>
+    intro y
     change (y : Sheaf.H.{u} (modulesAb (idealPow I F (n + 1))) (q + 1)) =
       H.linearMap A (𝟙 _) (q + 1) y
     rw [H.linearMap_id]
     rfl
-  | c + 1, y => by
+  | succ c ih =>
+    intro y
     change ((towerComp (E := fun m => formalQ I F q m) (formalτQ I F q) n c
       (formalτQ I F q (n + c) y) : formalQ I F q n) : Sheaf.H.{u} (modulesAb (idealPow I F (n + 1))) (q + 1)) = _
-    rw [towerComp_formalτQ_val q n c, transMap, H.linearMap_comp]
+    rw [ih, transMap, H.linearMap_comp]
     rfl
 
 variable [IsProper (X ↘ Spec (.of A))] (hF : IsCoherent F)
