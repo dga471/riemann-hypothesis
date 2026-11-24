@@ -84,6 +84,28 @@ import Mathlib.RingTheory.AdicCompletion.Completeness
 import Mathlib.RingTheory.Coalgebra.CoassocSimps
 import Mathlib.RingTheory.RegularLocalRing.Defs
 
+attribute [-instance]
+  isWellOrder_lt instWellQuasiOrderedLEOfWellFoundedLT
+  NormedSpace.toModule NormedAlgebra.toAlgebra
+  Subalgebra.normedCommRing Subalgebra.seminormedRing
+  Subalgebra.seminormedCommRing Subalgebra.normedRing
+  Submodule.normedSpace Submodule.seminormedAddCommGroup
+  Submodule.normedAddCommGroup SubalgebraClass.toNormedAlgebra
+  Subalgebra.isScalarTower_left Subalgebra.isScalarTower_mid
+  Submonoid.instIsScalarTowerSubtypeMem Submonoid.instSMulCommClassSubtypeMem_1
+  Subalgebra.smulCommClass_right Subalgebra.smulCommClass_left
+  MulSemiringAction.toDistribMulAction
+  RingHomClass.toLinearMapClassNNRat RingHomClass.toLinearMapClassRat
+  NonUnitalAlgHomClass.instLinearMapClass
+  NonUnitalAlgHomClass.instSemilinearMapClassOfNonUnitalAlgSemiHomClassOfClassRingHom
+  Algebra.TensorProduct.instNonUnitalSemiring Algebra.TensorProduct.instNonUnitalRing
+attribute [local instance high]
+  Submodule.module TensorProduct.leftModule Algebra.TensorProduct.leftAlgebra
+
+local elab "exact_kern " t:term : tactic =>
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ =>
+    Lean.Elab.Tactic.elabTerm t none
+
 -- This file was produced by scripts/clump.py from the modules listed below.
 -- Members: Development.AutomorphicSpectrum.Proofs.BlockDecomposition.IsAdicCompleteOfPowSmulEqZero, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.AdicCompleteTensorFinite, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.FlatBaseChangeLimitSystem, Development.WeilBound.CoreStatements.PadicHodgeComparison.EtaleCohomologyComparison.PerfectoidPullbacks.FrobeniusFactorisation.ExistsAlpha, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.BoundedCokernelLimitToLevel, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.ModuleFiniteLimitOfLseq, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.CrisZeroSurjective, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.FlatAcrisTruncatedWitt, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.FlatAcrisTruncatedWittStatement, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.NilpotentIdentityMorphismCompat, Development.AutomorphicSpectrum.Proofs.BlockDecomposition.SmoothModelTensorWittComparison, Development.WeilBound.CoreStatements.PadicHodgeComparison.EtaleCohomologyComparison.PerfectoidPullbacks.PeriodBaseChange.BcTens, Development.WeilBound.CoreStatements.PadicHodgeComparison.EtaleCohomologyComparison.PerfectoidPullbacks.FrobeniusFactorisation.PhiAIter
 
@@ -1463,7 +1485,7 @@ theorem bc_cover : ∀ {O R R' : Type} [CommRing O] [CommRing R] [CommRing R'] [
     intro S hS j
     obtain ⟨α, hα⟩ := id hS
     obtain ⟨c', -⟩ := coord_res (U.c α) (iInf₂_le α hα) (U.inter S hS)
-    exact GlobalTheory.CompanionTheory.ChartLocBc.local_bc hp hn m hu hg c' _ _ rfl rfl (st_obj m hu _) (A _ _) (B _ _) j
+    exact_kern GlobalTheory.CompanionTheory.ChartLocBc.local_bc hp hn m hu hg c' _ _ rfl rfl (st_obj m hu _) (A _ _) (B _ _) j
   have h₁ : St (γ := γ) (p := p) (q := q) (κ := κ) ⊤ (Set.range U.U) ≤ St ⊤ {⊤} := fun T _ => ⟨trivial, ⊤, rfl, fun _ _ => trivial⟩
   have h₂ : St (γ := γ') (p := p) (q := q) (κ := κ') ⊤ (Set.range U.U) ≤ St ⊤ {⊤} := fun T _ => ⟨trivial, ⊤, rfl, fun _ _ => trivial⟩
   have hc : ∀ W ∈ ({⊤} : Set X.Opens), W ≤ sSup (Set.range U.U) := by
@@ -1471,7 +1493,7 @@ theorem bc_cover : ∀ {O R R' : Type} [CommRing O] [CommRing R] [CommRing R'] [
     rw [sSup_range, U.cover]
   have b₁ := (zar (γ := γ) (p := p) (q := q) (κ := κ) ⊤ (Or.inr ⟨hp, Or.inl rfl⟩) _ _ h₁ hc j).2.1 (some 0) none 0 0
   have b₂ := (zar (γ := γ') (p := p) (q := q) (κ := κ') ⊤ (Or.inr ⟨hp, Or.inl rfl⟩) _ _ h₂ hc j).2.1 (some 0) none 0 0
-  exact tens_transport _ _ _ b₁ _ b₂
+  exact_kern tens_transport _ _ _ b₁ _ b₂
     (fun _ a x => pull_square m h₁ h₂ h (st_obj m hu _) a (ha a) (hb a) (A _ _ a) (B _ _ a) j x) Hg
 
 end GlobalTheory.CompanionTheory.BcCov
@@ -1535,7 +1557,7 @@ theorem bc_tens : ∀ {l : ℕ} [Fact l.Prime] {K : IntermediateField ℚ_[l] (P
   · intro a y
     have key := sqC_toQ m Q Q' h (Ideal.Quotient.mk _) ((base l).cris n) r.w (Mid.wn_mk r n) ((base l).cris n a)
       (ha _) (hb _) j y
-    exact (pull_comm r M j n Q' a y).trans key.symm
+    exact_kern (pull_comm r M j n Q' a y).trans key.symm
 
 end GlobalTheory.CompanionTheory.BcAcris
 end -- clump:auto
@@ -1663,9 +1685,9 @@ theorem fac_ex (hmn : MuNu r hT)
             galT_tmul := fun _ _ _ _ _ _ => rfl
             lin := ?_, fac := ?_, phi := ?_, gal := ?_, galβ := ?_, nat := ?_ }, fun M hM j => ⟨h M j hM, fun _ => rfl⟩⟩
   · intro M hM j a x
-    exact ((h M j hM).lin a x).trans (congrArg (fun b : AW r => b • α M j x) (phiA_iter N a))
+    exact_kern ((h M j hM).lin a x).trans (congrArg (fun b : AW r => b • α M j x) (phiA_iter N a))
   · intro M hM j x
-    exact (h M j hM).fac (muH r hT M j) x _ fun n => (hmn M n j _).trans (iter_lim (M.phiH j) N n x).symm
+    exact_kern (h M j hM).fac (muH r hT M j) x _ fun n => (hmn M n j _).trans (iter_lim (M.phiH j) N n x).symm
   · intro M hM j x
     exact ((h M j hM).op (h M j hM) (τ := φA r) (fun n => phiM r M n j) (Wc.phiS l (B.schFn M.p) r.ρ j).lim
       (fun n y => (_root_.GlobalTheory.CompanionTheory.BaseChangeFrob.phiM_bW r M n j _).symm) _ (fun _ _ => rfl) x (phiL M j x) fun n => _root_.GlobalTheory.CompanionTheory.NuPhi.nu_phi r hT M n j _).2 rfl
@@ -1675,11 +1697,11 @@ theorem fac_ex (hmn : MuNu r hT)
   · intro M hM j g y
     refine Subtype.ext (funext fun n => (_root_.GlobalTheory.CompanionTheory.MuGal.mu_gal r hT M _ (hσ g) n j _).trans (congrArg (Mid.mu r M n j hT) ?_))
     have e1 : Fa.E (gH r M j) n ((1 : AW r) ⊗ₜ y) = bW r M n j (y.1 n) := (Fa.E_tmul _ n 1 y).trans (one_smul _ _)
-    exact (congrArg (galM r M _ (hσ g) n j) e1).trans ((_root_.GlobalTheory.CompanionTheory.BWGal.bW_gal r M _ (hσ g) n j _).trans e1.symm)
+    exact_kern (congrArg (galM r M _ (hσ g) n j) e1).trans ((_root_.GlobalTheory.CompanionTheory.BWGal.bW_gal r M _ (hσ g) n j _).trans e1.symm)
   · intro M M' u hu hM hM' j x
     refine ⟨0, ?_⟩
     rw [pow_zero, one_smul, sub_eq_zero]
-    exact ((h M' j hM').op (h M j hM) (τ := RingHom.id _) (fun n => pullM r u hu n j) (Wc.pullS l r.ρ (B.schMap u hu) j).lim
+    exact_kern ((h M' j hM').op (h M j hM) (τ := RingHom.id _) (fun n => pullM r u hu n j) (Wc.pullS l r.ρ (B.schMap u hu) j).lim
       (fun n y => (_root_.GlobalTheory.CompanionTheory.CrisBase.pullM_bW r u hu n j _).symm) (LinearMap.lTensor (AW r) (Wc.pullS l r.ρ (B.schMap u hu) j).lim).toAddMonoidHom
       (fun _ _ => rfl) x (pullL u hu j x) fun n => _root_.GlobalTheory.CompanionTheory.NuPull.nu_pull r hT u hu n j _).1
 

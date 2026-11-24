@@ -99,17 +99,21 @@ def phiM (n : ℕ) : Mor (Lc F κ true n) (Lc F κ true n) ((base l).phi n) :=
   B.crMor (F := F) (F' := F) (b := bs l true n) (b' := bs l true n) (ht := rfl) (ht' := rfl) ((base l).phi n) rfl
     ((base l).dpP_phi n) (phiPt F κ n) fun _ y r => ((congrArg y.1.1 (phi_mk (base l) n r)).trans (map_pow y.1.1 _ l)).symm
 
+local elab "exact_kern " t:term : tactic =>
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ =>
+    Lean.Elab.Tactic.elabTerm t none
+
 theorem red_gal (σ : Gal(PadicAlgCl l/K)) (hσ : ∀ x, galOC σ (κ x) = κ x) (k : Bool) (n j : ℕ) (x : Hc F κ k (n + 1) j) :
     redHc F κ k n.le_succ j (galHc F κ σ hσ k (n + 1) j x) = galHc F κ σ hσ k n j (redHc F κ k n.le_succ j x) := by
   unfold redHc galHc redMor galMorC
-  exact cr_square (galM F κ σ hσ k (n + 1)) (redM F κ k n) (redM F κ k n) (galM F κ σ hσ k n) (galBase_cris σ (n + 1))
+  exact_kern cr_square (galM F κ σ hσ k (n + 1)) (redM F κ k n) (redM F κ k n) (galM F κ σ hσ k n) (galBase_cris σ (n + 1))
     (red_cris _ n.le_succ) (red_cris _ n.le_succ) (galBase_cris σ n) (red_galBase σ n)
     (base_base F (gal_κb κ σ hσ k (n + 1)) (red_κb κ k n.le_succ) (red_κb κ k n.le_succ) (gal_κb κ σ hσ k n)) j x
 
 theorem red_phi (n j : ℕ) (x : Hc F κ true (n + 1) j) :
     redHc F κ true n.le_succ j (phiHc F κ (n + 1) j x) = phiHc F κ n j (redHc F κ true n.le_succ j x) := by
   unfold redHc phiHc redMor phiMorC
-  exact cr_square (phiM F κ (n + 1)) (redM F κ true n) (redM F κ true n) (phiM F κ n) ((base l).phi_cris (n + 1))
+  exact_kern cr_square (phiM F κ (n + 1)) (redM F κ true n) (redM F κ true n) (phiM F κ n) ((base l).phi_cris (n + 1))
     (red_cris _ n.le_succ) (red_cris _ n.le_succ) ((base l).phi_cris n) ((pdOk_frob _).red_acr n.le_succ) (phi_base F κ n) j x
 
 variable {F} {F' : Fn O}
@@ -121,7 +125,7 @@ def pullM (u : Fn.Map F F') (k : Bool) (n : ℕ) : Mor (Lc F' κ k n) (Lc F κ k
 theorem red_pull (u : Fn.Map F F') (k : Bool) (n j : ℕ) (x : Hc F' κ k (n + 1) j) :
     redHc F κ k n.le_succ j (pullHc κ u k (n + 1) j x) = pullHc κ u k n j (redHc F' κ k n.le_succ j x) := by
   unfold redHc pullHc redMor pullMorC
-  exact cr_square (pullM κ u k (n + 1)) (redM F κ k n) (redM F' κ k n) (pullM κ u k n) (idc _)
+  exact_kern cr_square (pullM κ u k (n + 1)) (redM F κ k n) (redM F' κ k n) (pullM κ u k n) (idc _)
     (red_cris _ n.le_succ) (red_cris _ n.le_succ) (idc _) (fun r => (idc ((base l).red n.le_succ) r).symm)
     (base_map u (red_κb κ k n.le_succ)) j x
 
