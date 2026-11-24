@@ -850,6 +850,41 @@ noncomputable section
 open MvPolynomial
 namespace GlobalTheory.ExpFrame.Eigenform
 
+section NablaTInsts
+variable {O : Type} [CommRing O] {ι : Type} [Fintype ι] [DecidableEq ι] (N : ℕ) (mu : ι → ℕ → ℕ)
+
+local instance (priority := high) instAddCommGroupNablaT : AddCommGroup (NablaT O N mu) := inferInstance
+local instance (priority := high) instAddMonoidNablaT : AddMonoid (NablaT O N mu) := inferInstance
+local instance (priority := high) instAddNablaT : Add (NablaT O N mu) := inferInstance
+local instance (priority := high) instHAddNablaT : HAdd (NablaT O N mu) (NablaT O N mu) (NablaT O N mu) := instHAdd
+local instance (priority := high) instZeroNablaT : Zero (NablaT O N mu) := inferInstance
+local instance (priority := high) instOfNatZeroNablaT : OfNat (NablaT O N mu) 0 := inferInstance
+local instance (priority := high) instModuleNablaT : Module O (NablaT O N mu) := inferInstance
+local instance (priority := high) instSMulNablaT : SMul O (NablaT O N mu) := inferInstance
+local instance (priority := high) instSMulZeroClassNablaT : SMulZeroClass O (NablaT O N mu) := inferInstance
+local instance (priority := high) instDistribSMulNablaT : DistribSMul O (NablaT O N mu) := inferInstance
+local instance (priority := high) instHSMulNablaT : HSMul O (NablaT O N mu) (NablaT O N mu) := instHSMul
+local instance (priority := high) instRingAlg : Ring (alg O N mu) := inferInstance
+local instance (priority := high) instAlgebraAlg : Algebra O (alg O N mu) := inferInstance
+local instance (priority := high) instModuleAlgNablaT : Module (alg O N mu) (NablaT O N mu) := inferInstance
+local instance (priority := high) instSMulAlgNablaT : SMul (alg O N mu) (NablaT O N mu) := inferInstance
+local instance (priority := high) instIsScalarTowerAlgNablaT :
+    IsScalarTower O (alg O N mu) (NablaT O N mu) := inferInstance
+
+local instance (priority := high) instSMulFormsT {l : ℕ} [Fact l.Prime] {ι : Type} [Fintype ι] [DecidableEq ι]
+    {N : ℕ} (F : Frame l ι N) (mu : ι → ℕ → ℕ) (jKm : F.K →* alg F.O N mu)
+    (M : Type) [AddCommGroup M] [Module F.O M] [Module (alg F.O N mu) M] [IsScalarTower F.O (alg F.O N mu) M]
+    [hM : Module F.T (Forms F.O (A := alg F.O N mu) F.Γ jKm M)] :
+    SMul F.T (Forms F.O (A := alg F.O N mu) F.Γ jKm M) :=
+  hM.toSMul
+
+local instance (priority := high) instHSMulFormsT {l : ℕ} [Fact l.Prime] {ι : Type} [Fintype ι] [DecidableEq ι]
+    {N : ℕ} (F : Frame l ι N) (mu : ι → ℕ → ℕ) (jKm : F.K →* alg F.O N mu)
+    (M : Type) [AddCommGroup M] [Module F.O M] [Module (alg F.O N mu) M] [IsScalarTower F.O (alg F.O N mu) M]
+    [Module F.T (Forms F.O (A := alg F.O N mu) F.Γ jKm M)] :
+    HSMul F.T (Forms F.O (A := alg F.O N mu) F.Γ jKm M) (Forms F.O (A := alg F.O N mu) F.Γ jKm M) :=
+  instHSMul
+
 theorem mem_of_ann {R M : Type} [CommRing R] [AddCommGroup M] [Module R M] (m : Ideal R) [m.IsPrime]
     (hne : ¬ Subsingleton (LocalizedModule m.primeCompl M)) (p : R) (hp : ∀ x : M, p • x = 0) : p ∈ m := by
   by_contra hpm
@@ -1076,6 +1111,8 @@ theorem eigenform_of_surviving : ∀ (l : ℕ) [Fact l.Prime] (ι : Type) [Finty
   obtain ⟨b, hbi, -, -, hbg, hbli, -⟩ := GlobalTheory.LatBC.baseChange_lattices l ι N F mu hOk.ring.1 hdom
   exact eig_of_ann F mu jKm hOk hJm hHm b hbi hbg hbli m
     (fun p hp => hann p (ann_lift F lam mu jK jKm ϖ Gm hOk hJ hJm hH hHm hE p hp))
+
+end NablaTInsts
 
 end GlobalTheory.ExpFrame.Eigenform
 
