@@ -56,6 +56,8 @@ noncomputable section
 
 namespace GlobalTheory.CompanionTheory.CapCoeff
 
+attribute [-instance] Submodule.seminormedAddCommGroup
+
 theorem coeff_mem_of_values {A : Type} [AddCommGroup A] [Module ℂ A] (W : Submodule ℂ A) (n : ℕ) (c : ℕ → A)
     (h : ∀ u : ℂ, ∑ k ∈ Finset.range n, u ^ k • c k ∈ W) : ∀ k < n, c k ∈ W := by
   intro k hk
