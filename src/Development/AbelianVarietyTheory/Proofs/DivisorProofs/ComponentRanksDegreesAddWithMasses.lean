@@ -152,6 +152,159 @@ set_option synthInstance.maxHeartbeats 400000
 
 noncomputable section
 
+section CompAddsInsts
+
+local instance (priority := high) instAlgebraTRing_CompAdds {K : Type} [Field K] (p : TRing K) :
+    Algebra K p.R :=
+  Ideal.Quotient.algebra K
+
+local instance (priority := high) instCommRingTRing_CompAdds {K : Type} [Field K] (p : TRing K) :
+    CommRing p.R :=
+  Ideal.Quotient.commRing p.I
+
+local instance (priority := high) instModuleTRing_CompAdds {K : Type} [Field K] (p : TRing K) :
+    Module K p.R :=
+  Algebra.toModule
+
+section RulCuspInsts
+variable {E : Type} [Field E] [NumberField E] [IsCMField E]
+  {H : ReciprocityTheory.ChartRestriction.G.Geo.Tor.Host E} {Dw : Datum H}
+  {l : Level H}
+
+local instance (priority := high) instAddCommGroupRul_CompAdds (Xo : Moduli Dw l) (c : Coeff l) :
+    AddCommGroup (Rul Xo c) :=
+  inferInstance
+
+local instance (priority := high) instModuleRul_CompAdds (Xo : Moduli Dw l) (c : Coeff l) :
+    Module c.F (Rul Xo c) :=
+  inferInstance
+
+local instance (priority := high) instSMulWithZeroRul_CompAdds (Xo : Moduli Dw l) (c : Coeff l) :
+    SMulWithZero c.F (Rul Xo c) :=
+  Module.toMulActionWithZero.toSMulWithZero
+
+local instance (priority := high) instSMulORul_CompAdds (Xo : Moduli Dw l) (c : Coeff l) :
+    SMul (𝓞 c.F) (Rul Xo c) :=
+  inferInstance
+
+local instance (priority := high) instModuleORul_CompAdds (Xo : Moduli Dw l) (c : Coeff l) :
+    Module (𝓞 c.F) (Rul Xo c) :=
+  inferInstance
+
+local instance (priority := high) instScalarTowerORul_CompAdds (Xo : Moduli Dw l) (c : Coeff l) :
+    IsScalarTower (𝓞 c.F) c.F (Rul Xo c) :=
+  inferInstance
+
+local instance (priority := high) instAddCommGroupCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    AddCommGroup ↥(cuspW Xo c U G) :=
+  Submodule.addCommGroup _
+
+local instance (priority := high) instModuleCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    Module c.F ↥(cuspW Xo c U G) :=
+  Submodule.module _
+
+local instance (priority := high) instSMulWithZeroCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    SMulWithZero c.F ↥(cuspW Xo c U G) :=
+  Module.toMulActionWithZero.toSMulWithZero
+
+local instance (priority := high) instDistribMulActionCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    DistribMulAction c.F ↥(cuspW Xo c U G) :=
+  Module.toDistribMulAction
+
+local instance (priority := high) instMulActionCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    MulAction c.F ↥(cuspW Xo c U G) :=
+  DistribMulAction.toMulAction
+
+local instance (priority := high) instSMulCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    SMul c.F ↥(cuspW Xo c U G) :=
+  Module.toDistribMulAction.toDistribSMul.toSMul
+
+local instance (priority := high) instHSMulCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    HSMul c.F ↥(cuspW Xo c U G) ↥(cuspW Xo c U G) :=
+  instHSMul
+
+local instance (priority := high) instSMulOCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    SMul (𝓞 c.F) ↥(cuspW Xo c U G) :=
+  Submodule.smul _
+
+local instance (priority := high) instHSMulOCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    HSMul (𝓞 c.F) ↥(cuspW Xo c U G) ↥(cuspW Xo c U G) :=
+  instHSMul
+
+local instance (priority := high) instModuleOCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    Module (𝓞 c.F) ↥(cuspW Xo c U G) :=
+  inferInstance
+
+local instance (priority := high) instScalarTowerOCuspW_CompAdds (Xo : Moduli Dw l) (c : Coeff l) {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (G : WTZ E) :
+    IsScalarTower (𝓞 c.F) c.F ↥(cuspW Xo c U G) :=
+  inferInstance
+
+local instance (priority := high) instAddCommGroupCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    AddCommGroup ↥(cuspOn U Z G) :=
+  Submodule.addCommGroup _
+
+local instance (priority := high) instModuleCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    Module c.F ↥(cuspOn U Z G) :=
+  Submodule.module _
+
+local instance (priority := high) instSMulWithZeroCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    SMulWithZero c.F ↥(cuspOn U Z G) :=
+  Module.toMulActionWithZero.toSMulWithZero
+
+local instance (priority := high) instDistribMulActionCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    DistribMulAction c.F ↥(cuspOn U Z G) :=
+  Module.toDistribMulAction
+
+local instance (priority := high) instMulActionCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    MulAction c.F ↥(cuspOn U Z G) :=
+  DistribMulAction.toMulAction
+
+local instance (priority := high) instSMulCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    SMul c.F ↥(cuspOn U Z G) :=
+  Module.toDistribMulAction.toDistribSMul.toSMul
+
+local instance (priority := high) instHSMulCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    HSMul c.F ↥(cuspOn U Z G) ↥(cuspOn U Z G) :=
+  instHSMul
+
+local instance (priority := high) instSMulOCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    SMul (𝓞 c.F) ↥(cuspOn U Z G) :=
+  Submodule.smul _
+
+local instance (priority := high) instHSMulOCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    HSMul (𝓞 c.F) ↥(cuspOn U Z G) ↥(cuspOn U Z G) :=
+  instHSMul
+
+local instance (priority := high) instModuleOCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    Module (𝓞 c.F) ↥(cuspOn U Z G) :=
+  inferInstance
+
+local instance (priority := high) instScalarTowerOCuspOn_CompAdds {Xo : Moduli Dw l} {c : Coeff l} {r : ℕ}
+    (U : ∀ σ : c.F →+* ℂ, Unf Xo c σ r) (Z : Comp Xo c) (G : WTZ E) :
+    IsScalarTower (𝓞 c.F) c.F ↥(cuspOn U Z G) :=
+  inferInstance
+
 namespace GlobalTheory.CompAdds
 
 theorem totallyComplex {D : D7} {H : ReciprocityTheory.ChartRestriction.G.Geo.Tor.Host D.host.E} {l : Level H} (c : Coeff l) :
@@ -230,6 +383,22 @@ theorem hasGram_normRes (h : HasGram (normOn U (xiR D) V dict Z G)) : HasGram (n
 
 def sub : Submodule c.F (cuspW Xo c U G) := (cuspOn U Z G).comap (cuspW Xo c U G).subtype
 
+local instance (priority := high) instAddCommGroupSub_Basic :
+    AddCommGroup ↥(sub U Z G) :=
+  Submodule.addCommGroup _
+
+local instance (priority := high) instModuleSub_Basic :
+    Module c.F ↥(sub U Z G) :=
+  Submodule.module _
+
+local instance (priority := high) instSMulWithZeroSub_Basic :
+    SMulWithZero c.F ↥(sub U Z G) :=
+  Module.toMulActionWithZero.toSMulWithZero
+
+local instance (priority := high) instSMulSub_Basic :
+    SMul c.F ↥(sub U Z G) :=
+  Module.toDistribMulAction.toDistribSMul.toSMul
+
 def toOn : sub U Z G →ₗ[c.F] cuspOn U Z G :=
   LinearMap.codRestrict (cuspOn U Z G) ((cuspW Xo c U G).subtype ∘ₗ (sub U Z G).subtype) fun x => x.2
 
@@ -247,6 +416,22 @@ theorem span_partLat_le : Submodule.span c.F (partLat U Z G : Set (cuspW Xo c U 
 end Basic
 
 variable {U V dict} {G : WTZ D.host.E}
+
+local instance (priority := high) instAddCommGroupSub_CompAdds (Z : Comp Xo c) :
+    AddCommGroup ↥(sub U Z G) :=
+  Submodule.addCommGroup _
+
+local instance (priority := high) instModuleSub_CompAdds (Z : Comp Xo c) :
+    Module c.F ↥(sub U Z G) :=
+  Submodule.module _
+
+local instance (priority := high) instSMulWithZeroSub_CompAdds (Z : Comp Xo c) :
+    SMulWithZero c.F ↥(sub U Z G) :=
+  Module.toMulActionWithZero.toSMulWithZero
+
+local instance (priority := high) instSMulSub_CompAdds (Z : Comp Xo c) :
+    SMul c.F ↥(sub U Z G) :=
+  Module.toDistribMulAction.toDistribSMul.toSMul
 
 theorem sub_indep (hS : Splits U G) : iSupIndep (fun Z => sub U Z G) := by
   intro Z
@@ -383,6 +568,8 @@ theorem adds : ∀ (D : D7) (H : ReciprocityTheory.ChartRestriction.G.Geo.Tor.Ho
   exact finsum_congr fun Z => degRes_eq hO Z (hRes Z) (hOn Z).2.1
 
 end GlobalTheory.CompAdds
+end RulCuspInsts
+end CompAddsInsts
 end -- clump:auto
 end -- clump:auto
 end -- clump:auto
