@@ -49,6 +49,15 @@ noncomputable section
 
 namespace GlobalTheory.RowEx
 
+local elab "exact_kern " t:term : tactic => do
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => do
+    Lean.Elab.Term.elabTerm t none
+
+local elab "rfl_kern" : tactic => do
+  Lean.Elab.Tactic.closeMainGoalUsing `rfl_kern fun target _ => do
+    let some (_, lhs, _) := target.eq? | throwError "rfl_kern: expected equality"
+    Lean.Meta.mkEqRefl lhs
+
 theorem triIs_congr {D : D7} {T : Type} {A A' WW : HSp D} {X : Tri T A A' WW} {ψ ψ' : AddChar (AF D.host.F) ℂ} {θ θ' : InfFam D}
     {α α' β β' : T → ((AE D)ˣ →* Circle)} {ν ν' : T → Formalism.L2.Host.HChar D.host.E} {S S' : T → Finset (Pl D.host.E)}
     (h : X.Is ψ θ α β ν S) (e1 : ψ' = ψ) (e2 : θ' = θ) (e3 : ∀ t, α' t = α t) (e4 : ∀ t, β' t = β t) (e5 : ∀ t, ν' t = ν t)
@@ -112,29 +121,29 @@ theorem trBot_holds : TrBot := by
     exact propext ⟨fun h => (by with_unfolding_all exact ((thImp' _ _ _ _ h) :)), fun h => (by with_unfolding_all exact ((thImp _ _ _ _ h) :))⟩
   have wImp : ∀ ψ S T x1 x2 ω, @IsWeilDatumO DX ψ S T x1 x2 ω →
       @IsWeilDatumO DX' ((by with_unfolding_all exact (ψ :))) ((by with_unfolding_all exact (S :))) ((by with_unfolding_all exact (T :))) ((by with_unfolding_all exact (x1 :))) ((by with_unfolding_all exact (x2 :))) ((by with_unfolding_all exact (ω :))) := fun ψ S T x1 x2 ω h =>
-    { std := (by with_unfolding_all exact (h.std :))
-      hecS := (by with_unfolding_all exact (h.hecS :))
-      hecT := (by with_unfolding_all exact (h.hecT :))
-      resS := (by with_unfolding_all exact (h.resS :))
-      resT := (by with_unfolding_all exact (h.resT :))
-      om_pres := by rewrite [thEq]; exact (by with_unfolding_all exact (h.om_pres :))
-      om_heis := by rewrite [thEq]; exact (by with_unfolding_all exact (h.om_heis :))
-      om_aut := by rewrite [thEq]; exact (by with_unfolding_all exact (h.om_aut :))
-      om_cont := by rewrite [thEq]; exact (by with_unfolding_all exact (h.om_cont :))
-      om_unit := by rewrite [thEq]; exact (by with_unfolding_all exact (h.om_unit :))
-      om_split := by rewrite [thEq]; exact (by with_unfolding_all exact (h.om_split :)) }
+    { std := by exact_kern h.std
+      hecS := by exact_kern h.hecS
+      hecT := by exact_kern h.hecT
+      resS := by exact_kern h.resS
+      resT := by exact_kern h.resT
+      om_pres := by rewrite [thEq]; exact_kern h.om_pres
+      om_heis := by rewrite [thEq]; exact_kern h.om_heis
+      om_aut := by rewrite [thEq]; exact_kern h.om_aut
+      om_cont := by rewrite [thEq]; exact_kern h.om_cont
+      om_unit := by rewrite [thEq]; exact_kern h.om_unit
+      om_split := by rewrite [thEq]; exact_kern h.om_split }
   have vacImp : ∀ ψ θ S T sS sT LS LT f, @IsVacO DX ψ θ S T sS sT LS LT f →
       @IsVacO DX' ((by with_unfolding_all exact (ψ :))) ((by with_unfolding_all exact (θ :))) ((by with_unfolding_all exact (S :))) ((by with_unfolding_all exact (T :))) ((by with_unfolding_all exact (sS :))) ((by with_unfolding_all exact (sT :))) ((by with_unfolding_all exact (LS :))) ((by with_unfolding_all exact (LT :))) ((by with_unfolding_all exact (f :))) :=
     fun ψ θ S T sS sT LS LT f h => by
       unfold IsVacO
       rewrite [thEq]
-      exact ⟨(by with_unfolding_all exact (h.1 :)), (by with_unfolding_all exact (h.2.inf :)), (by with_unfolding_all exact (h.2.theta :)), (by with_unfolding_all exact (h.2.lat :)), (by with_unfolding_all exact (h.2.fock :)), (by with_unfolding_all exact (h.2.norm :))⟩
+      exact ⟨by exact_kern h.1, by exact_kern h.2.inf, by exact_kern h.2.theta, by exact_kern h.2.lat, by exact_kern h.2.fock, by exact_kern h.2.norm⟩
   have pmImp : ∀ m n ψ B hs e Λ c f₀ T, @IsPlaceModel DX m n ψ B hs e Λ c f₀ T →
       @IsPlaceModel DX' m n ((by with_unfolding_all exact (ψ :))) ((by with_unfolding_all exact (B :))) ((by with_unfolding_all exact (hs :))) ((by with_unfolding_all exact (e :))) ((by with_unfolding_all exact (Λ :))) c ((by with_unfolding_all exact (f₀ :))) ((by with_unfolding_all exact (T :))) :=
-    fun m n ψ B hs e Λ c f₀ T h => ⟨(by with_unfolding_all exact (h.trans :)), (by with_unfolding_all exact (h.modul :)), (by with_unfolding_all exact (h.vac :))⟩
+    fun m n ψ B hs e Λ c f₀ T h => ⟨by exact_kern h.trans, by exact_kern h.modul, by exact_kern h.vac⟩
   have pmImp' : ∀ m n ψ B hs e Λ c f₀ T, @IsPlaceModel DX' m n ψ B hs e Λ c f₀ T →
       @IsPlaceModel DX m n ((by with_unfolding_all exact (ψ :))) ((by with_unfolding_all exact (B :))) ((by with_unfolding_all exact (hs :))) ((by with_unfolding_all exact (e :))) ((by with_unfolding_all exact (Λ :))) c ((by with_unfolding_all exact (f₀ :))) ((by with_unfolding_all exact (T :))) :=
-    fun m n ψ B hs e Λ c f₀ T h => ⟨(by with_unfolding_all exact (h.trans :)), (by with_unfolding_all exact (h.modul :)), (by with_unfolding_all exact (h.vac :))⟩
+    fun m n ψ B hs e Λ c f₀ T h => ⟨by exact_kern h.trans, by exact_kern h.modul, by exact_kern h.vac⟩
   have pmEq : @IsPlaceModel DX' = fun m n ψ B hs e Λ c f₀ T =>
       @IsPlaceModel DX m n ((by with_unfolding_all exact (ψ :))) ((by with_unfolding_all exact (B :))) ((by with_unfolding_all exact (hs :))) ((by with_unfolding_all exact (e :))) ((by with_unfolding_all exact (Λ :))) c ((by with_unfolding_all exact (f₀ :))) ((by with_unfolding_all exact (T :))) := by
     funext m n ψ B hs e Λ c f₀ T
@@ -144,42 +153,42 @@ theorem trBot_holds : TrBot := by
   have hmu : ∀ t, L'.mu t (↑j + 1) = (by with_unfolding_all exact ((L.mu (ι t) (↑j + 1)) :)) := fun t => by
     show L'.mu0 (↑j + 1) * L'.xi t = _
     rw [hmu0 j, hxi t]
-    exact (by with_unfolding_all exact ((Eq.refl (L.mu (ι t) (↑j + 1))) :))
+    rfl_kern
   have hnu : ∀ t, SqNum.nuH G' t i j = (by with_unfolding_all exact ((SqNum.nuH G (ι t) i j) :)) := fun t => by
     show L'.C.mu0 j * L'.xiH t / G'.ch.chiH (DX'.R.m - ↑i) = _
     rw [hCmu j, hxiH t, hchiH]
-    exact (by with_unfolding_all exact ((Eq.refl (SqNum.nuH G (ι t) i j)) :))
+    rfl_kern
   have hloc : ∀ t, locPl G' t = (by with_unfolding_all exact ((locPl G (ι t)) :)) := fun t => by
     unfold locPl GlobalTheory.ChiGrid.Places.W0 GlobalTheory.ChiGrid.Places.S0
     rw [hQ t, hv0, hwp]
-    exact (by with_unfolding_all exact ((Eq.refl (locPl G (ι t))) :))
+    rfl_kern
   refine ⟨A, A', WW,
-    ⟨⟨(by with_unfolding_all exact (Y.rA.Λ :)), (by with_unfolding_all exact (Y.rA.β :)), (by with_unfolding_all exact (Y.rA.s :)), (by with_unfolding_all exact (Y.rA.B :))⟩, ⟨(by with_unfolding_all exact (Y.rA'.Λ :)), (by with_unfolding_all exact (Y.rA'.β :)), (by with_unfolding_all exact (Y.rA'.s :)), (by with_unfolding_all exact (Y.rA'.B :))⟩,
-      ⟨(by with_unfolding_all exact (Y.rW.Λ :)), (by with_unfolding_all exact (Y.rW.β :)), (by with_unfolding_all exact (Y.rW.s :)), (by with_unfolding_all exact (Y.rW.B :))⟩, fun t => (by with_unfolding_all exact ((Y.ω (ι t)) :)), fun t => (by with_unfolding_all exact ((Y.ω' (ι t)) :)), (by with_unfolding_all exact (Y.vac :)),
-      (by with_unfolding_all exact (Y.vac' :)), fun t => (by with_unfolding_all exact ((Y.e (ι t)) :)), fun t => (by with_unfolding_all exact ((Y.c (ι t)) :)), fun t => (by with_unfolding_all exact ((Y.f (ι t)) :)), fun t => (by with_unfolding_all exact ((Y.f' (ι t)) :)),
-      (by with_unfolding_all exact (Y.m :)), (by with_unfolding_all exact (Y.fd :)), (by with_unfolding_all exact (Y.m' :)), (by with_unfolding_all exact (Y.fd' :))⟩, ⟨(by with_unfolding_all exact (hb.rank :)), (by with_unfolding_all exact (hb.rank' :)), (by with_unfolding_all exact (hb.std :)), (by with_unfolding_all exact (hb.std' :)), (by with_unfolding_all exact (hb.stdW :)), ?_⟩, ?_⟩
+    ⟨⟨by exact_kern Y.rA.Λ, by exact_kern Y.rA.β, by exact_kern Y.rA.s, by exact_kern Y.rA.B⟩, ⟨by exact_kern Y.rA'.Λ, by exact_kern Y.rA'.β, by exact_kern Y.rA'.s, by exact_kern Y.rA'.B⟩,
+      ⟨by exact_kern Y.rW.Λ, by exact_kern Y.rW.β, by exact_kern Y.rW.s, by exact_kern Y.rW.B⟩, fun t => by exact_kern Y.ω (ι t), fun t => by exact_kern Y.ω' (ι t), by exact_kern Y.vac,
+      by exact_kern Y.vac', fun t => by exact_kern Y.e (ι t), fun t => by exact_kern Y.c (ι t), fun t => by exact_kern Y.f (ι t), fun t => by exact_kern Y.f' (ι t),
+      by exact_kern Y.m, by exact_kern Y.fd, by exact_kern Y.m', by exact_kern Y.fd'⟩, ⟨by exact_kern hb.rank, by exact_kern hb.rank', by exact_kern hb.std, by exact_kern hb.std', by exact_kern hb.stdW, ?_⟩, ?_⟩
   · have e3 : ∀ t, L'.mu t (↑j + 1) * L'.eta ^ (rankV DX' i j % 2) =
         (by with_unfolding_all exact ((L.mu (ι t) (↑j + 1) * L.eta ^ (rankV DX i j % 2)) :)) := fun t => by
       rw [hmu t, heta]
-      exact (by with_unfolding_all exact ((Eq.refl (L.mu (ι t) (↑j + 1) * L.eta ^ (rankV DX i j % 2))) :))
+      rfl_kern
     have e4 : ∀ _ : T', G'.ch.chi (DX'.R.m - ↑i) * L'.eta ^ (rankV DX' i j % 2) =
         (by with_unfolding_all exact ((G.ch.chi (DX.R.m - ↑i) * L.eta ^ (rankV DX i j % 2)) :)) := fun _ => by
       rw [hchi, heta]
-      exact (by with_unfolding_all exact ((Eq.refl (G.ch.chi (DX.R.m - ↑i) * L.eta ^ (rankV DX i j % 2))) :))
+      rfl_kern
     refine triIs_congr ?_ hψ hθ e3 e4 hnu hloc
-    exact ⟨(by with_unfolding_all exact (hb.is.rank :)), (by with_unfolding_all exact (hb.is.rigA :)), (by with_unfolding_all exact (hb.is.rigA' :)), (by with_unfolding_all exact (hb.is.rigW :)),
-      fun t => by unfold GlobalTheory.Grid.IsWeil; exact (by with_unfolding_all exact ((wImp _ _ _ _ _ _ (hb.is.weil (ι t))) :)),
-      fun t => by unfold GlobalTheory.Grid.IsWeil; exact (by with_unfolding_all exact ((wImp _ _ _ _ _ _ (hb.is.weil' (ι t))) :)),
-      (by with_unfolding_all exact ((vacImp _ _ _ _ _ _ _ _ _ hb.is.isVac) :)), (by with_unfolding_all exact ((vacImp _ _ _ _ _ _ _ _ _ hb.is.isVac') :)),
-      fun t => (by with_unfolding_all exact ((hb.is.idem (ι t)) :)), fun t => (by with_unfolding_all exact ((hb.is.expo (ι t)) :)),
-      fun t => by unfold IsThetaAt; rewrite [pmEq]; exact (by with_unfolding_all exact ((hb.is.fst (ι t)) :)),
-      fun t => by unfold IsThetaAt; rewrite [pmEq]; exact (by with_unfolding_all exact ((hb.is.snd (ι t)) :)),
-      (by with_unfolding_all exact (hb.is.meas :)), (by with_unfolding_all exact (hb.is.meas' :))⟩
+    exact ⟨by exact_kern hb.is.rank, by exact_kern hb.is.rigA, by exact_kern hb.is.rigA', by exact_kern hb.is.rigW,
+      fun t => by unfold GlobalTheory.Grid.IsWeil; exact_kern wImp _ _ _ _ _ _ (hb.is.weil (ι t)),
+      fun t => by unfold GlobalTheory.Grid.IsWeil; exact_kern wImp _ _ _ _ _ _ (hb.is.weil' (ι t)),
+      by exact_kern vacImp _ _ _ _ _ _ _ _ _ hb.is.isVac, by exact_kern vacImp _ _ _ _ _ _ _ _ _ hb.is.isVac',
+      fun t => by exact_kern hb.is.idem (ι t), fun t => by exact_kern hb.is.expo (ι t),
+      fun t => by unfold IsThetaAt; rewrite [pmEq]; exact_kern hb.is.fst (ι t),
+      fun t => by unfold IsThetaAt; rewrite [pmEq]; exact_kern hb.is.snd (ι t),
+      by exact_kern hb.is.meas, by exact_kern hb.is.meas'⟩
   · obtain ⟨Ω, Ω', h0, h0', H⟩ := hsum
     refine ⟨Ω, Ω', h0, h0', fun t h hh => ?_⟩
     rw [hψ, hθ]
-    have H3 := H (ι t) ((by with_unfolding_all exact (h :))) ((by with_unfolding_all exact (hh :)))
-    exact (by with_unfolding_all exact (H3 :))
+    have H3 := H (ι t) (by exact_kern h) (by exact_kern hh)
+    exact_kern H3
 
 end GlobalTheory.RowEx
 
