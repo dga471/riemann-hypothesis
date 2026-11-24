@@ -80,6 +80,28 @@ import Formalism.LocalToGlobal.ProjectiveLattices.CurveInj
 import Formalism.LocalToGlobal.ProjectiveLattices.LocalUnitReduction.IsUnitMkOfForallPrime
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.OpIsDVR
 
+attribute [-instance]
+  LieRinehartAlgebra.toIsScalarTower
+  LieAlgebra.toModule RightPreLieAlgebra.toModule LeftPreLieAlgebra.toModule
+  NormedAlgebra.toAlgebra NormedSpace.toModule
+  Submodule.normedSpace Submodule.seminormedAddCommGroup
+  Submodule.normedAddCommGroup SubalgebraClass.toNormedAlgebra
+  Subalgebra.isScalarTower_left Subalgebra.isScalarTower_mid
+  Submonoid.instIsScalarTowerSubtypeMem Submonoid.instSMulCommClassSubtypeMem_1
+  Subalgebra.smulCommClass_right Subalgebra.smulCommClass_left
+  MulSemiringAction.toDistribMulAction
+  RingHomClass.toLinearMapClassNNRat RingHomClass.toLinearMapClassRat
+  NonUnitalAlgHomClass.instLinearMapClass
+  NonUnitalAlgHomClass.instSemilinearMapClassOfNonUnitalAlgSemiHomClassOfClassRingHom
+  Algebra.TensorProduct.instNonUnitalSemiring Algebra.TensorProduct.instNonUnitalRing
+  AddMonoidAlgebra.instHopfAlgebra AddMonoidAlgebra.instHopfAlgebraStruct
+  GradedMonoid.GradeZero.mulAction GradedMonoid.GradeZero.smul
+  PositiveLinearMap.instContinuousLinearMapClassComplexOfLinearMapClassOfOrderHomClass
+  NonUnitalAlgHom.instContinuousLinearMapClassOfNonUnitalAlgHomClass
+  instNonUnitalAlgHomClassOfNonUnitalAlgEquivClass
+attribute [local instance high]
+  Submodule.module TensorProduct.leftModule Algebra.TensorProduct.leftAlgebra
+
 -- This file was produced by scripts/clump.py from the modules listed below.
 -- Members: Development.AbelianVarietyTheory.Proofs.AlgebraicCurves.ExistsMulEqMapOfIsAlgebraic, Development.AbelianVarietyTheory.Proofs.HeightProofs.ComponentRingAwayGenericSectionQuotient, Development.AbelianVarietyTheory.Proofs.HeightProofs.ExistsEquivCoverPointsPlacesBaseChange, Development.AbelianVarietyTheory.Proofs.HeightProofs.ExistsEquivCoverPointsPlacesBaseChangeStatement, Development.AbelianVarietyTheory.Proofs.HeightProofs.ExistsGaussRingMapToCompletion, Development.AbelianVarietyTheory.Proofs.HeightProofs.ExistsGaussRingMapToCompletionStatement, Development.AbelianVarietyTheory.Proofs.HeightProofs.OrdersAuxiliaryFormAtPrimesEqFunctionField
 

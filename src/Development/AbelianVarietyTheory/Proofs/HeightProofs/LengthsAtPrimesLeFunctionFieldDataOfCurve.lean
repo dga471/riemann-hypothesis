@@ -80,6 +80,28 @@ import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.HDiscAD
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.KTFiniteDimensional
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.OpIsDVR
 
+attribute [-instance]
+  LieRinehartAlgebra.toIsScalarTower
+  LieAlgebra.toModule RightPreLieAlgebra.toModule LeftPreLieAlgebra.toModule
+  NormedAlgebra.toAlgebra NormedSpace.toModule
+  Submodule.normedSpace Submodule.seminormedAddCommGroup
+  Submodule.normedAddCommGroup SubalgebraClass.toNormedAlgebra
+  Subalgebra.isScalarTower_left Subalgebra.isScalarTower_mid
+  Submonoid.instIsScalarTowerSubtypeMem Submonoid.instSMulCommClassSubtypeMem_1
+  Subalgebra.smulCommClass_right Subalgebra.smulCommClass_left
+  MulSemiringAction.toDistribMulAction
+  RingHomClass.toLinearMapClassNNRat RingHomClass.toLinearMapClassRat
+  NonUnitalAlgHomClass.instLinearMapClass
+  NonUnitalAlgHomClass.instSemilinearMapClassOfNonUnitalAlgSemiHomClassOfClassRingHom
+  Algebra.TensorProduct.instNonUnitalSemiring Algebra.TensorProduct.instNonUnitalRing
+  AddMonoidAlgebra.instHopfAlgebra AddMonoidAlgebra.instHopfAlgebraStruct
+  GradedMonoid.GradeZero.mulAction GradedMonoid.GradeZero.smul
+  PositiveLinearMap.instContinuousLinearMapClassComplexOfLinearMapClassOfOrderHomClass
+  NonUnitalAlgHom.instContinuousLinearMapClassOfNonUnitalAlgHomClass
+  instNonUnitalAlgHomClassOfNonUnitalAlgEquivClass
+attribute [local instance high]
+  Submodule.module TensorProduct.leftModule Algebra.TensorProduct.leftAlgebra
+
 -- This file was produced by scripts/clump.py from the modules listed below.
 -- Members: Development.AbelianVarietyTheory.Proofs.HeightProofs.ExistsRingHomTensorOmSOfPoint, Development.AbelianVarietyTheory.Proofs.HeightProofs.ExistsSectionMaps, Development.AbelianVarietyTheory.Proofs.HeightProofs.LengthQuotientLeOfOrderBound, Development.AbelianVarietyTheory.Proofs.HeightProofs.ValuationEqOrdAndEqZero, Development.AbelianVarietyTheory.Proofs.HeightProofs.LengthsAtPrimesLeFunctionFieldDataOfCurve
 
