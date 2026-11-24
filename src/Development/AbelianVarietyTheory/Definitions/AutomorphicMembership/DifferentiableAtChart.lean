@@ -454,4 +454,29 @@ theorem lie_comm (X Y : Lie E a) :
   rw [key, key, (hs.isSymmSndFDerivAt (by simp)).eq X Y]
   ring
 
+
+section SmShortcuts
+
+variable (E : Type) [Field E] [NumberField E] [_root_.NumberField.IsTotallyComplex E]
+
+instance (priority := high) Sm.instAddCommGroup (a : ℕ) : AddCommGroup ↥(Sm E a) :=
+  (Sm E a).addCommGroup
+
+instance (priority := high) Sm.instAddCommMonoid (a : ℕ) : AddCommMonoid ↥(Sm E a) :=
+  (Sm E a).addCommMonoid
+
+instance (priority := high) Sm.instModule (a : ℕ) : Module ℂ ↥(Sm E a) :=
+  Submodule.module (Sm E a)
+
+instance (priority := high) Sm.instMulAction (a : ℕ) : MulAction ℂ ↥(Sm E a) :=
+  (Submodule.module (Sm E a)).toMulAction
+
+instance (priority := high) Sm.instSMul (a : ℕ) : SMul ℂ ↥(Sm E a) :=
+  (Submodule.module (Sm E a)).toSMul
+
+instance (priority := high) Sm.instHSMul (a : ℕ) : HSMul ℂ ↥(Sm E a) ↥(Sm E a) :=
+  @_root_.instHSMul _ _ (Submodule.module (Sm E a)).toSMul
+
+end SmShortcuts
+
 end GlobalTheory.CuspRep
