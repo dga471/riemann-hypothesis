@@ -45,6 +45,9 @@ open Formalism.IndefR.RecTie Formalism.IndefR.Lev Formalism.L2.Rows GlobalTheory
 
 noncomputable section
 namespace GlobalTheory.Mem.R3
+
+local elab "exact_kern " t:term : tactic =>
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => Lean.Elab.Tactic.elabTerm t none
 variable {D : D7} {G : Type} [Group G] [Fintype G] {Pl0 I0 T : Type} {A3 : FamIn3 D.what₂.LL G Pl0 I0 (List ℕ) T D.R.m} {Ks : Type} [Field Ks] [NumberField Ks] [Algebra Ks D.what₂.LL]
 
 def reFaceErr (R : RealDat3 D A3 Ks) (F : Face3 D A3)
@@ -164,7 +167,17 @@ def reFaceReadL (R : RealDat3 D A3 Ks) (F : Face3 D A3)
     (Zsc : DefSub A3.fam3.amb3 → IndefScale A3.fam3.base3) (e : type_of% R.err0) (X0 : BaseLevelRowSide D)
     (Y : Read (A3 := A3) R.toRealDat F.lv2 X0) (Z : ReadL R F X0 Y) :
     ReadL (R.withErr e) (reFace F Dc Sp Zsc) X0 (reFaceRead R F Dc Sp Zsc e X0 Y) :=
-  { Z with }
+  { eRR := by exact_kern Z.eRR
+    eRR0 := by exact_kern Z.eRR0
+    jEE := by exact_kern Z.jEE
+    jEE0 := by exact_kern Z.jEE0
+    met := by exact_kern Z.met
+    met0 := by exact_kern Z.met0
+    rr := Z.rr
+    rr0 := Z.rr0
+    jW := by exact_kern Z.jW
+    jW_read := by exact_kern Z.jW_read
+    etaJ := by exact_kern Z.etaJ }
 
 end GlobalTheory.Mem.R3
 
