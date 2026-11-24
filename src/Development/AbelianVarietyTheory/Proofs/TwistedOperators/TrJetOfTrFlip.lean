@@ -315,6 +315,11 @@ section Two
 
 variable {X X' : Stages}
 
+local elab "exact_kern " t:term : tactic => Lean.Elab.Tactic.withMainContext do
+  let e ← Lean.Elab.Term.elabTerm t none
+  (← Lean.Elab.Tactic.getMainGoal).assign e
+  Lean.Elab.Tactic.replaceMainGoal []
+
 theorem kerTop_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K →+* ℂ) (c : ℝ) (j : ℕ) {A B : HSp X.toD7}
     {A' B' : HSp X'.toD7} {ψ ψ' θ θ' sA sA' sB sB' om om' fA fA' fB fB' uA uA' uB uB' vac vac' c0 c0' δ δ' r r' x x' y y'}
     (h1 : HEq A' A) (h2 : HEq B' B) (h3 : HEq ψ' ψ) (h4 : HEq θ' θ) (h5 : HEq sA' sA) (h6 : HEq sB' sB) (h7 : HEq om' om)
@@ -327,7 +332,7 @@ theorem kerTop_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K 
   cases hp
   cases h1; cases h2; cases h3; cases h4; cases h5; cases h6; cases h7; cases h8; cases h9; cases h10; cases h11; cases h12
   cases h13; cases h14; cases h15; cases h16; cases h17
-  exact (by with_unfolding_all exact (H :))
+  exact_kern H
 
 theorem kerRow_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K →+* ℂ) (c : ℝ) (j : ℕ) {A B : HSp X.toD7}
     {A' B' : HSp X'.toD7} {ψ ψ' θ θ' sA sA' sB sB' om om' fA fA' fB fB' uA uA' uB uB' vac vac' c0 c0' δ δ' r r' x x' y y'}
@@ -341,7 +346,7 @@ theorem kerRow_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K 
   cases hp
   cases h1; cases h2; cases h3; cases h4; cases h5; cases h6; cases h7; cases h8; cases h9; cases h10; cases h11; cases h12
   cases h13; cases h14; cases h15; cases h16; cases h17
-  exact (by with_unfolding_all exact (H :))
+  exact_kern H
 
 theorem jets_congr (hp : X'.B.toPre = X.B.toPre) {E : Env X.toD7} {E' : Env X'.toD7} {a : E.KT} {a' : E'.KT} {b : E.KR} {b' : E'.KR}
     (h1 : HEq E'.P E.P) (h2 : HEq E'.ov E.ov) (h3 : HEq E'.Vt E.Vt) (h4 : HEq E'.Vr E.Vr) (h5 : HEq E'.Λt E.Λt)
@@ -358,12 +363,10 @@ theorem jets_congr (hp : X'.B.toPre = X.B.toPre) {E : Env X.toD7} {E' : Env X'.t
   dsimp only at h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13
   cases h1; cases h2; cases h3; cases h4; cases h5; cases h6; cases h7; cases h8; cases h9; cases h10; cases h11; cases h12
   cases h13
-  refine Env.Jets.mono (a := (by with_unfolding_all exact (a :))) (b := (by with_unfolding_all exact (b :))) (by run_tac do
-    let e ← Lean.Elab.Term.elabTerm (Lean.mkIdent `H) none
-    (← Lean.Elab.Tactic.getMainGoal).assign e
-    Lean.Elab.Tactic.replaceMainGoal []) (fun j hj r x y => ?_) fun j hj r x y => ?_
-  · exact (by with_unfolding_all exact (ha j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl :))
-  · exact (by with_unfolding_all exact (hb j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl :))
+  refine Env.Jets.mono (a := (by exact_kern a)) (b := (by exact_kern b)) (by exact_kern H)
+    (fun j hj r x y => ?_) (fun j hj r x y => ?_)
+  · exact_kern (ha j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl)
+  · exact_kern (hb j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl)
 
 variable {T T' : Type} {L : LevCh X.toD7 T} {L' : LevCh X'.toD7 T'} {sc : GlobalTheory.ChiGrid.Consts} {G : GridData L sc}
   {G' : GridData L' sc} {W : G.Weil} {W' : G'.Weil}
@@ -422,10 +425,10 @@ theorem term_congr (hp : X'.B.toPre = X.B.toPre) {w : Pl X.toD7.host.E} {w' : Pl
   obtain ⟨⟨P', _⟩, _⟩ := X'
   cases hp
   cases hw; cases h1; cases h2; cases h3; cases h4; cases h5; cases h6
-  refine ⟨(by with_unfolding_all exact (Eq.refl (Cosets hs J) :)), fun b b' h => ?_⟩
+  refine ⟨(by exact_kern Eq.refl (Cosets hs J)), fun b b' h => ?_⟩
   cases h
-  exact (by with_unfolding_all exact ((⟨HEq.rfl, HEq.rfl, id⟩ : let u := unfTerm ψ (unitVol w) k (Reps.through hs J (stair Γ (unifAt w) e)) f b
-    HEq u.datum u.datum ∧ HEq u.pr u.pr ∧ (u.datum ≠ 0 → u.datum ≠ 0)) :))
+  exact_kern ((⟨HEq.rfl, HEq.rfl, id⟩ : let u := unfTerm ψ (unitVol w) k (Reps.through hs J (stair Γ (unifAt w) e)) f b
+    HEq u.datum u.datum ∧ HEq u.pr u.pr ∧ (u.datum ≠ 0 → u.datum ≠ 0)))
 
 theorem sub_congr (hp : X'.B.toPre = X.B.toPre) {P : Finset (Pl X.toD7.host.E)} {P' : Finset (Pl X'.toD7.host.E)} (h : HEq P' P) :
     (P' : Type) = P ∧ (∀ (w : P) (w' : P'), HEq w' w → HEq w'.1 w.1) := by

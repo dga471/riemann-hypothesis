@@ -36,8 +36,6 @@ import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
-set_option backward.isDefEq.lazyProjDelta false
-set_option backward.isDefEq.lazyWhnfCore false
 
 
 
@@ -48,6 +46,12 @@ open Formalism.BasicNotions Formalism.MainNotions Formalism.MainNotions.N Formal
   GlobalTheory.Mem.Top.GroupRetwisting GlobalTheory.Mem.Top.Bl GlobalTheory.Mem.R3 GlobalTheory.Mem.R3.Rw GlobalTheory.Mem.R3.Tr GlobalTheory.HeightCounting GlobalTheory.HeightCounting.Up
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
+local elab "exact_kern " t:term : tactic => do
+  let g ← Lean.Elab.Tactic.getMainGoal
+  g.withContext do
+    let e ← Lean.Elab.Tactic.elabTerm t none
+    g.assign e
+
 
 
 variable {hL : _root_.UpperTheory.Zero.LLC.RecTExists} {K : Ctx} {B : Base} {f : Fr B.toPre} {T : TwDat B} {w : ColW B f T} {P : Pre2 K w}
@@ -57,14 +61,20 @@ variable (l : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel 
 
 def yStructureLocal : NExpRealS (datL x L).R (datL x L).cG (SL L l.rat) := by
   let Y : NExpRealS (datL x L).R (datL x L).cG (ratL L l.rat.S) := {
-    fi := l.b.YS.fi
-    geq := l.b.YS.geq
-    rho := l.b.YS.rho
-    chi := l.b.YS.chi
-    eF := fun i j b h1 h2 => l.b.YS.eF i j b h1 h2
-    bsup := fun i j b h1 h2 => l.b.YS.bsup i j b h1 h2
-    act := fun i j b h1 h2 g y => l.b.YS.act i j b h1 h2 g y }
-  exact (Y :)
+    fi := by exact_kern l.b.YS.fi
+    geq := by exact_kern l.b.YS.geq
+    rho := by exact_kern l.b.YS.rho
+    chi := by exact_kern l.b.YS.chi
+    eF := by
+      intro i j b h1 h2
+      exact_kern (l.b.YS.eF i j b h1 h2)
+    bsup := by
+      intro i j b h1 h2
+      exact_kern (l.b.YS.bsup i j b h1 h2)
+    act := by
+      intro i j b h1 h2 g y
+      exact_kern (l.b.YS.act i j b h1 h2 g y) }
+  exact_kern Y
 
 def heckeHeightData : NExpRealH x.m.z.R x.m.z.cG l.rat.S l.b.YS where
   hL := l.rat.In.hL
@@ -77,28 +87,30 @@ def heckeHeightData : NExpRealH x.m.z.R x.m.z.cG l.rat.S l.b.YS where
   hkEq := by rw [l.b.eF]; exact l.b.Bs.hkEq
 
 def localHeckeHeightData : NExpRealH (datL x L).R (datL x L).cG (SL L l.rat) (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l) := by
-  let Y : NExpRealS (datL x L).R (datL x L).cG (ratL L l.rat.S) :=
-    (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l :)
+  let Y : NExpRealS (datL x L).R (datL x L).cG (ratL L l.rat.S) := by
+    exact_kern (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l)
   let H : NExpRealH (datL x L).R (datL x L).cG (ratL L l.rat.S) Y := {
-    hL := (heckeHeightData l).hL
-    hs := (heckeHeightData l).hs
-    cHk := (heckeHeightData l).cHk
-    cHk_zero := (heckeHeightData l).cHk_zero
-    cHk_unit := (heckeHeightData l).cHk_unit
-    cHk_pow := (heckeHeightData l).cHk_pow
-    hkEq := fun i j b h1 h2 k Q y hQ hsplit hk => (heckeHeightData l).hkEq i j b h1 h2 k Q y hQ hsplit hk }
-  exact (H :)
+    hL := by exact_kern (heckeHeightData l).hL
+    hs := by exact_kern (heckeHeightData l).hs
+    cHk := by exact_kern (heckeHeightData l).cHk
+    cHk_zero := by exact_kern (heckeHeightData l).cHk_zero
+    cHk_unit := by exact_kern (heckeHeightData l).cHk_unit
+    cHk_pow := by exact_kern (heckeHeightData l).cHk_pow
+    hkEq := by
+      intro i j b h1 h2 k Q y hQ hsplit hk
+      exact_kern ((heckeHeightData l).hkEq i j b h1 h2 k Q y hQ hsplit hk) }
+  exact_kern H
 
 def psiVectorLocal : ∀ i : Fin (DL x L).R.m, principalLevelFrame.RowPsi (Formalism.IndefR.Links.Vc (DL x L) i) (DL x L).R.nV :=
-  fun i => (rowPsi (a := x.o.Z) (oL x L).Z (l.mt.ad.PV i) :)
+  fun i => by exact_kern (rowPsi (a := x.o.Z) (oL x L).Z (l.mt.ad.PV i))
 def characterChoiceLocal : NChoice (DL x L) := { l.c.ch with }
 def localCharacterTupleAgreement : TupTied (DL x L) (cfD x L) (characterChoiceLocal L l) :=
   { l.c.tp with }
 def localMultiplicityFamily : MtFam (DL x L) := fun μ j h1 h2 =>
   { l.mt.M μ j h1 h2 with }
-def placeMapLocal : HeightOneSpectrum (𝓞 (maximalRealSubfield (DL x L).host.E)) → PlE (DL x L).host := l.Pq
-def localEigenvalueDegree : ℕ → (DL x L).what₂.FT → ℕ → PlE (DL x L).host → ↥(DL x L).LL0 := l.rat.In.eig
-def smallPlaceSet : Finset (PlE (DL x L).host) := l.rat.In.Sb
+def placeMapLocal : HeightOneSpectrum (𝓞 (maximalRealSubfield (DL x L).host.E)) → PlE (DL x L).host := by exact_kern l.Pq
+def localEigenvalueDegree : ℕ → (DL x L).what₂.FT → ℕ → PlE (DL x L).host → ↥(DL x L).LL0 := by exact_kern l.rat.In.eig
+def smallPlaceSet : Finset (PlE (DL x L).host) := by exact_kern l.rat.In.Sb
 theorem twist_ok_local : ∀ v, TwistedAt (DL x L) v → IntegralHeckeForms.TwOK ((_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l).twI v) ((_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l).k' v) ((_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l).Q v)
     (((_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l).psi' v).comp ((DL x L).ntw.art ((_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l).twI v) ((_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l).Q v))) := by
   -- The kernel checks the conversion between the two character choices.
@@ -110,7 +122,7 @@ theorem thetaTie_yStructureLocal_nonempty : Nonempty (GlobalTheory.GeoTie.ThetaT
   obtain ⟨g⟩ := l.b.geo
   refine ⟨{ side := ?_, isUnramified₂ := ?_ }⟩
   · intro i j b
-    let side := g.side (i :) (j :) b
+    let side := g.side (by exact_kern i) (by exact_kern j) b
     refine { pt := ?_, cover := ?_, ev_eq := ?_, fmUr := ?_, hk := ?_, hk_none := ?_ }
     -- The transported fields have definitionally equal types. The kernel
     -- checks them in the resulting record without elaborator unification.
@@ -118,12 +130,12 @@ theorem thetaTie_yStructureLocal_nonempty : Nonempty (GlobalTheory.GeoTie.ThetaT
       for field in [`side.pt, `side.cover, `side.ev_eq, `side.fmUr, `side.hk, `side.hk_none] do
         Lean.Elab.Tactic.closeMainGoalUsing `thetaTieField fun _ _ =>
           Lean.Elab.Tactic.elabTerm (Lean.mkIdent field) none
-  · exact (g.isUnramified₂ :)
+  · exact_kern g.isUnramified₂
 
 theorem kept_characterChoiceLocal : Kept l.c.ch (_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l) :=
-  ⟨sameGaloisL L, twistDataAgreeAcrossCoefficients_localized L, sameFormsL L, HEq.refl (Dof x).ntwbr, HEq.refl l.c.ch.twI, HEq.refl l.c.ch.sd,
-    HEq.refl l.c.ch.Q, HEq.refl l.c.ch.k', HEq.refl l.c.ch.psi'⟩
-theorem yStructureLocal_fi_e_heq : ∀ i y, HEq (((_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l).fi i).e y) y := l.b.fi
+  ⟨sameGaloisL L, twistDataAgreeAcrossCoefficients_localized L, sameFormsL L, (by exact_kern (HEq.refl (Dof x).ntwbr)), (by exact_kern (HEq.refl l.c.ch.twI)), (by exact_kern (HEq.refl l.c.ch.sd)),
+    (by exact_kern (HEq.refl l.c.ch.Q)), (by exact_kern (HEq.refl l.c.ch.k')), (by exact_kern (HEq.refl l.c.ch.psi'))⟩
+theorem yStructureLocal_fi_e_heq : ∀ i y, HEq (((_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l).fi i).e y) y := by exact_kern l.b.fi
 end GlobalTheory.HeightCounting.Fin3
 end
 end
