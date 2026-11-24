@@ -547,6 +547,9 @@ private theorem lev_mem {n : ℕ} {U : Subgroup (UA L n)} {S : Finset (Plc L)} {
 end Br
 
 
+set_option allowUnsafeReducibility true in
+attribute [local irreducible] cv Ov DX KD RP SA Lsq KU SD.lvS lev Kall Lev.iw
+
 theorem UpperTheory.V.Z.Sym.So.levExt :
     UpperTheory.V.Z.Sym.So.LevExt := by
   intro L _ _ _ B hB T S VL A hA hF A₀ hA₀ hE S₁ h1 _ U y hy hU g hg
@@ -744,6 +747,9 @@ private theorem dc_step {G G' V : Type} [Group G] [Group G'] [AddCommGroup V] [M
   funext y
   have := congrFun t (e.symm y)
   simpa using this.symm
+
+set_option allowUnsafeReducibility true in
+attribute [local irreducible] cv Ov DX KD RP SA KU SD.lvS lev Kall Dat.UG
 
 private theorem lev_G (B : Bridge L) (hB : B.Ok) (T : Spl B) (S : Finset (Plc L)) (VL : ∀ w : Plc L, Lev (Kw w)) (A : SD B.Δ)
     (hA : A.Ok) (hF : Fit T S VL A) : ∀ g : GA B.Δ, g ∈ A.dat.UG ↔ (B.bG g : UA L 3) ∈ lev (Kall (L := L) 3) S VL :=
@@ -1329,7 +1335,7 @@ private theorem iK {ch : F → ℂ} {B : Base (DX Δ) (DA Δ) V} (h : D.IsBK ch 
 end
 
 set_option allowUnsafeReducibility true in
-attribute [local irreducible] cv Kv Ov DX KD RP SA Lsq
+attribute [local irreducible] cv Kv Ov DX KD RP SA Lsq KU SD.lvS lev Kall Dat.UG Lev.iw
 
 section
 
