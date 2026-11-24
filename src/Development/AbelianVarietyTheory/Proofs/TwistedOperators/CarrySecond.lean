@@ -202,10 +202,20 @@ open GlobalTheory.Mem GlobalTheory.RowEx.CarryTr
 
 
 
-local elab "exact_kern " t:term : tactic => Lean.Elab.Tactic.withMainContext do
-  let e ← Lean.Elab.Term.elabTerm t none
-  (← Lean.Elab.Tactic.getMainGoal).assign e
-  Lean.Elab.Tactic.replaceMainGoal []
+-- Compare the types in the kernel to avoid unfolding the stage records in the elaborator.
+open Lean Elab Tactic in
+local elab "exact_by_kernel " term:term : tactic =>
+  closeMainGoalUsing `exact_by_kernel fun target _ => do
+    let value ← elabTerm term none
+    Term.synthesizeSyntheticMVarsNoPostponing
+    let value ← instantiateMVars value
+    let actual ← instantiateMVars (← Meta.inferType value)
+    let target ← instantiateMVars target
+    let lctx ← instantiateLCtxMVars (← getLCtx)
+    match Kernel.isDefEq (← getEnv) lctx actual target with
+    | .ok true => pure value
+    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
+    | .error error => throwError (error.toMessageData (← getOptions))
 
 theorem carryS : CarryS := by
   intro X X' T T' L L' μ₀ μ₀' ι hL sc G G' hG W W' hW S
@@ -293,10 +303,10 @@ theorem carryS : CarryS := by
     (hfr _ hGd) (hfr _ hTd) (hu' _ hGd) (hu' _ hTd) S.N.fr_top S.N.fr_last S.N.u_top S.N.u_last
   obtain ⟨N', hNS, hN'⟩ : ∃ N' : Std G' Set.univ, N'.S = S.N.S ∧
       ∀ Y, DefNode m Y → HEq (N'.fr Y) (S.N.fr Y) ∧ HEq (N'.u Y) (S.N.u Y) := by
-    refine ⟨{ S := S.N.S, prime := S.N.prime, off := ?_, unr := ?_, fr := fr', fr_on := ?_, u := ((by exact_kern (u'))), u_supp := ?_,
-              u_lat := ?_, fr_top := ((by exact_kern (hTop.1))), fr_last := ((by exact_kern (hTop.2.1))),
-              u_top := ((by exact_kern (hTop.2.2.1))), u_last := ((by exact_kern (hTop.2.2.2))) }, rfl,
-      fun Y h => ⟨hfr Y h, (by exact_kern (hu' Y h))⟩⟩
+    refine ⟨{ S := S.N.S, prime := S.N.prime, off := ?_, unr := ?_, fr := fr', fr_on := ?_, u := by exact_by_kernel u', u_supp := ?_,
+              u_lat := ?_, fr_top := by exact_by_kernel hTop.1, fr_last := by exact_by_kernel hTop.2.1,
+              u_top := by exact_by_kernel hTop.2.2.1, u_last := by exact_by_kernel hTop.2.2.2 }, rfl,
+      fun Y h => ⟨hfr Y h, by exact_by_kernel hu' Y h⟩⟩
     · intro w hw
       obtain ⟨a, b, c⟩ := S.N.off w hw
       exact ⟨by rw [eS0]; exact a, fun t _ w' hw' => b (ι t) trivial w' (by rw [← eQ]; exact hw'), c⟩
@@ -305,13 +315,13 @@ theorem carryS : CarryS := by
       exact S.N.unr w hw e he (ι t) trivial j h1 (h2.trans_eq (hm'.trans hm.symm))
     · intro Y hY
       have h : DefNode m Y := hm' ▸ hY
-      exact (by exact_kern (frOn_tr (D := dOf L) (eVd' Y h) (hfr Y h) (S.N.fr_on Y (hm.symm ▸ h))))
+      exact_by_kernel frOn_tr (D := dOf L) (eVd' Y h) (hfr Y h) (S.N.fr_on Y (hm.symm ▸ h))
     · intro Y hY
       have h : DefNode m Y := hm' ▸ hY
-      exact (by exact_kern (uSupp_tr (D := dOf L) (eVd' Y h) (hu' Y h) (S.N.u_supp Y (hm.symm ▸ h))))
+      exact_by_kernel uSupp_tr (D := dOf L) (eVd' Y h) (hu' Y h) (S.N.u_supp Y (hm.symm ▸ h))
     · intro Y hY
       have h : DefNode m Y := hm' ▸ hY
-      exact (by exact_kern (uLat_tr (D := dOf L) (eVd' Y h) (eVd Y h).2 (hfr Y h) (hu' Y h) (S.N.u_lat Y (hm.symm ▸ h))))
+      exact_by_kernel uLat_tr (D := dOf L) (eVd' Y h) (eVd Y h).2 (hfr Y h) (hu' Y h) (S.N.u_lat Y (hm.symm ▸ h))
 
   obtain ⟨βp', hβp'⟩ : ∃ βp' : ∀ j, GL (Fin (G'.V (.top j)).rank) (Formalism.IndefR.Lev.EAf (dOf L)), ∀ j, HEq (βp' j) (S.βp j) :=
     ⟨fun j => trGL (eVt j) (S.βp j), fun j => trGL_heq _ _⟩
@@ -350,77 +360,77 @@ theorem carryS : CarryS := by
   have vacDD : ∀ ψ θ (S T : HSp (dOf L)) cS cT LS LT f, Formalism.IndefR.Datum.IsVacO (D := dOf L) ψ θ S T cS cT LS LT f →
       Formalism.IndefR.Datum.IsVacO (D := dOf L') ψ θ S T cS cT LS LT f := by
     rintro ψ θ S T cS cT LS LT f ⟨h1, ⟨hinf, ⟨q, l, c, s⟩, hlat, hfock, hnorm⟩⟩
-    exact ⟨(by exact_kern (h1)), ⟨(by exact_kern (hinf)), ⟨(by exact_kern (q)), (by exact_kern (l)), (by exact_kern (c)), (by exact_kern (s))⟩, (by exact_kern (hlat)),
-      (by exact_kern (hfock)), (by exact_kern (hnorm))⟩⟩
+    exact ⟨by exact_by_kernel h1, ⟨by exact_by_kernel hinf, ⟨by exact_by_kernel q, by exact_by_kernel l, by exact_by_kernel c, by exact_by_kernel s⟩, by exact_by_kernel hlat,
+      by exact_by_kernel hfock, by exact_by_kernel hnorm⟩⟩
   obtain ⟨Z', hZδ, hZ'⟩ : ∃ Z' : Normal W' N', Z'.δ = S.Z.δ ∧
       ∀ p, DefPair m p → HEq (Z'.vac p) (S.Z.vac (mapPair ι p)) ∧ Z'.c0 p = S.Z.c0 (mapPair ι p) := by
-    refine ⟨{ δ := S.Z.δ, crv := ((by exact_kern (S.Z.crv))), t0 := S.Z.t0, pt0 := ((by exact_kern (S.Z.pt0))), e0 := ((by exact_kern (e0'))),
-              e0_is := ?_, vac := ((by exact_kern (vac'))), vac_is := ?_, c0 := fun p => S.Z.c0 (mapPair ι p), kernelNorm_constant_spec := ?_,
-              free := ?_ }, rfl, fun p h => ⟨(by exact_kern (hvac' p h)), rfl⟩⟩
+    refine ⟨{ δ := S.Z.δ, crv := by exact_by_kernel S.Z.crv, t0 := S.Z.t0, pt0 := by exact_by_kernel S.Z.pt0, e0 := by exact_by_kernel e0',
+              e0_is := ?_, vac := by exact_by_kernel vac', vac_is := ?_, c0 := fun p => S.Z.c0 (mapPair ι p), kernelNorm_constant_spec := ?_,
+              free := ?_ }, rfl, fun p h => ⟨by exact_by_kernel hvac' p h, rfl⟩⟩
     · intro p hp
       have h : DefPair m p := hm' ▸ hp
-      exact (by exact_kern (oddGenerator_condition_of_rank_eq_heq (D := dOf L) (rk_eq (eP p h).1) (rk_eq (eP p h).2) (he0' p h)
-        (S.Z.e0_is (mapPair ι p) (hm.symm ▸ hmap p h))))
+      exact_by_kernel oddGenerator_condition_of_rank_eq_heq (D := dOf L) (rk_eq (eP p h).1) (rk_eq (eP p h).2) (he0' p h)
+        (S.Z.e0_is (mapPair ι p) (hm.symm ▸ hmap p h))
     · intro p hp
       have h : DefPair m p := hm' ▸ hp
       rcases p with ⟨i, j⟩ | ⟨t, i, j⟩ | i | ⟨t, j⟩
       · have hS := eVd' (.grid (i + 1) j) ⟨h.1, h.2⟩
         have hT := eVd' (.grid i j) ⟨by have := h.1; omega, h.2⟩
-        exact (by exact_kern (vacDD _ _ _ _ _ _ _ _ _ <| vac_tr (D := dOf L) eψ eθ (congrArg negSp hS) hT (neg_heq hS (hW.cart _ (hDN (.grid (i + 1) j) ⟨h.1, h.2⟩)))
+        exact_by_kernel vacDD _ _ _ _ _ _ _ _ _ <| vac_tr (D := dOf L) eψ eθ (congrArg negSp hS) hT (neg_heq hS (hW.cart _ (hDN (.grid (i + 1) j) ⟨h.1, h.2⟩)))
           (hW.cart _ (hDN (.grid i j) ⟨by have := h.1; omega, h.2⟩)) (colLat_heq hS (hN' (.grid (i + 1) j) ⟨h.1, h.2⟩).1)
-          (colLat_heq hT (hN' (.grid i j) ⟨by have := h.1; omega, h.2⟩).1) (hvac' _ h) (S.Z.vac_is (.chi i j) (hm.symm ▸ h))))
+          (colLat_heq hT (hN' (.grid i j) ⟨by have := h.1; omega, h.2⟩).1) (hvac' _ h) (S.Z.vac_is (.chi i j) (hm.symm ▸ h))
       · exact absurd h id
       · exact absurd h id
       · have hS := eVt j
         have hT := eVt (j + 1)
-        exact (by exact_kern (vacDD _ _ _ _ _ _ _ _ _ <| vac_tr (D := dOf L) eψ eθ hS hT (hW.cart _ (hDN (.top j) (by have h' : j + 1 ≤ m := h; show j ≤ m; omega)))
+        exact_by_kernel vacDD _ _ _ _ _ _ _ _ _ <| vac_tr (D := dOf L) eψ eθ hS hT (hW.cart _ (hDN (.top j) (by have h' : j + 1 ≤ m := h; show j ≤ m; omega)))
           (hW.cart _ (hDN (.top (j + 1)) h)) (colLat_heq hS (hN' (.top j) (by have h' : j + 1 ≤ m := h; show j ≤ m; omega)).1)
-          (colLat_heq hT (hN' (.top (j + 1)) h).1) (hvac' _ h) (S.Z.vac_is (.top (ι t) j) (hm.symm ▸ h))))
+          (colLat_heq hT (hN' (.top (j + 1)) h).1) (hvac' _ h) (S.Z.vac_is (.top (ι t) j) (hm.symm ▸ h))
     · intro p hp
       have h : DefPair m p := hm' ▸ hp
       rcases p with ⟨i, j⟩ | ⟨t, i, j⟩ | i | ⟨t, j⟩
       · have hS := eVd' (.grid (i + 1) j) ⟨h.1, h.2⟩
         have hT := eVd' (.grid i j) ⟨by have := h.1; omega, h.2⟩
-        exact (by exact_kern (fockVectorNormalisation_of_space_eq_heq (D := dOf L) eψ eθ (congrArg negSp hS) hT (neg_heq hS (hW.cart _ (hDN (.grid (i + 1) j) ⟨h.1, h.2⟩)))
+        exact_by_kernel fockVectorNormalisation_of_space_eq_heq (D := dOf L) eψ eθ (congrArg negSp hS) hT (neg_heq hS (hW.cart _ (hDN (.grid (i + 1) j) ⟨h.1, h.2⟩)))
           (hW.cart _ (hDN (.grid i j) ⟨by have := h.1; omega, h.2⟩)) (frC_heq hS (hN' (.grid (i + 1) j) ⟨h.1, h.2⟩).1)
           (frC_heq hT (hN' (.grid i j) ⟨by have := h.1; omega, h.2⟩).1) (hvac' _ h) (he0' _ h) _ _ _
-          (S.Z.kernelNorm_constant_spec (.chi i j) (hm.symm ▸ h))))
+          (S.Z.kernelNorm_constant_spec (.chi i j) (hm.symm ▸ h))
       · exact absurd h id
       · exact absurd h id
       · have hS := eVt j
         have hT := eVt (j + 1)
-        exact (by exact_kern (fockVectorNormalisation_of_space_eq_heq (D := dOf L) eψ eθ hS hT (hW.cart _ (hDN (.top j) (by have h' : j + 1 ≤ m := h; show j ≤ m; omega)))
+        exact_by_kernel fockVectorNormalisation_of_space_eq_heq (D := dOf L) eψ eθ hS hT (hW.cart _ (hDN (.top j) (by have h' : j + 1 ≤ m := h; show j ≤ m; omega)))
           (hW.cart _ (hDN (.top (j + 1)) h)) (frC_heq hS (hN' (.top j) (by have h' : j + 1 ≤ m := h; show j ≤ m; omega)).1)
-          (frC_heq hT (hN' (.top (j + 1)) h).1) (hvac' _ h) (he0' _ h) _ _ _ (S.Z.kernelNorm_constant_spec (.top (ι t) j) (hm.symm ▸ h))))
+          (frC_heq hT (hN' (.top (j + 1)) h).1) (hvac' _ h) (he0' _ h) _ _ _ (S.Z.kernelNorm_constant_spec (.top (ι t) j) (hm.symm ▸ h))
     · intro t t' j
       by_cases hj : DefPair m (Pair.top t j : Pair T')
       · have hj' : DefPair m (Pair.top t' j : Pair T') := hj
         obtain ⟨f1, f2, f3⟩ := S.Z.free (ι t) (ι t') j
         refine ⟨?_, ?_, f3⟩
-        · exact (by exact_kern (eq_of_heq ((he0' _ hj).trans ((heq_of_eq f1).trans (he0' _ hj').symm))))
-        · exact (by exact_kern (eq_of_heq ((hvac' _ hj).trans ((heq_of_eq f2).trans (hvac' _ hj').symm))))
+        · exact_by_kernel eq_of_heq ((he0' _ hj).trans ((heq_of_eq f1).trans (he0' _ hj').symm))
+        · exact_by_kernel eq_of_heq ((hvac' _ hj).trans ((heq_of_eq f2).trans (hvac' _ hj').symm))
       · have hj' : ¬ DefPair m (Pair.top t' j : Pair T') := hj
         obtain ⟨_, _, f3⟩ := S.Z.free (ι t) (ι t') j
-        exact ⟨(by exact_kern ((ze0' _ hj).trans (ze0' _ hj').symm)), (by exact_kern ((zvac' _ hj).trans (zvac' _ hj').symm)), f3⟩
-  refine ⟨{ B := B', βp := ((by exact_kern (βp'))), βp_is := ?_, row := ?_, last := ?_, N := N', Z := Z',
-            PA := ((by exact_kern (S.PA))), PA_dvd := ((by exact_kern (S.PA_dvd))), PA_one := ((by exact_kern (S.PA_one))) }, ?_⟩
+        exact ⟨by exact_by_kernel (ze0' _ hj).trans (ze0' _ hj').symm, by exact_by_kernel (zvac' _ hj).trans (zvac' _ hj').symm, f3⟩
+  refine ⟨{ B := B', βp := by exact_by_kernel βp', βp_is := ?_, row := ?_, last := ?_, N := N', Z := Z',
+            PA := by exact_by_kernel S.PA, PA_dvd := by exact_by_kernel S.PA_dvd, PA_one := by exact_by_kernel S.PA_one }, ?_⟩
   · intro j hj
-    exact (by exact_kern (isFrame_tr' (D := dOf L) (eVt j) (hG.top j).2 (hβp' j) (S.βp_is j hj)))
+    exact_by_kernel isFrame_tr' (D := dOf L) (eVt j) (hG.top j).2 (hβp' j) (S.βp_is j hj)
   · intro t _ w hw j hj
     have hw' : w ∈ locPl G (ι t) := by rw [← eloc]; exact hw
     have h := S.row (ι t) trivial w hw' j hj
     rw [ecos w]
-    exact (by exact_kern (sumFrame_tr (D := dOf L) (eVt j) (eVm j) (hG.rowDec j hj hj).1 (hG.rowDec j hj hj).2 (G.rowDec j hj).rank
-      (G'.rowDec j hj).rank (hβp' j) (hB' _ j (hm0 hm')) h))
+    exact_by_kernel sumFrame_tr (D := dOf L) (eVt j) (eVm j) (hG.rowDec j hj hj).1 (hG.rowDec j hj hj).2 (G.rowDec j hj).rank
+      (G'.rowDec j hj).rank (hβp' j) (hB' _ j (hm0 hm')) h
   · intro t _ w hw
     have hw' : w ∈ locPl G (ι t) := by rw [← eloc]; exact hw
     have h := S.last (ι t) trivial w hw'
-    exact (by exact_kern (sumFrame_tr (D := dOf L) (eVd' _ hGd) (eVt _) hG.topDec.1 hG.topDec.2 G.sp.topDec.rank G'.sp.topDec.rank
-      (hB' _ _ (hm0 hm')) (hβp' _) h))
-  · refine ⟨fun i j => hB' (i + 1) j (Nat.succ_ne_zero i), fun j => (by exact_kern (hβp' j)), fun Y hY => ?_, hZδ,
-      fun p hp => hZ' p (hm' ▸ hp), (by exact_kern ((HEq.refl S.PA)))⟩
+    exact_by_kernel sumFrame_tr (D := dOf L) (eVd' _ hGd) (eVt _) hG.topDec.1 hG.topDec.2 G.sp.topDec.rank G'.sp.topDec.rank
+      (hB' _ _ (hm0 hm')) (hβp' _) h
+  · refine ⟨fun i j => hB' (i + 1) j (Nat.succ_ne_zero i), fun j => by exact_by_kernel hβp' j, fun Y hY => ?_, hZδ,
+      fun p hp => hZ' p (hm' ▸ hp), by exact_by_kernel HEq.refl S.PA⟩
     have h : DefNode m Y := hm' ▸ hY
-    exact ⟨(hN' Y h).1, (by exact_kern (val_heq (D := dOf L) (eVd' Y h) (hN' Y h).2))⟩
+    exact ⟨(hN' Y h).1, by exact_by_kernel val_heq (D := dOf L) (eVd' Y h) (hN' Y h).2⟩
 
 end GlobalTheory.RowEx
 

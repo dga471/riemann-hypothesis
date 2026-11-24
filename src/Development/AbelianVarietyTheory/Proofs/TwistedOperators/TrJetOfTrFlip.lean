@@ -315,10 +315,20 @@ section Two
 
 variable {X X' : Stages}
 
-local elab "exact_kern " t:term : tactic => Lean.Elab.Tactic.withMainContext do
-  let e ← Lean.Elab.Term.elabTerm t none
-  (← Lean.Elab.Tactic.getMainGoal).assign e
-  Lean.Elab.Tactic.replaceMainGoal []
+-- Compare the types in the kernel to avoid unfolding the stage records in the elaborator.
+open Lean Elab Tactic in
+local elab "exact_by_kernel " term:term : tactic =>
+  closeMainGoalUsing `exact_by_kernel fun target _ => do
+    let value ← elabTerm term none
+    Term.synthesizeSyntheticMVarsNoPostponing
+    let value ← instantiateMVars value
+    let actual ← instantiateMVars (← Meta.inferType value)
+    let target ← instantiateMVars target
+    let lctx ← instantiateLCtxMVars (← getLCtx)
+    match Kernel.isDefEq (← getEnv) lctx actual target with
+    | .ok true => pure value
+    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
+    | .error error => throwError (error.toMessageData (← getOptions))
 
 theorem kerTop_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K →+* ℂ) (c : ℝ) (j : ℕ) {A B : HSp X.toD7}
     {A' B' : HSp X'.toD7} {ψ ψ' θ θ' sA sA' sB sB' om om' fA fA' fB fB' uA uA' uB uB' vac vac' c0 c0' δ δ' r r' x x' y y'}
@@ -332,7 +342,7 @@ theorem kerTop_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K 
   cases hp
   cases h1; cases h2; cases h3; cases h4; cases h5; cases h6; cases h7; cases h8; cases h9; cases h10; cases h11; cases h12
   cases h13; cases h14; cases h15; cases h16; cases h17
-  exact_kern H
+  exact_by_kernel H
 
 theorem kerRow_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K →+* ℂ) (c : ℝ) (j : ℕ) {A B : HSp X.toD7}
     {A' B' : HSp X'.toD7} {ψ ψ' θ θ' sA sA' sB sB' om om' fA fA' fB fB' uA uA' uB uB' vac vac' c0 c0' δ δ' r r' x x' y y'}
@@ -346,7 +356,7 @@ theorem kerRow_congr (hp : X'.B.toPre = X.B.toPre) {K : Type} [Field K] (σ : K 
   cases hp
   cases h1; cases h2; cases h3; cases h4; cases h5; cases h6; cases h7; cases h8; cases h9; cases h10; cases h11; cases h12
   cases h13; cases h14; cases h15; cases h16; cases h17
-  exact_kern H
+  exact_by_kernel H
 
 theorem jets_congr (hp : X'.B.toPre = X.B.toPre) {E : Env X.toD7} {E' : Env X'.toD7} {a : E.KT} {a' : E'.KT} {b : E.KR} {b' : E'.KR}
     (h1 : HEq E'.P E.P) (h2 : HEq E'.ov E.ov) (h3 : HEq E'.Vt E.Vt) (h4 : HEq E'.Vr E.Vr) (h5 : HEq E'.Λt E.Λt)
@@ -363,10 +373,10 @@ theorem jets_congr (hp : X'.B.toPre = X.B.toPre) {E : Env X.toD7} {E' : Env X'.t
   dsimp only at h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13
   cases h1; cases h2; cases h3; cases h4; cases h5; cases h6; cases h7; cases h8; cases h9; cases h10; cases h11; cases h12
   cases h13
-  refine Env.Jets.mono (a := (by exact_kern a)) (b := (by exact_kern b)) (by exact_kern H)
+  refine Env.Jets.mono (a := (by exact_by_kernel a)) (b := (by exact_by_kernel b)) (by exact_by_kernel H)
     (fun j hj r x y => ?_) (fun j hj r x y => ?_)
-  · exact_kern (ha j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl)
-  · exact_kern (hb j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl)
+  · exact_by_kernel (ha j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl)
+  · exact_by_kernel (hb j hj r r x x y y HEq.rfl HEq.rfl HEq.rfl)
 
 variable {T T' : Type} {L : LevCh X.toD7 T} {L' : LevCh X'.toD7 T'} {sc : GlobalTheory.ChiGrid.Consts} {G : GridData L sc}
   {G' : GridData L' sc} {W : G.Weil} {W' : G'.Weil}
@@ -425,9 +435,9 @@ theorem term_congr (hp : X'.B.toPre = X.B.toPre) {w : Pl X.toD7.host.E} {w' : Pl
   obtain ⟨⟨P', _⟩, _⟩ := X'
   cases hp
   cases hw; cases h1; cases h2; cases h3; cases h4; cases h5; cases h6
-  refine ⟨(by exact_kern Eq.refl (Cosets hs J)), fun b b' h => ?_⟩
+  refine ⟨(by exact_by_kernel Eq.refl (Cosets hs J)), fun b b' h => ?_⟩
   cases h
-  exact_kern ((⟨HEq.rfl, HEq.rfl, id⟩ : let u := unfTerm ψ (unitVol w) k (Reps.through hs J (stair Γ (unifAt w) e)) f b
+  exact_by_kernel ((⟨HEq.rfl, HEq.rfl, id⟩ : let u := unfTerm ψ (unitVol w) k (Reps.through hs J (stair Γ (unifAt w) e)) f b
     HEq u.datum u.datum ∧ HEq u.pr u.pr ∧ (u.datum ≠ 0 → u.datum ≠ 0)))
 
 theorem sub_congr (hp : X'.B.toPre = X.B.toPre) {P : Finset (Pl X.toD7.host.E)} {P' : Finset (Pl X'.toD7.host.E)} (h : HEq P' P) :

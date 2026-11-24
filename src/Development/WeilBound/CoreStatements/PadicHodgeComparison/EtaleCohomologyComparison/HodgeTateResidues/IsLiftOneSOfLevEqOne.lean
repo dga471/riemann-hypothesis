@@ -44,7 +44,6 @@ import Mathlib.Tactic.NormNum.RealSqrt
 @[expose] public section
 
 set_option autoImplicit false
-set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 
 noncomputable section
@@ -53,8 +52,20 @@ open CategoryTheory Limits AlgebraicGeometry GlobalTheory.LogCris DividedPowers 
 
 namespace CrystallineSemistableComparison.HT
 
-local elab "exact_kern " t:term : tactic =>
-  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => Lean.Elab.Tactic.elabTerm t none
+-- Compare the types in the kernel to avoid unfolding the stage records in the elaborator.
+open Lean Elab Tactic in
+local elab "exact_by_kernel " term:term : tactic =>
+  closeMainGoalUsing `exact_by_kernel fun target _ => do
+    let value ← elabTerm term none
+    Term.synthesizeSyntheticMVarsNoPostponing
+    let value ← instantiateMVars value
+    let actual ← instantiateMVars (← Meta.inferType value)
+    let target ← instantiateMVars target
+    let lctx ← instantiateLCtxMVars (← getLCtx)
+    match Kernel.isDefEq (← getEnv) lctx actual target with
+    | .ok true => pure value
+    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
+    | .error error => throwError (error.toMessageData (← getOptions))
 
 open CH PAlg
 
@@ -131,16 +142,14 @@ theorem tMor_cup (ht : TFil l) (P : PAlg l ⥤ Type) (n : ℕ) {r r' s : ℕ} (e
       (ttPair P n e).cup h ((tMor ht P r n).pull p x) ((tMor ht P r' n).pull q y) :=
   mulTo_cup (A := AcrEl P n) (by rw [← e, pow_add]) _ _ _ _ h x y
 
-set_option backward.isDefEq.respectTransparency true
-
 theorem comp_cup {M : Model l K} {r r' s i j : ℕ} (h : r + r' = s) {x : Fam M r i} {y : Fam M r' j} (hx : Comp x) (hy : Comp y) :
     Comp (cupS h x y) := fun n => by
-  exact_kern (pdOm_cup (CrystallineSemistableComparison.SH.redM (B.schFn M.p) (okToOC l K) false n) (RingHom.id _) (B.red_cris _ n.le_succ) h rfl
+  exact_by_kernel (pdOm_cup (CrystallineSemistableComparison.SH.redM (B.schFn M.p) (okToOC l K) false n) (RingHom.id _) (B.red_cris _ n.le_succ) h rfl
     (x (n + 1)) (y (n + 1))).trans
     (congrArg₂ ((pdPair (M.L false n) ((base l).cris n) h).cup rfl) (hx n) (hy n))
 
 theorem comp_one (M : Model l K) : Comp (oneS M) := fun n => by
-  exact_kern pdOm_one (CrystallineSemistableComparison.SH.redM (B.schFn M.p) (okToOC l K) false n) (RingHom.id _) (B.red_cris _ n.le_succ)
+  exact_by_kernel pdOm_one (CrystallineSemistableComparison.SH.redM (B.schFn M.p) (okToOC l K) false n) (RingHom.id _) (B.red_cris _ n.le_succ)
 
 theorem cup_gen (ht : TFil l) {O : Type} [CommRing O] (F : B.Fn O) (κ : O →+* OC l) (n : ℕ) {r r' s i j : ℕ} (e : r + r' = s)
     (x : H (B.pdS (B.Lc F κ false n) ((base l).cris n) r).fn i) (y : H (B.pdS (B.Lc F κ false n) ((base l).cris n) r').fn j)
@@ -150,7 +159,7 @@ theorem cup_gen (ht : TFil l) {O : Type} [CommRing O] (F : B.Fn O) (κ : O →+*
     (hy : (βMorF F κ r' n).pull j y = (tMor ht (F.pt κ) r' n).pull j b) :
     (βMorF F κ s n).pull (i + j) ((pdPair (B.Lc F κ false n) ((base l).cris n) e).cup rfl x y) =
       (tMor ht (F.pt κ) s n).pull (i + j) w := by
-  exact_kern ((βF_cup F κ n e rfl x y).trans (congrArg₂ ((ttPair (F.pt κ) n e).cup rfl) hx hy)).trans
+  exact_by_kernel ((βF_cup F κ n e rfl x y).trans (congrArg₂ ((ttPair (F.pt κ) n e).cup rfl) hx hy)).trans
     ((tMor_cup ht (F.pt κ) n e rfl a b).symm.trans (congrArg ((tMor ht (F.pt κ) s n).pull (i + j)) hw.symm))
 
 variable (ht : TFil l) {e : E.EtFam l K}
@@ -158,12 +167,12 @@ variable (ht : TFil l) {e : E.EtFam l K}
 theorem isLift_cupS_of_cupT (he : EtP e) : ∀ {M : Model l K} {r r' s i j : ℕ} (h : r + r' = s) {v : M.T i} {v' : M.T j} {w : M.T (i + j)}
     {x : Fam M r i} {x' : Fam M r' j}, M.CupT v v' w → IsLift ht e r v x → IsLift ht e r' v' x' → IsLift ht e s w (cupS h x x') :=
   fun {M _ _ _ i j} h {v v' w x x'} hw hx hx' => ⟨comp_cup h hx.1 hx'.1, fun n => by
-    exact_kern cup_gen ht (B.schFn M.p) (okToOC l K) n h (x n) (x' n) (e M n i (v.lev n)) (e M n j (v'.lev n)) (e M n (i + j) (w.lev n))
+    exact_by_kernel cup_gen ht (B.schFn M.p) (okToOC l K) n h (x n) (x' n) (e M n i (v.lev n)) (e M n j (v'.lev n)) (e M n (i + j) (w.lev n))
       ((congrArg (e M n (i + j)) (hw n)).trans (he.good.cup M n i j (v.lev n) (v'.lev n))) (hx.2 n) (hx'.2 n)⟩
 
 theorem isLift_oneS_of_lev_eq_one (he : EtP e) : ∀ (M : Model l K) (v : M.T 0), (∀ k, v.lev k = GlobalTheory.EtC.one (l ^ k) M.spc) →
     IsLift ht e 0 v (oneS M) := fun M v hv => ⟨comp_one M, fun n => by
-  exact_kern (βF_one (B.schFn M.p) (okToOC l K) ht n).trans
+  exact_by_kernel (βF_one (B.schFn M.p) (okToOC l K) ht n).trans
     (congrArg ((tMor ht ((B.schFn M.p).pt (okToOC l K)) 0 n).pull 0) ((congrArg (e M n 0) (hv n)).trans (he.one M n)).symm)⟩
 
 end CrystallineSemistableComparison.HT
