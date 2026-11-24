@@ -263,7 +263,8 @@ theorem kappa_bound : GlobalTheory.GapIn.Hyp → ∀ (k r : ℕ) (Wp : Type) [No
     intro J
     have := n1_add_eZ_le_add_card' ν J.1
     rw [J.2] at this
-    nlinarith
+    have hmul : (r + 1) + (r + 1) ^ 2 = (r + 1) * (r + 2) := by ring
+    omega
   have hνJ0 : ∀ J : Sub (2 * r + k + 1) l, n1 (ν + eZ J.1) ≤ q0 := fun J =>
     le_trans (Nat.le_add_right _ _) (hνJ J)
   have hDS := hFam ν hν0
@@ -969,7 +970,9 @@ theorem side_kappa (hH : GlobalTheory.GapIn.Hyp) (ht : t ∈ GG k r) {lam u u' b
   have hSG := setupG_of hS
   have hSG' := setupG_of hS'
   have hν0 : n1 ν ≤ q0 := by omega
-  have hνl : n1 ν + l ≤ q0 := by nlinarith
+  have hνl : n1 ν + l ≤ q0 := by
+    have hmul : r + 1 ≤ (r + 1) * (r + 2) := Nat.le_mul_of_pos_right (r + 1) (by omega)
+    omega
   have hR := hS.2.1 ν hν0
   have hRG := hSG.2.1 ν hν0
   have hRIG := fun J : Sub (2 * r + k + 1) l => hSG'.2.1 _ (firstNorm_add_subsetIndicator_le hνl J)
@@ -1083,8 +1086,8 @@ theorem minor_line : GlobalTheory.GapIn.Hyp → GlobalTheory.GapIn.AmpKF0 → Ce
     have := D.R.m_add_three_le_k
     exact_mod_cast (by omega : 1 ≤ D.R.k)
   have hm2 : (D.R.m : ℝ) ^ 2 ≤ D.R.k * (D.R.m : ℝ) ^ 3 := by
-    have : (D.R.m : ℝ) ^ 2 ≤ (D.R.m : ℝ) ^ 3 := pow_le_pow_right₀ (by linarith) (by norm_num)
-    nlinarith [pow_nonneg (show (0 : ℝ) ≤ D.R.m by linarith) 3]
+    have h1 : (D.R.m : ℝ) ^ 2 ≤ (D.R.m : ℝ) ^ 3 := pow_le_pow_right₀ (by linarith) (by norm_num)
+    exact h1.trans (le_mul_of_one_le_left (by positivity) hk1)
   obtain ⟨hNum, hgc, heps⟩ := _root_.GlobalTheory.SizeNum.num_of_size D large₂ C' Cl Cg cb Cu cT CT C0 hZ hCl τ w
     (fun n => if h : n - 1 < D.R.k then uS D w τ ⟨n - 1, h⟩ else 0) (fun i => by simp)
   obtain ⟨⟨hbv, hbv', hnb, -, hok⟩, hnum⟩ := GlobalTheory.NumFam.num_fam _ _ _ _ _ _ _ _ _ hNum
@@ -1099,14 +1102,22 @@ theorem minor_line : GlobalTheory.GapIn.Hyp → GlobalTheory.GapIn.AmpKF0 → Ce
     simp [l1dist, n1]
   rw [hdist] at hlam
   have hν : n1 ν + (D.R.rS + 1) * (D.R.rS + 2) ≤ D.R.k * D.R.m ^ 5 := by
-    have h1 : Cn + 1 ≤ (D.R.m : ℝ) ^ 2 := by nlinarith [(le_max_right _ _).trans hBig.2.2]
+    have h1 : Cn + 1 ≤ (D.R.m : ℝ) ^ 2 := by
+      have hm1 : (D.R.m : ℝ) ≤ (D.R.m : ℝ) ^ 2 := by rw [sq]; exact le_mul_of_one_le_right (by linarith) (by linarith)
+      linarith [(le_max_right _ _).trans hBig.2.2]
     have h2 : (Cn + 1) * (D.R.k * (D.R.m : ℝ) ^ 3) ≤ (D.R.m : ℝ) ^ 2 * (D.R.k * (D.R.m : ℝ) ^ 3) :=
       mul_le_mul_of_nonneg_right h1 (by positivity)
-    have h3 : ((D.R.rS : ℝ) + 1) * (D.R.rS + 2) ≤ (D.R.m : ℝ) ^ 2 := by rw [hmR]; nlinarith
-    have : (n1 ν : ℝ) + ((D.R.rS : ℝ) + 1) * (D.R.rS + 2) ≤ D.R.k * (D.R.m : ℝ) ^ 5 := by nlinarith
+    have h3 : ((D.R.rS : ℝ) + 1) * (D.R.rS + 2) ≤ (D.R.m : ℝ) ^ 2 := by
+      rw [hmR, sq]
+      exact mul_le_mul (by linarith) (by linarith) (by linarith) (by linarith)
+    have : (n1 ν : ℝ) + ((D.R.rS : ℝ) + 1) * (D.R.rS + 2) ≤ D.R.k * (D.R.m : ℝ) ^ 5 := by
+      linarith [show (Cn + 1) * (D.R.k * (D.R.m : ℝ) ^ 3) = Cn * D.R.k * (D.R.m : ℝ) ^ 3 + D.R.k * (D.R.m : ℝ) ^ 3 by ring,
+                show (D.R.m : ℝ) ^ 2 * (D.R.k * (D.R.m : ℝ) ^ 3) = D.R.k * (D.R.m : ℝ) ^ 5 by ring]
     exact_mod_cast this
   have hν0 : n1 ν ≤ D.R.k * D.R.m ^ 5 := by omega
-  have hνl : n1 ν + l ≤ D.R.k * D.R.m ^ 5 := by nlinarith
+  have hνl : n1 ν + l ≤ D.R.k * D.R.m ^ 5 := by
+    have hmul : D.R.rS + 1 ≤ (D.R.rS + 1) * (D.R.rS + 2) := Nat.le_mul_of_pos_right _ (by omega)
+    omega
   have hsh : ∀ I : Finset (Fin (2 * D.R.rS + D.R.k + 1)), (fun a => lamD D τ a + (ν a : ℝ)) + epsI I =
       fun a => lamD D τ a + ((ν + eZ I) a : ℝ) := fun I => by
     funext a
@@ -1167,7 +1178,9 @@ theorem minor_line : GlobalTheory.GapIn.Hyp → GlobalTheory.GapIn.AmpKF0 → Ce
       (fun I : Sub _ l => F' (ν + eZ I.1)) io pr ep := by
     rcases hFF with h0 | h1
     · subst h0
-      exact tens_zero hH.1 _ _ _ _ _ _ _ _ _ F F' ν hNum hFG hFG' (by nlinarith)
+      exact tens_zero hH.1 _ _ _ _ _ _ _ _ _ F F' ν hNum hFG hFG' (by
+        have h2 : 2 ≤ (D.R.rS + 1) * (D.R.rS + 2) := Nat.mul_le_mul (by omega : 1 ≤ D.R.rS + 1) (by omega : 2 ≤ D.R.rS + 2)
+        omega)
     · rw [h1]
       exact (_root_.Gp91.GlobalTheory.TensExists.tens_exists hH.1 _ _ _ _ _ _ _ _ _ F hNum hFG ν).1 l hνl
   obtain ⟨b1, e1⟩ := moved hH ht hNt (hz _ z1).2.1 (hz _ z1).2.2 G1 hDS (S1.2.2.2 ν hν0).1
@@ -1205,7 +1218,8 @@ theorem minor_line : GlobalTheory.GapIn.Hyp → GlobalTheory.GapIn.AmpKF0 → Ce
     have hM : (0 : ℝ) ≤ max 2 Cu := le_trans zero_le_two (le_max_left _ _)
     have hn1 : (1 : ℝ) ≤ 2 * D.R.rS + D.R.k + 1 := by linarith
     have hN : ((2 * D.R.rS + D.R.k + 1 : ℝ)) ^ l ≤ large₂.sc.b ^ (max 2 Cu * (D.R.m : ℝ) ^ 2) :=
-      pow_le_rpow hb1 (by linarith) hnb hM (by rw [hmR]; nlinarith)
+      pow_le_rpow hb1 (by linarith) hnb hM (by
+        rw [sq]; exact (by linarith : (l : ℝ) ≤ D.R.m).trans (le_mul_of_one_le_right (by linarith) (by linarith)))
     have hS : ‖∏ a : Fin l, s (Fin.castLE hl a)‖ ≤ large₂.sc.b ^ ((2 * Cg + 2) * (D.R.m : ℝ) ^ 2) := by
       have hQ := scale_le hbe hv hvb hg1 hgb hCg
       rw [← hka] at hQ
@@ -1255,11 +1269,14 @@ theorem minor_line : GlobalTheory.GapIn.Hyp → GlobalTheory.GapIn.AmpKF0 → Ce
     simp only [haI]
     refine ha2 μsec K hK (hMM _ ?_ _ hA₀) (fun I hI => hMM _ ?_ _ (hAI I.1 I.2 hI)) γ p hγ θ'
       (lt_of_lt_of_le (by positivity) hθ'.1) νR hνR
-    · rw [hdist]; nlinarith [sq_nonneg (D.R.m : ℝ)]
+    · rw [hdist]
+      have : (0 : ℝ) ≤ D.R.k * (D.R.m : ℝ) ^ 3 := by positivity
+      linarith
     · rw [hdist]
       have h1 : (n1 (ν + eZ I.1) : ℝ) ≤ n1 ν + l := by exact_mod_cast firstNorm_add_subsetIndicator_le (le_refl (n1 ν + l)) I
-      have h2 : (l : ℝ) ≤ (D.R.m : ℝ) ^ 2 := by rw [hmR]; nlinarith
-      nlinarith
+      have h2 : (l : ℝ) ≤ (D.R.m : ℝ) ^ 2 := by
+        rw [sq]; exact (by linarith : (l : ℝ) ≤ D.R.m).trans (le_mul_of_one_le_right (by linarith) (by linarith))
+      linarith
 
 end GlobalTheory.CellMinorLineGap
 end -- clump:auto

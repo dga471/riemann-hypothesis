@@ -103,7 +103,7 @@ theorem pi_le_v {R : Ranks} (H : Host R) : Real.pi ≤ H.v := by
   have h8 : 32 / 5 ≤ H.rdE := by
     refine le_trans ?_ (factRd R H).1
     rw [show (2 : ℝ) ^ (2 : ℝ) = 4 by norm_num] at hlo
-    nlinarith
+    linarith [mul_le_mul hlo hs (by norm_num) (by linarith), mul_le_mul hs hlo (by norm_num) (by linarith)]
   have := Real.pi_lt_d2
   unfold Host.v
   linarith
@@ -162,7 +162,10 @@ theorem idx_place (R : Ranks) (g : ℕ) (hp : g.Prime) (hg : 3 ≤ g) :
   have p1 : (0 : ℝ) < (g : ℝ) ^ (R.k * (R.k + 1) / 2) := pow_pos hgpos _
   have p2 : (0 : ℝ) < (g : ℝ) ^ ((R.r ^ 2 + 3 * R.k + 1 + 2 * R.rS) / 2) := pow_pos hgpos _
   rw [e1, e2]
-  refine ⟨by nlinarith, by nlinarith, by nlinarith, by nlinarith⟩
+  refine ⟨by rw [div_eq_mul_one_div]; exact mul_le_mul_of_nonneg_left hθ1 p1.le,
+    mul_le_of_le_one_right p1.le hθ2,
+    by rw [div_eq_mul_one_div]; exact mul_le_mul_of_nonneg_left hθ1' p2.le,
+    mul_le_of_le_one_right p2.le hθ2'⟩
 
 theorem idx_ratio (R : Ranks) (g : Fin 2 → ℕ) (hp : ∀ i, (g i).Prime) (hg : ∀ i, 3 ≤ g i) :
     0 < idxColLoc (g 0) R.k ^ R.f * idxColLoc (g 1) R.k ^ R.f ∧
@@ -304,13 +307,13 @@ theorem place_data {R : Ranks} (p : HCParam R) (x Δ a B h0 b1 : ℝ) (hx : 1 �
   have hm := R.two_le_m
   have hx0 : 0 < x := by linarith
   have hk1 : (1 : ℝ) ≤ R.k := by exact_mod_cast (by omega : 1 ≤ R.k)
-  have hkΔ : 1 ≤ (R.k : ℝ) * (4 * Δ) := by nlinarith
+  have hkΔ : 1 ≤ (R.k : ℝ) * (4 * Δ) := one_le_mul_of_one_le_of_one_le hk1 (by linarith)
   have ht : (0 : ℚ) ≤ R.t := by positivity
   have hbj : ∀ j : Fin R.m, b1 ≤ ((p.b j : ℚ) : ℝ) := fun j => by
     rw [(hb j).1]; have : (0 : ℝ) ≤ j.1 * h0 := by positivity
     linarith
-  have e1 : x * (R.k * (4 * Δ)) ≤ b1 := by nlinarith
-  have e2 : x * h0 ≤ b1 := by nlinarith
+  have e1 : x * (R.k * (4 * Δ)) ≤ b1 := le_trans (mul_le_mul_of_nonneg_left (by linarith) hx0.le) hlo
+  have e2 : x * h0 ≤ b1 := le_trans (mul_le_mul_of_nonneg_left (by linarith) hx0.le) hlo
   refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
   · intro i hi
     rw [seqOf_lt _ hi, hv]
@@ -345,7 +348,9 @@ theorem place_data {R : Ranks} (p : HCParam R) (x Δ a B h0 b1 : ℝ) (hx : 1 �
     refine ⟨by exact_mod_cast g2, ?_⟩
     rw [(hb _).2, add_sub_cancel_left, abs_of_nonneg (by positivity), le_div_iff₀ hx0]
     have := hbj ⟨j, hj⟩
-    nlinarith
+    have heq : h0 / 2 * x = x * h0 / 2 := by ring
+    have hxh : 0 ≤ x * h0 := mul_nonneg hx0.le hh
+    linarith
   · intro j hj
     have g1 := p.gap_be ⟨j, by omega⟩
     have g2 := p.gap_eb ⟨j, by omega⟩ hj
@@ -359,11 +364,13 @@ theorem place_data {R : Ranks} (p : HCParam R) (x Δ a B h0 b1 : ℝ) (hx : 1 �
   · rw [seqOf_lt _ (by omega : R.m - 1 < R.m), (hb _).2, (hb _).1]
     have : ((R.m - 1 : ℕ) : ℝ) = R.m - 1 := by rw [Nat.cast_sub (by omega)]; simp
     simp only [this]
-    nlinarith
+    have heq : b1 + ((R.m : ℝ) - 1) * h0 + h0 / 2 = b1 + (R.m : ℝ) * h0 - h0 / 2 := by ring
+    linarith
   · intro j hj
     rw [seqOf_lt _ hj, (hb _).2]
     have := hbj ⟨j, hj⟩
-    nlinarith
+    have h1b : 1 ≤ x * (R.k * (4 * Δ)) := one_le_mul_of_one_le_of_one_le hx hkΔ
+    linarith
 
 theorem scale_sizes (eps cD ch : ℝ) (h0 : 0 < eps) (h1 : eps < 1 / 52) (hcD : 0 ≤ cD) (hch : 0 ≤ ch) :
     ∃ x0 : ℝ, ∀ (s : Scale) (R : Ranks), s.eps = eps → x0 ≤ s.x → RankVal s R →
@@ -409,17 +416,21 @@ theorem scale_sizes (eps cD ch : ℝ) (h0 : 0 < eps) (h1 : eps < 1 / 52) (hcD : 
   have z4 : (R.k : ℝ) * (Delv s cD : ℝ) ≤ s.x ^ (5 : ℝ) * (2 * s.x ^ cD) :=
     mul_le_mul hk hD (by positivity) (by positivity)
   have z0 : 1 ≤ z := o1.trans z3
-  have hxz : 12 ≤ s.x * z := by nlinarith
-  have hy12 : 12 * (s.x * z) ≤ z * (s.x * s.x) := by nlinarith
+  have hxz : 12 ≤ s.x * z := le_trans h12 (le_mul_of_one_le_right hxp.le z0)
+  have hy12 : 12 * (s.x * z) ≤ z * (s.x * s.x) := by
+    calc 12 * (s.x * z) ≤ s.x * (s.x * z) := mul_le_mul_of_nonneg_right h12 (by linarith)
+      _ = z * (s.x * s.x) := by ring
   have hw : z * (s.x * s.x) ≤ s.w'' R.n := (le_mul_of_one_le_left (by positivity) hb2).trans c6
-  have h3 : 3 * s.b' ≤ s.b := by nlinarith
+  have h3 : 3 * s.b' ≤ s.b := by
+    linarith [mul_le_mul_of_nonneg_right (by linarith : (3 : ℝ) ≤ z * (s.x * s.x)) hb',
+      mul_le_mul_of_nonneg_left (by linarith : (3 : ℝ) ≤ z * (s.x * s.x)) hb']
   have hzx : z ≤ s.x * z := le_mul_of_one_le_left (by linarith) hx1'.le
   have hmh : (R.m : ℝ) * (h0v s ch : ℝ) ≤ s.x * (4 * z) := mul_le_mul hm (by linarith) (by positivity) hxp.le
   refine ⟨?_, c7, hb', h3, by linarith, by linarith, ?_, hk⟩
   · have : (R.k * (4 * (Delv s cD : ℝ)) + (h0v s ch : ℝ)) ≤ 12 * z := by linarith
     have := mul_le_mul_of_nonneg_left this hxp.le
     linarith
-  · unfold Scale.a; nlinarith
+  · unfold Scale.a; exact mul_le_mul_of_nonneg_right (by linarith) (by linarith)
 
 theorem bottom_len (eps : ℝ) (K : G.Consts) (h0 : 0 < eps) (h1 : eps < 1 / 52) (hK : 1 ≤ K.La) :
     ∃ x0 : ℝ, ∀ (s : Scale) (R : Ranks), s.eps = eps → x0 ≤ s.x → RankVal s R →

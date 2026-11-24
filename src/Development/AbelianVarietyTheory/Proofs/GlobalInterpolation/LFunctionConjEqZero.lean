@@ -140,7 +140,7 @@ theorem neg_re_logDeriv_le : ∃ C : ℝ, 0 < C ∧ ∀ (q : ℕ) [NeZero q] (χ
           have h1 : (1 : ℝ) ≤ analyticOrderNatAt (LFunction χ) w := by
             exact_mod_cast one_le_order hχ hw0
           have h2 := hpos w hw0
-          nlinarith
+          exact le_mul_of_one_le_left h2 h1
       _ ≤ ∑ w ∈ hfin.toFinset,
           (analyticOrderNatAt (LFunction χ) w : ℝ) * (1 / ((σ : ℂ) + t * I - w)).re := by
           refine Finset.sum_le_sum_of_subset_of_nonneg hSsub fun w hw _ => ?_
@@ -155,7 +155,8 @@ theorem re_one_div (a b : ℝ) : (1 / ((a : ℂ) + b * I)).re = a / (a ^ 2 + b ^
 
 theorem half_lt_log (q : ℕ) [NeZero q] (t : ℝ) : 1 / 2 < Real.log (q * (|t| + 2)) := by
   have hq : (1 : ℝ) ≤ q := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne q)
-  have h2 : (2 : ℝ) ≤ q * (|t| + 2) := by nlinarith [abs_nonneg t]
+  have h2 : (2 : ℝ) ≤ q * (|t| + 2) :=
+    le_trans (by linarith [abs_nonneg t]) (le_mul_of_one_le_left (by positivity) hq)
   have := Real.log_le_log (by norm_num) h2
   linarith [Real.log_two_gt_d9]
 
@@ -165,7 +166,7 @@ theorem log_zero_le (q : ℕ) [NeZero q] (t : ℝ) :
   apply Real.log_le_log
   · simp only [abs_zero, zero_add]; positivity
   · simp only [abs_zero, zero_add]
-    nlinarith [abs_nonneg t]
+    exact mul_le_mul_of_nonneg_left (by linarith [abs_nonneg t]) (by linarith)
 
 theorem log_two_le (q : ℕ) [NeZero q] (t : ℝ) :
     Real.log (q * (|2 * t| + 2)) ≤ 2 * Real.log (q * (|t| + 2)) := by
@@ -175,8 +176,10 @@ theorem log_two_le (q : ℕ) [NeZero q] (t : ℝ) :
     rw [Real.log_pow]; norm_num]
   apply Real.log_le_log (by positivity)
   rw [abs_mul, abs_two]
-  have h1 : (q : ℝ) ≤ q * q := by nlinarith
-  have h2 : 2 * |t| + 2 ≤ (|t| + 2) * (|t| + 2) := by nlinarith
+  have h1 : (q : ℝ) ≤ q * q := le_mul_of_one_le_left (by linarith) hq
+  have h2 : 2 * |t| + 2 ≤ (|t| + 2) * (|t| + 2) := by
+    have hexp : (|t| + 2) * (|t| + 2) = |t| ^ 2 + 4 * |t| + 4 := by ring
+    linarith [sq_nonneg |t|]
   calc (q : ℝ) * (2 * |t| + 2) ≤ (q * q) * ((|t| + 2) * (|t| + 2)) :=
         mul_le_mul h1 h2 (by positivity) (by positivity)
     _ = (q * (|t| + 2)) ^ 2 := by ring
@@ -185,7 +188,8 @@ private theorem norm_ofReal_add_mul_I_le_of_sq_add_sq_le (a b r : ℝ) (hr : 0 �
     ‖(a : ℂ) + b * I‖ ≤ r := by
   have h1 : ‖(a : ℂ) + b * I‖ ^ 2 = a ^ 2 + b ^ 2 := by
     rw [Complex.sq_norm, Complex.normSq_add_mul_I]
-  nlinarith [norm_nonneg ((a : ℂ) + b * I)]
+  have h2 := Real.sqrt_le_sqrt (h1.le.trans h)
+  rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq hr] at h2
 
 theorem inv_le_log : ∃ K : ℝ, 0 < K ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q)
     (δ γ : ℝ), χ ≠ 1 → LFunction χ (((1 - δ : ℝ) : ℂ) + γ * I) = 0 → (χ ^ 2 ≠ 1 ∨ γ ≠ 0) →
@@ -241,6 +245,7 @@ theorem inv_le_log : ∃ K : ℝ, 0 < K ∧ ∀ (q : ℕ) [NeZero q] (χ : Diric
         have := congrArg Complex.im h
         simp at this
         exact hγ (by linarith)
+      have hδsq : δ ^ 2 ≤ (1 / 21 : ℝ) ^ 2 := pow_le_pow_left₀ hδ.le hδ21 2
       have hdisk : ∀ w ∈ ({((1 - δ : ℝ) : ℂ) + γ * I, ((1 - δ : ℝ) : ℂ) + ((-γ : ℝ) : ℂ) * I} :
           Finset ℂ), ‖w - (3/2 + ((0 : ℝ) : ℂ) * I)‖ ≤ 5/6 ∧ LFunction χ w = 0 := by
         intro w hw
@@ -249,13 +254,17 @@ theorem inv_le_log : ∃ K : ℝ, 0 < K ∧ ∀ (q : ℕ) [NeZero q] (χ : Diric
           refine ⟨?_, hρ⟩
           rw [show (((1 - δ : ℝ) : ℂ) + γ * I) - (3/2 + ((0 : ℝ) : ℂ) * I) =
             ((-(1/2) - δ : ℝ) : ℂ) + (γ : ℂ) * I by push_cast; ring]
-          exact norm_ofReal_add_mul_I_le_of_sq_add_sq_le _ _ _ (by norm_num) (by nlinarith)
+          exact norm_ofReal_add_mul_I_le_of_sq_add_sq_le _ _ _ (by norm_num) (by
+            have hexp : (-(1 / 2) - δ) ^ 2 = 1 / 4 + δ + δ ^ 2 := by ring
+            linarith)
         · rw [Finset.mem_singleton] at hw
           rw [hw]
           refine ⟨?_, hcρ⟩
           rw [show (((1 - δ : ℝ) : ℂ) + ((-γ : ℝ) : ℂ) * I) - (3/2 + ((0 : ℝ) : ℂ) * I) =
             ((-(1/2) - δ : ℝ) : ℂ) + ((-γ : ℝ) : ℂ) * I by push_cast; ring]
-          exact norm_ofReal_add_mul_I_le_of_sq_add_sq_le _ _ _ (by norm_num) (by nlinarith)
+          exact norm_ofReal_add_mul_I_le_of_sq_add_sq_le _ _ _ (by norm_num) (by
+            have hexp : (-(1 / 2) - δ) ^ 2 + (-γ) ^ 2 = 1 / 4 + δ + δ ^ 2 + γ ^ 2 := by ring
+            linarith)
       have h := h1 q χ hχ (1 + 8 * δ) 0 hσ1 hσ2 _ hdisk
       rw [Finset.sum_pair hne] at h
       rw [show ((1 + 8 * δ : ℝ) : ℂ) + ((0 : ℝ) : ℂ) * I - (((1 - δ : ℝ) : ℂ) + γ * I) =
@@ -269,7 +278,9 @@ theorem inv_le_log : ∃ K : ℝ, 0 < K ∧ ∀ (q : ℕ) [NeZero q] (χ : Diric
       have hlow : 2 / 27 * (1 / δ) ≤ T := by
         rw [hT]
         rw [div_mul_eq_mul_div, mul_one_div, div_div, div_le_div_iff₀ (by positivity) (by positivity)]
-        nlinarith
+        have e1 : 2 * ((9 * δ) ^ 2 + γ ^ 2) = 162 * δ ^ 2 + 2 * γ ^ 2 := by ring
+        have e2 : 9 * δ * (27 * δ) = 243 * δ ^ 2 := by ring
+        linarith
       rw [neg_sq] at h
       have H := GlobalTheory.TwoRealCharacters.neg_sum_logDeriv_nonneg q χ χ (1 + 8 * δ) h2 h2 hσ1
       rw [show χ * χ = 1 by rw [← sq]; exact h2] at H
@@ -287,7 +298,9 @@ theorem inv_le_log : ∃ K : ℝ, 0 < K ∧ ∀ (q : ℕ) [NeZero q] (χ : Diric
           ((8 * δ : ℝ) : ℂ) + ((2 * γ : ℝ) : ℂ) * I by push_cast; ring, re_one_div] at h
         have e : 8 * δ / ((8 * δ) ^ 2 + (2 * γ) ^ 2) ≤ 4 / 81 * (1 / δ) := by
           rw [div_mul_eq_mul_div, mul_one_div, div_div, div_le_div_iff₀ (by positivity) (by positivity)]
-          nlinarith
+          have e1 : 8 * δ * (81 * δ) = 648 * δ ^ 2 := by ring
+          have e2 : 4 * ((8 * δ) ^ 2 + (2 * γ) ^ 2) = 256 * δ ^ 2 + 8 * (2 * γ ^ 2) := by ring
+          linarith [sq_nonneg δ]
         push_cast at h ⊢
         linarith [mul_le_mul_of_nonneg_left hL2 hC0.le]
       have H := GlobalTheory.logDerivativeThreeFourOne.three_four_one q χ (1 + 8 * δ) γ hσ1
@@ -324,11 +337,14 @@ theorem zero_free_region : ∃ c : ℝ, 0 < c ∧ ∀ (q : ℕ) [NeZero q] (χ :
       have hm : min (1 / (2 * K)) (1 / 42) ≤ 1 / (2 * K) := min_le_left _ _
       have hk : 1 / (2 * K) < (1 - s.re) * L := by
         rw [div_lt_iff₀ (by positivity)]
-        nlinarith
+        have hexp : (1 - s.re) * L * (2 * K) = 2 * (K * L * (1 - s.re)) := by ring
+        linarith
       linarith
     · push Not at hsmall
       have hm : min (1 / (2 * K)) (1 / 42) ≤ 1 / 42 := min_le_right _ _
-      nlinarith
+      have hprod : (1 / 21 : ℝ) * (1 / 2) < (1 - s.re) * L :=
+        mul_lt_mul'' hsmall hL (by norm_num) (by norm_num)
+      linarith
   linarith
 
 end GlobalTheory.ZeroFreeComplex

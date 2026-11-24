@@ -113,30 +113,60 @@ lemma key_ineq {A Bn u w D ρ : ℝ} (hA : 0 ≤ A) (hB : 0 ≤ Bn) (hu0 : 0 ≤
         (1 + ρ) * (A ^ 2 - u ^ 2 + Bn ^ 2 - w ^ 2) ∧
       (1 - ρ) * (A ^ 2 - u ^ 2 + Bn ^ 2 - w ^ 2) ≤
         (1 + ρ) * (A ^ 2 + w ^ 2 + 2 * D + (u ^ 2 + Bn ^ 2 + 2 * D)) := by
-  have hD1 : |D| ≤ ρ * A * Bn := h1.trans (by nlinarith)
-  have hD2 : |D| ≤ ρ * A * Bn := h2.trans (by nlinarith)
-  have hAB : 2 * (A * Bn) ≤ A ^ 2 + Bn ^ 2 := by nlinarith [sq_nonneg (A - Bn)]
-  have hu2 : u ^ 2 ≤ ρ ^ 2 * A ^ 2 := by nlinarith
-  have hw2 : w ^ 2 ≤ ρ ^ 2 * Bn ^ 2 := by nlinarith
+  have hD1 : |D| ≤ ρ * A * Bn := h1.trans (mul_le_mul_of_nonneg_right hu hB)
+  have hAB : 2 * (A * Bn) ≤ A ^ 2 + Bn ^ 2 := by
+    have := sq_nonneg (A - Bn)
+    have : (A - Bn) ^ 2 = A ^ 2 + Bn ^ 2 - 2 * (A * Bn) := by ring
+    linarith
+  have hu2 : u ^ 2 ≤ ρ ^ 2 * A ^ 2 := by
+    calc u ^ 2 ≤ (ρ * A) ^ 2 := pow_le_pow_left₀ hu0 hu 2
+      _ = ρ ^ 2 * A ^ 2 := by ring
+  have hw2 : w ^ 2 ≤ ρ ^ 2 * Bn ^ 2 := by
+    calc w ^ 2 ≤ (ρ * Bn) ^ 2 := pow_le_pow_left₀ hw0 hw 2
+      _ = ρ ^ 2 * Bn ^ 2 := by ring
   have hDa := abs_le.1 hD1
   constructor
-  · nlinarith [mul_nonneg hρ0.le hA, mul_nonneg (sub_nonneg.2 hρ1.le) hρ0.le]
+  · have h1' : 4 * (1 - ρ) * D ≤ 4 * (1 - ρ) * (ρ * A * Bn) :=
+      mul_le_mul_of_nonneg_left hDa.2 (by linarith)
+    have h2' : 2 * ρ * (1 - ρ) * (2 * (A * Bn)) ≤ 2 * ρ * (1 - ρ) * (A ^ 2 + Bn ^ 2) :=
+      mul_le_mul_of_nonneg_left hAB (mul_nonneg (by linarith) (by linarith))
+    have h3' : 4 * (1 - ρ) * (ρ * A * Bn) = 2 * ρ * (1 - ρ) * (2 * (A * Bn)) := by ring
+    have h4' : (1 + ρ) * (A ^ 2 - u ^ 2 + Bn ^ 2 - w ^ 2) -
+        (1 - ρ) * (A ^ 2 + w ^ 2 + 2 * D + (u ^ 2 + Bn ^ 2 + 2 * D)) =
+        (2 * ρ * (1 - ρ) * (A ^ 2 + Bn ^ 2) - 4 * (1 - ρ) * D) +
+        2 * (ρ ^ 2 * A ^ 2 - u ^ 2) + 2 * (ρ ^ 2 * Bn ^ 2 - w ^ 2) := by ring
+    linarith
   · have hsum : 2 * ρ * (A * Bn) + 2 * (u * w) ≤ ρ * (A ^ 2 + Bn ^ 2) + (u ^ 2 + w ^ 2) := by
-      nlinarith [sq_nonneg (A - Bn), sq_nonneg (u - w)]
+      have h1' : ρ * (2 * (A * Bn)) ≤ ρ * (A ^ 2 + Bn ^ 2) := mul_le_mul_of_nonneg_left hAB hρ0.le
+      have h2' : 2 * (u * w) ≤ u ^ 2 + w ^ 2 := by
+        have := sq_nonneg (u - w)
+        have : (u - w) ^ 2 = u ^ 2 + w ^ 2 - 2 * (u * w) := by ring
+        linarith
+      linarith
     have hkey : (1 + ρ) * (-D) ≤ ρ * (A * Bn) + u * w := by
       rcases le_or_gt (-D) 0 with hd | hd
-      · nlinarith [mul_nonneg hA hB, mul_nonneg hu0 hw0]
+      · exact (mul_nonpos_of_nonneg_of_nonpos (by linarith) hd).trans
+          (add_nonneg (mul_nonneg hρ0.le (mul_nonneg hA hB)) (mul_nonneg hu0 hw0))
       · have hd1 : -D ≤ u * Bn := (neg_le_abs D).trans h1
         have hd2 : -D ≤ A * w := (neg_le_abs D).trans h2
-        have hdAB : -D ≤ ρ * (A * Bn) := by nlinarith [mul_le_mul_of_nonneg_right hu hB]
+        have hdAB : -D ≤ ρ * (A * Bn) := by
+          have : ρ * (A * Bn) = ρ * A * Bn := by ring
+          linarith [hDa.1]
         have hAB0 : 0 < A * Bn := pos_of_mul_pos_right (by linarith : 0 < ρ * (A * Bn)) hρ0.le
         have hsq : (-D) * (-D) ≤ (u * Bn) * (A * w) := mul_le_mul hd1 hd2 hd.le (mul_nonneg hu0 hB)
         have hq : 0 ≤ (-D - ρ * (A * Bn)) * (-D - A * Bn) :=
-          mul_nonneg_of_nonpos_of_nonpos (by linarith) (by nlinarith)
+          mul_nonneg_of_nonpos_of_nonpos (by linarith)
+            (by linarith [mul_le_mul_of_nonneg_right hρ1.le hAB0.le])
         have hmain : (A * Bn) * ((1 + ρ) * (-D)) ≤ (A * Bn) * (ρ * (A * Bn) + u * w) := by
-          nlinarith
+          have : (A * Bn) * (ρ * (A * Bn) + u * w) - (A * Bn) * ((1 + ρ) * (-D)) =
+              ((-D - ρ * (A * Bn)) * (-D - A * Bn)) + ((u * Bn) * (A * w) - (-D) * (-D)) := by ring
+          linarith
         exact le_of_mul_le_mul_left hmain hAB0
-    nlinarith
+    have hdiff : (1 + ρ) * (A ^ 2 + w ^ 2 + 2 * D + (u ^ 2 + Bn ^ 2 + 2 * D)) -
+        (1 - ρ) * (A ^ 2 - u ^ 2 + Bn ^ 2 - w ^ 2) =
+        2 * (ρ * (A ^ 2 + Bn ^ 2) + (u ^ 2 + w ^ 2) - (2 * ρ * (A * Bn) + 2 * (u * w))) +
+        4 * (ρ * (A * Bn) + u * w - (1 + ρ) * (-D)) := by ring
+    linarith
 
 section Frames
 
@@ -269,7 +299,12 @@ lemma en_adj_le (Z : X.Coord) (τ : X.Ψ) {ρ : ℝ} (hρ : 0 ≤ ρ) (hZ : X.zN
   rcases hy0.eq_or_lt with h | h
   · rw [← h]
     positivity
-  · exact le_of_mul_le_mul_right (by nlinarith) h
+  · refine le_of_mul_le_mul_right ?_ h
+    calc en ((Matrix.of (Z τ))ᴴ *ᵥ b) * en ((Matrix.of (Z τ))ᴴ *ᵥ b)
+        = en ((Matrix.of (Z τ))ᴴ *ᵥ b) ^ 2 := (sq _).symm
+      _ = nsq ((Matrix.of (Z τ))ᴴ *ᵥ b) := hsq
+      _ ≤ en b * (ρ * en ((Matrix.of (Z τ))ᴴ *ᵥ b)) := h1
+      _ = ρ * en b * en ((Matrix.of (Z τ))ᴴ *ᵥ b) := by ring
 
 private lemma hermC_sum_smul_left_fin_p0 (τ : E →+* ℂ) (G : Matrix (Fin r) (Fin r) E)
     (α : Fin X.p0 → ℂ) (w : Fin X.p0 → Fin r → ℂ) (z : Fin r → ℂ) :

@@ -130,7 +130,11 @@ theorem betaFactorisation : Factorisation := by
   have m1 : 4 * c.Del * 1 ≤ 4 * c.Del * ((c.k : ℝ) - 1 - l) :=
     mul_le_mul_of_nonneg_left (by linarith) (by linarith)
   have hv0 := h.hv0
-  have hvl1 : c.v l ≤ c.v 1 := by simp only [Cfg.v]; push_cast; nlinarith
+  have hvl1 : c.v l ≤ c.v 1 := by
+    simp only [Cfg.v]; push_cast
+    have := mul_le_mul_of_nonneg_left (by linarith : (c.k : ℝ) - 1 - l ≤ (c.k : ℝ) - 1 - 1)
+      (by linarith : 0 ≤ 4 * c.Del)
+    linarith
   have hkD : 0 < 4 * (c.k : ℝ) * c.Del := by
     have : (0 : ℝ) < c.k := by linarith
     positivity
@@ -290,7 +294,11 @@ theorem nodeBound : NodeBound := by
       linarith
   have hl1 : (1:ℝ) ≤ l := by exact_mod_cast hl
   have hlR : (l:ℝ) + 2 ≤ c.k := by exact_mod_cast hlk
-  have hvl : c.v l ≤ c.v 1 := by simp only [Cfg.v]; push_cast; nlinarith
+  have hvl : c.v l ≤ c.v 1 := by
+    simp only [Cfg.v]; push_cast
+    have := mul_le_mul_of_nonneg_left (by linarith : (c.k : ℝ) - 1 - l ≤ (c.k : ℝ) - 1 - 1)
+      (by linarith : 0 ≤ 4 * c.Del)
+    linarith
   have hvl' : c.v l = c.vlast + 4 * c.Del * ((c.k:ℝ) - 1 - l) := rfl
   have m1 : 4 * c.Del * 1 ≤ 4 * c.Del * ((c.k:ℝ) - 1 - l) :=
     mul_le_mul_of_nonneg_left (by linarith) (by linarith)
@@ -307,7 +315,8 @@ theorem nodeBound : NodeBound := by
     have hb := hbj j hj.1 hj.2
     have hbpos : 0 < c.b j := by linarith
     have s1 : Real.sqrt ((c.b j + y) * (c.b j + y - 1)) ≤ c.b j + y := by
-      rw [Real.sqrt_le_iff]; exact ⟨by linarith, by nlinarith⟩
+      rw [Real.sqrt_le_iff]
+      exact ⟨by linarith, by rw [sq]; exact mul_le_mul_of_nonneg_left (by linarith) (by linarith)⟩
     have s2 : c.b j + y ≤ c.b j * E := by
       have t1 : 1 + 4 * c.k * c.Del / c.b 1 ≤ E := by
         have := Real.add_one_le_exp (4 * c.k * c.Del / c.b 1); rw [hE]; linarith
@@ -332,7 +341,10 @@ theorem edgeFactorBound : FirstBound := by
   have hlR : (1 : ℝ) ≤ l := by exact_mod_cast hl
   have hD := h.hDel
   have hvl : c.v l ≤ c.v 1 := by
-    simp only [Cfg.v]; push_cast; nlinarith
+    simp only [Cfg.v]; push_cast
+    have := mul_le_mul_of_nonneg_left (by linarith : (c.k : ℝ) - 1 - l ≤ (c.k : ℝ) - 1 - 1)
+      (by linarith : 0 ≤ 4 * c.Del)
+    linarith
   have hpos : 0 < 4 * (c.k : ℝ) * c.Del := by positivity
   have ha := h.ha
   have hv1 := h.hv1
@@ -343,7 +355,9 @@ theorem edgeFactorBound : FirstBound := by
   · simp only [Cfg.U1]; exact one_div_le_one_div_of_le h1 h2
   · have ha0 : 0 < c.a := by
       have : 0 ≤ c.v 1 := by
-        simp only [Cfg.v]; have := h.hv0; push_cast; nlinarith
+        simp only [Cfg.v]; have := h.hv0; push_cast
+        have := mul_nonneg (by linarith : (0 : ℝ) ≤ 4 * c.Del) (by linarith : (0 : ℝ) ≤ (c.k : ℝ) - 1 - 1)
+        linarith
       linarith
     rw [div_le_div_iff₀ h1 ha0]; linarith
 
@@ -373,7 +387,8 @@ theorem positionBefore : PositionBefore := by
   have hb : X - c.Del ≤ X - de' i * c.Del := by
     rcases hw'.1 i with a | a <;> rw [a] <;> linarith
   have hnum : Real.sqrt |X * (X + 1)| ≤ X + 1 := by
-    rw [abs_of_pos (by positivity), Real.sqrt_le_iff]; exact ⟨by linarith, by nlinarith⟩
+    rw [abs_of_pos (by positivity), Real.sqrt_le_iff]
+    exact ⟨by linarith, by rw [sq]; exact mul_le_mul_of_nonneg_right (by linarith) (by linarith)⟩
   have hden : X - c.Del ≤ Real.sqrt |(X - de i * c.Del) * (X - de' i * c.Del)| := by
     apply Real.le_sqrt_of_sq_le
     rw [abs_of_pos (mul_pos (by linarith) (by linarith)), sq]
@@ -383,7 +398,11 @@ theorem positionBefore : PositionBefore := by
   calc _ ≤ (X + 1) / (X - c.Del) := div_le_div₀ (by linarith) hnum hXD hden
     _ ≤ 1 + 2 / (4 * p - 1) := by
       rw [e3, div_le_div_iff₀ hXD h4p, hX]
-      nlinarith [mul_nonneg (by linarith : (0:ℝ) ≤ p - 1) (by linarith : (0:ℝ) ≤ c.Del - 1)]
+      have hdiff : (4 * p + 1) * (4 * c.Del * p + d - c.Del) -
+          (4 * c.Del * p + d + 1) * (4 * p - 1) =
+          4 * ((p - 1) * (c.Del - 1)) + 3 * (c.Del - 1) + 2 * d := by ring
+      have hmul : 0 ≤ (p - 1) * (c.Del - 1) := mul_nonneg (by linarith) (by linarith)
+      linarith
 
 theorem positionAfter : PositionAfter := by
   intro c de de' Y l i h hw hw' hl hli hik hor hY
@@ -414,8 +433,7 @@ theorem positionAfter : PositionAfter := by
   rw [div_le_one (Real.sqrt_pos.mpr (abs_pos.mpr hden.ne'))]
   apply Real.sqrt_le_sqrt
   rw [abs_of_nonneg (mul_nonneg (by linarith) (by linarith)), abs_of_pos hden]
-  nlinarith [mul_nonneg ha hb, mul_nonneg (by linarith : (0:ℝ) ≤ X) ha,
-    mul_nonneg (by linarith : (0:ℝ) ≤ X) hb]
+  exact mul_le_mul (by linarith) (by linarith) (by linarith) (by linarith)
 
 theorem slotAt_true : PositionAt := by
   intro c de de' Y l h hw hw' hl hlk hne hY
@@ -446,7 +464,11 @@ theorem slotAt_true : PositionAt := by
   rw [hrho]
   apply Real.sqrt_le_sqrt
   rw [div_le_div_iff₀ hDd (by positivity)]
-  nlinarith
+  have hdiff : 14 * d * (c.Del - d) - (d + 1) * (5 * c.Del) =
+      (c.Del - 2 * d) * (9 * d - 5) + 4 * d * (d - 5 / 2) := by ring
+  have h1 : 0 ≤ (c.Del - 2 * d) * (9 * d - 5) := mul_nonneg (by linarith) (by linarith)
+  have h2 : 0 ≤ 4 * d * (d - 5 / 2) := mul_nonneg (by linarith) (by linarith)
+  linarith
 
 theorem positionTop : PositionTop := by
   intro c de de' Y l h ht hl hlk hY
@@ -474,7 +496,7 @@ theorem positionTop : PositionTop := by
   have hX0 : 0 ≤ X := by linarith
   rw [e1, abs_of_nonneg (mul_nonneg hX0 (by linarith))]
   have hs : Real.sqrt (X * (X - 1)) ≤ X := by
-    rw [Real.sqrt_le_iff]; exact ⟨hX0, by nlinarith⟩
+    rw [Real.sqrt_le_iff]; exact ⟨hX0, by rw [sq]; exact mul_le_mul_of_nonneg_left (by linarith) hX0⟩
   have hden : c.bp ≤ c.bp + -Y - 1 / 2 := by
     have : -Y = X + c.vlast := by rw [hX]; ring
     linarith
@@ -492,7 +514,7 @@ theorem positionProduct : ProdOneAddTwoDivLeSqrt := by
       rw [Finset.prod_Icc_succ_top (by omega)]
       have hn1 : (1:ℝ) ≤ n := by exact_mod_cast hn
       have e : 1 + 2 / (4 * ((n + 1 : ℕ) : ℝ) - 1) = (4 * (n:ℝ) + 5) / (4 * (n:ℝ) + 3) := by
-        have h4 : 4 * ((n:ℝ) + 1) - 1 ≠ 0 := by nlinarith
+        have h4 : 4 * ((n:ℝ) + 1) - 1 ≠ 0 := by linarith
         push_cast; field_simp; ring
       rw [e]
       refine ⟨mul_nonneg ih0 (by positivity), ?_⟩
@@ -501,7 +523,9 @@ theorem positionProduct : ProdOneAddTwoDivLeSqrt := by
       rw [mul_div_assoc', div_le_iff₀ h3]
       push_cast
       have := mul_le_mul_of_nonneg_right ih1 (by positivity : (0:ℝ) ≤ (4 * (n:ℝ) + 5) ^ 2)
-      nlinarith
+      have hdiff : 50 / 27 * ((n:ℝ) + 1 + 1 / 2) * (4 * (n:ℝ) + 3) ^ 2 -
+          50 / 27 * ((n:ℝ) + 1 / 2) * (4 * (n:ℝ) + 5) ^ 2 = 50 / 27 := by ring
+      linarith
   intro p hp
   obtain ⟨h0, h1⟩ := key p hp
   have hp1 : (1:ℝ) ≤ p := by exact_mod_cast hp

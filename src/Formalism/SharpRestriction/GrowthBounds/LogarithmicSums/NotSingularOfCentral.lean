@@ -138,7 +138,8 @@ theorem a_bounds (P : ParameterChoice' D L) (a b : HH D → ℤ) (hW : InWin L a
   obtain ⟨h1, h2, -⟩ := hW s hs
   have hx1 : 1 < L.sc.x := L.sc.one_lt_alt
   have hxA : 1 ≤ L.sc.x ^ (Scale.A / 2) := Real.one_le_rpow hx1.le (by unfold Scale.A; norm_num)
-  have hden : 5 ≤ (D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2) := by nlinarith
+  have hden : 5 ≤ (D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2) :=
+    hk5.trans (le_mul_of_one_le_right (by linarith) hxA)
   have hapos : 0 < L.sc.a := by linarith
   have hfrac : L.sc.a / ((D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2)) ≤ L.sc.a / 5 :=
     div_le_div_of_nonneg_left hapos.le (by norm_num) hden
@@ -157,7 +158,7 @@ theorem two_le_a (s : Scale) : 2 ≤ s.a := by
     have := Real.add_one_le_exp s.L
     linarith
   unfold Scale.a
-  nlinarith
+  exact hb.trans (le_mul_of_one_le_left (by linarith) hx.le)
 
 theorem logb_facts (s : Scale) (p : ℕ) (hp : p.Prime) :
     0 ≤ Real.logb p s.a ∧ 0 ≤ Real.logb p (2 * s.a) ∧ Real.logb p (2 * s.a) ≤ 2 * Real.logb p s.a := by
@@ -186,14 +187,17 @@ theorem mem_TT_of_topsOn (X : Inst D L) (p : ℕ) (t0 s : HH D) (hs : s ∈ tops
 theorem gam_facts (p : ℕ) (hp : p.Prime) : 0 ≤ gam p ∧ gam p ≤ 4 / 3 * (1 / p) := by
   have hp2 : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast hp.two_le
   have hp0 : 0 < (p : ℝ) := by linarith
-  have hden : 0 < (p : ℝ) ^ 2 - 1 := by nlinarith
+  have hp2sq : (4 : ℝ) ≤ (p : ℝ) ^ 2 := by
+    calc (4 : ℝ) = 2 ^ 2 := by norm_num
+      _ ≤ (p : ℝ) ^ 2 := pow_le_pow_left₀ (by norm_num) hp2 2
+  have hden : 0 < (p : ℝ) ^ 2 - 1 := by linarith
   unfold gam
   constructor
   · exact div_nonneg hp0.le hden.le
   · rw [div_le_iff₀ hden]
     have e : 4 / 3 * (1 / (p : ℝ)) * ((p : ℝ) ^ 2 - 1) = (4 * ((p : ℝ) ^ 2 - 1) / 3) / (p : ℝ) := by ring
-    rw [e, le_div_iff₀ hp0]
-    nlinarith
+    rw [e, le_div_iff₀ hp0, ← sq]
+    linarith
 
 theorem gU_le (P : ParameterChoice' D L) (X : Inst D L) (K : Consts) (hK : K.Nonneg) (a b : HH D → ℤ) (hW : InWin L a b)
     (p : ℕ) (hp : p.Prime) (j : ℕ) (hj : j ∈ SizeData₂.lifts D) (t0 : HH D) :
@@ -307,7 +311,9 @@ theorem card_reps_mul_nP_le (X : Inst D L) (p : ℕ) : ((reps X p).card : ℝ) *
     have h2 : nP D p = 2 * addOrderOf (2 • hP D p) := by unfold nP; rw [ite_eq_left hs]
     rw [h1] at h
     rw [h2, hf]
-    have : (reps X p).card * (2 * addOrderOf (2 • hP D p)) ≤ 2 * D.R.n := by nlinarith
+    have : (reps X p).card * (2 * addOrderOf (2 • hP D p)) ≤ 2 * D.R.n := by
+      rw [← mul_assoc, mul_comm (reps X p).card 2, mul_assoc]
+      exact Nat.mul_le_mul_left 2 h
     exact_mod_cast this
   · have h1 : stepP D p = hP D p := by unfold stepP; rw [ite_eq_right hs]
     have h2 : nP D p = addOrderOf (hP D p) := by unfold nP; rw [ite_eq_right hs]
@@ -346,13 +352,14 @@ theorem sum_dl_le (X : Inst D L) (K : Consts) (hK : K.Nonneg) (p : ℕ) (hp : p.
   have t1 : K.dl1 * Nm D ^ 2 * Real.logb p (2 * L.sc.a) * (((reps X p).card : ℝ) * (nP D p : ℝ)) ≤
       K.dl1 * Nm D ^ 2 * (2 * Real.logb p L.sc.a) * (D.R.f : ℝ) :=
     mul_le_mul (mul_le_mul_of_nonneg_left hl2 c0) hR (by positivity) (mul_nonneg c0 (by linarith))
-  have hB2 : Real.logb p (2 * L.sc.a) ^ 2 ≤ (2 * Real.logb p L.sc.a) ^ 2 := by nlinarith
+  have hB2 : Real.logb p (2 * L.sc.a) ^ 2 ≤ (2 * Real.logb p L.sc.a) ^ 2 :=
+    pow_le_pow_left₀ hl20 hl2 2
   have t2 : K.dl2 * Real.logb p (2 * L.sc.a) ^ 2 * ∑ t0 ∈ reps X p, (Nv X p t0 : ℝ) ≤
       K.dl2 * (2 * Real.logb p L.sc.a) ^ 2 * (D.R.f : ℝ) := by
     rw [hN]
     exact mul_le_mul (mul_le_mul_of_nonneg_left hB2 h2) hT (by positivity) (mul_nonneg h2 (sq_nonneg _))
   rw [hsum]
-  nlinarith [t1, t2]
+  exact (add_le_add t1 t2).trans_eq (by ring)
 
 theorem fl_nonneg (s : Scale) (C : ℝ) (hC : 0 ≤ C) (p : ℕ) (hp : p.Prime) : 0 ≤ fl D s C p := by
   have h := (logb_facts s p hp).1
@@ -386,7 +393,16 @@ theorem sum_dl_add_ep_le (X : Inst D L) (K : Consts) (hK : K.Nonneg) (Ce C bo : 
       C * ((D.R.f : ℝ) * Real.logb p L.sc.a ^ 2) :=
     mul_le_mul_of_nonneg_right hN.Cdl2 (mul_nonneg hf0 (sq_nonneg _))
   unfold fl
-  nlinarith
+  calc ∑ t0 ∈ reps X p, dl X K p t0 + (X.ep p : ℝ)
+      ≤ (2 * K.dl1 * (D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a +
+          4 * K.dl2 * (D.R.f : ℝ) * Real.logb p L.sc.a ^ 2) +
+          Ce * (D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a := add_le_add h1 (h9.trans h2)
+    _ = (2 * K.dl1 + Ce) * ((D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a) +
+          (4 * K.dl2) * ((D.R.f : ℝ) * Real.logb p L.sc.a ^ 2) := by ring
+    _ ≤ C * ((D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a) +
+          C * ((D.R.f : ℝ) * Real.logb p L.sc.a ^ 2) := add_le_add h3 h4
+    _ = C * (D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a +
+          C * (D.R.f : ℝ) * Real.logb p L.sc.a ^ 2 := by ring
 
 theorem La_nonneg (K : Consts) (hK : K.Nonneg) (s : Scale) : 0 ≤ La K s := by
   unfold La
@@ -410,7 +426,7 @@ theorem lo_ge_cp (P : ParameterChoice' D L) (K : Consts) (hK : K.Nonneg) (Ce C b
   have hk0 : (0 : ℝ) ≤ (D.R.k : ℝ) := Nat.cast_nonneg _
   have hcp : 3 * cG L * Real.logb p (2 * L.sc.a) ≤ C * (cG L + L.etaSz) * Real.logb p (2 * L.sc.a) := by
     apply mul_le_mul_of_nonneg_right _ hlg2
-    nlinarith [hN.C3]
+    exact mul_le_mul hN.C3 (by linarith) hcG hC0
   dsimp only [lo]
   apply le_add_of_le_of_nonneg
   · apply le_add_of_le_of_nonneg hcp
@@ -587,7 +603,7 @@ theorem top_small (a b : HH D → ℤ) (hW : InWin L a b) (p : ℕ) (hp : p.Prim
             Real.rpow_le_rpow_of_exponent_le hx1.le (by unfold Scale.A; norm_num)
       have hxQ : L.sc.x ≤ Q := by
         rw [hQ]
-        nlinarith [mul_nonneg (sub_nonneg.mpr hk1) (show (0 : ℝ) ≤ L.sc.x ^ (Scale.A / 2) by linarith)]
+        exact hxA.trans (le_mul_of_one_le_left (by linarith) hk1)
       exact div_le_div_of_nonneg_left hb'0 (by linarith) hxQ
   calc (a s : ℝ) / (p : ℝ) ^ e ≤ (a s : ℝ) / L.sc.X' := div_le_div_of_nonneg_left has hX0 hpe
     _ ≤ (L.sc.a + L.sc.a / Q) / L.sc.X' := div_le_div_of_nonneg_right h2 hX0.le
@@ -756,9 +772,12 @@ theorem gain_bound_at_of_star (P : ParameterChoice' D L) (X : Inst D L) (K : Con
     have h5 : (X.ep p : ℝ) + (D.R.m : ℝ) * ∑ t0 ∈ V, dl X K p t0 ≤ (D.R.m : ℝ) * fl D L.sc C p := by
       have h6 : (D.R.m : ℝ) * (∑ t0 ∈ V, dl X K p t0 + (X.ep p : ℝ)) ≤ (D.R.m : ℝ) * fl D L.sc C p :=
         mul_le_mul_of_nonneg_left (by linarith) hm0
-      nlinarith
+      rw [mul_add] at h6
+      have h7 : (X.ep p : ℝ) ≤ (D.R.m : ℝ) * (X.ep p : ℝ) := le_mul_of_one_le_left hep hm1
+      linarith
+    rw [mul_sub] at h1
     rw [htau]
-    nlinarith
+    linarith
 
 theorem gain_bound_all_of_star (P : ParameterChoice' D L) (X : Inst D L) (K : Consts) (hK : K.Nonneg) (Ce C bo : ℝ) (hCe : 0 ≤ Ce)
     (hN : GainBoundConstants K (Ce + 1) C bo) (h9 : adm9 D L X Ce) (hStar : StarAll X K C bo) : GainBoundAllUniform X K C bo := by
