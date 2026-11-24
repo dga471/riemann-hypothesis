@@ -127,4 +127,52 @@ def Dominates {Xo : Moduli D l} {c : Coeff l} {O O' : Type} [CommRing O] [CommRi
       g ≫ m₁.φ = g₁ ≫ Y.m.φ → g₁ ≫ Y.m0.toSABMap.φ = g₂ ≫ Y'.m0.toSABMap.φ → g₁ ≫ Y.oF.t.G.hom = g₂ ≫ Y'.oF.t.G.hom →
       g ≫ m₂.φ = g₂ ≫ Y'.m.φ
 
+
+namespace Coeff
+
+variable {E : Type} [Field E] [NumberField E] [IsCMField E] {H : Host E} {l : Level H}
+
+instance (priority := high) instField (c : Coeff l) : Field ↥c.F :=
+  IntermediateField.toField c.F
+
+instance (priority := high) instCommRing (c : Coeff l) : CommRing ↥c.F :=
+  (IntermediateField.toField c.F).toCommRing
+
+instance (priority := high) instSemiring (c : Coeff l) : Semiring ↥c.F :=
+  (IntermediateField.toField c.F).toSemiring
+
+instance (priority := high) instModuleSubmodule (c : Coeff l) {M : Type*} [AddCommMonoid M]
+    [Module ↥c.F M] (S : Submodule ↥c.F M) : Module ↥c.F ↥S :=
+  Submodule.module S
+
+instance (priority := high) instSMulSubmodule (c : Coeff l) {M : Type*} [AddCommMonoid M]
+    [Module ↥c.F M] (S : Submodule ↥c.F M) : SMul ↥c.F ↥S :=
+  (Submodule.module S).toSMul
+
+instance (priority := high) instHSMulSubmodule (c : Coeff l) {M : Type*} [AddCommMonoid M]
+    [Module ↥c.F M] (S : Submodule ↥c.F M) : HSMul ↥c.F ↥S ↥S :=
+  @instHSMul _ _ (Submodule.module S).toSMul
+
+instance (priority := high) instModuleQuotient (c : Coeff l) {M : Type*} [AddCommGroup M]
+    [Module ↥c.F M] (S : Submodule ↥c.F M) : Module ↥c.F (M ⧸ S) :=
+  Submodule.Quotient.module S
+
+instance (priority := high) instSMulQuotient (c : Coeff l) {M : Type*} [AddCommGroup M]
+    [Module ↥c.F M] (S : Submodule ↥c.F M) : SMul ↥c.F (M ⧸ S) :=
+  (Submodule.Quotient.module S).toSMul
+
+instance (priority := high) instHSMulQuotient (c : Coeff l) {M : Type*} [AddCommGroup M]
+    [Module ↥c.F M] (S : Submodule ↥c.F M) : HSMul ↥c.F (M ⧸ S) (M ⧸ S) :=
+  @instHSMul _ _ (Submodule.Quotient.module S).toSMul
+
+instance (priority := high) instModulePi (c : Coeff l) {α : Type*} {M : α → Type*}
+    [∀ i, AddCommMonoid (M i)] [∀ i, Module ↥c.F (M i)] : Module ↥c.F (∀ i, M i) :=
+  Pi.module _ _ _
+
+instance (priority := high) instSMulPi (c : Coeff l) {α : Type*} {M : α → Type*}
+    [∀ i, SMul ↥c.F (M i)] : SMul ↥c.F (∀ i, M i) :=
+  Pi.instSMul
+
+end Coeff
+
 end ReciprocityTheory.ChartRestriction.G.Geo.Tor
