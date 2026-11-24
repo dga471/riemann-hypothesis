@@ -233,7 +233,7 @@ lemma pm_cover (M N : ℕ) (hM : 2 ≤ M) (s : Finset ℕ)
       rcases Nat.eq_zero_or_pos q with h0 | h0
       · rw [h0, mul_zero] at hq; omega
       · exact h0
-    have hqM : q ≤ M * q := by nlinarith
+    have hqM : q ≤ M * q := Nat.le_mul_of_pos_left q (by omega)
     refine ⟨q - 1, by omega, ?_⟩
     rw [Nat.sub_add_cancel hq0, mul_comm]
     omega
@@ -244,7 +244,7 @@ lemma pm_cover (M N : ℕ) (hM : 2 ≤ M) (s : Finset ℕ)
       rcases Nat.eq_zero_or_pos q with h0 | h0
       · rw [h0, mul_zero] at hq; omega
       · exact h0
-    have h2q : 2 * q ≤ M * q := by nlinarith
+    have h2q : 2 * q ≤ M * q := Nat.mul_le_mul_right q hM
     refine ⟨q - 1, by omega, ?_⟩
     rw [Nat.sub_add_cancel hq0, mul_comm]
     omega
@@ -300,8 +300,12 @@ lemma pm_key_Y (m x y Y : ℝ) (hx : 1 ≤ x) (hy : 1 ≤ y) (h1 : x * y / 2 ≤
   have hlY : 0 ≤ Real.log Y := le_trans hlm hlmY
   rw [show Real.log Y * (2 / y) * (1 / x) = 2 * Real.log Y / (x * y) by ring]
   apply div_le_div_of_mul_le_mul_of_pos' hm0 (mul_pos hx0 hy0)
-  nlinarith [mul_le_mul_of_nonneg_right hlmY (mul_pos hx0 hy0).le,
-    mul_le_mul_of_nonneg_left h1 hlY]
+  calc Real.log m * (x * y) ≤ Real.log Y * (x * y) :=
+        mul_le_mul_of_nonneg_right hlmY (mul_pos hx0 hy0).le
+    _ = 2 * (Real.log Y * (x * y / 2)) := by ring
+    _ ≤ 2 * (Real.log Y * m) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left h1 hlY) (by norm_num)
+    _ = 2 * Real.log Y * m := by ring
 
 private theorem natCast_zmod_eq_zero_of_dvd {M a : ℕ} (h : M ∣ a) : (a : ZMod M) = 0 := by
   exact (CharP.cast_eq_zero_iff (ZMod M) M a).mpr h
@@ -412,9 +416,9 @@ lemma pm_y_sum (M N : ℕ) (hM : 2 ≤ M) (Y : ℝ) (hY : 1 ≤ Y) (hNY : (N : �
     apply sum_le_sum
     intro k _
     apply hterm k
-    · have hkM : (0 : ℝ) ≤ (k : ℝ) * M := mul_nonneg (Nat.cast_nonneg k) hM0.le
+    · have hkm : (0 : ℝ) ≤ ((k : ℝ) + 1) * M := by positivity
       push_cast
-      nlinarith
+      linarith
     · omega
   have hB : ∑ k ∈ range N, f ((k + 1) * M - 1) ≤
       ∑ k ∈ range N, Real.log Y * (2 / M) * (1 / ((k : ℝ) + 1)) := by
@@ -423,9 +427,12 @@ lemma pm_y_sum (M N : ℕ) (hM : 2 ≤ M) (Y : ℝ) (hY : 1 ≤ Y) (hNY : (N : �
     have h1le : 1 * M ≤ (k + 1) * M := Nat.mul_le_mul (by omega) (le_refl M)
     apply hterm k
     · have hkM : (0 : ℝ) ≤ (k : ℝ) * M := mul_nonneg (Nat.cast_nonneg k) hM0.le
+      have hkm2 : (2 : ℝ) ≤ ((k : ℝ) + 1) * M := by
+        have : ((k : ℝ) + 1) * M = (k : ℝ) * M + M := by ring
+        linarith
       rw [Nat.cast_sub (by omega)]
       push_cast
-      nlinarith
+      linarith
     · omega
   calc ∑ l ∈ s, Real.log l / (l : ℝ) = ∑ l ∈ s, f l := hsf
     _ ≤ _ := hmain
@@ -478,18 +485,31 @@ theorem ordersSumY_of (hI : OrdersIff) : OrdersSumY := by
   have he1 : (1 : ℝ) ≤ e := by exact_mod_cast he
   have hΛ : Real.log ((2 : ℝ) ^ e * Y) = e * Real.log 2 + Real.log Y := by
     rw [Real.log_mul (by positivity) (show (0 : ℝ) < Y by linarith).ne', Real.log_pow]
-  have hΛ1 : 1 / 2 ≤ (e : ℝ) * Real.log 2 := by
-    nlinarith [mul_nonneg (by linarith : (0 : ℝ) ≤ e - 1) (by linarith : (0 : ℝ) ≤ Real.log 2)]
+  have hΛ1 : 1 / 2 ≤ (e : ℝ) * Real.log 2 :=
+    hL.trans (le_mul_of_one_le_left (by linarith) he1)
   have hkey : Real.log Y * (1 + Real.log Y) ≤ 3 * Real.log ((2 : ℝ) ^ e * Y) ^ 2 := by
     rw [hΛ]
-    nlinarith [mul_nonneg (sub_nonneg.mpr hΛ1) hlY, sq_nonneg ((e : ℝ) * Real.log 2),
-      sq_nonneg (Real.log Y)]
+    have h1 : 1 / 2 * Real.log Y ≤ (e : ℝ) * Real.log 2 * Real.log Y :=
+      mul_le_mul_of_nonneg_right hΛ1 hlY
+    have h2 : 0 ≤ ((e : ℝ) * Real.log 2) ^ 2 := sq_nonneg _
+    have h3 : 0 ≤ Real.log Y ^ 2 := sq_nonneg _
+    have h4 : 3 * ((e : ℝ) * Real.log 2 + Real.log Y) ^ 2 =
+        3 * ((e : ℝ) * Real.log 2) ^ 2 + 6 * ((e : ℝ) * Real.log 2 * Real.log Y) +
+          3 * Real.log Y ^ 2 := by ring
+    have h5 : Real.log Y * (1 + Real.log Y) = Real.log Y + Real.log Y ^ 2 := by ring
+    linarith
   have hPpos : (0 : ℝ) < 2 ^ e := by positivity
   calc ∑ l ∈ s, Real.log l / (l : ℝ) ≤ 4 * Real.log Y * (1 + Real.log Y) / M := hsum
     _ ≤ 12 * (J : ℝ) * Real.log ((2 : ℝ) ^ e * Y) ^ 2 / (2 : ℝ) ^ e := by
       apply div_le_div_of_mul_le_mul_of_pos' hm0 hPpos
-      nlinarith [mul_nonneg (sub_nonneg.mpr hkey) hPpos.le,
-        mul_nonneg (sq_nonneg (Real.log ((2 : ℝ) ^ e * Y))) (sub_nonneg.mpr hP)]
+      calc 4 * Real.log Y * (1 + Real.log Y) * (2 : ℝ) ^ e
+          = 4 * (Real.log Y * (1 + Real.log Y)) * (2 : ℝ) ^ e := by ring
+        _ ≤ 4 * (3 * Real.log ((2 : ℝ) ^ e * Y) ^ 2) * (2 : ℝ) ^ e :=
+            mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hkey (by norm_num)) hPpos.le
+        _ = 12 * Real.log ((2 : ℝ) ^ e * Y) ^ 2 * (2 : ℝ) ^ e := by ring
+        _ ≤ 12 * Real.log ((2 : ℝ) ^ e * Y) ^ 2 * ((J : ℝ) * M) :=
+            mul_le_mul_of_nonneg_left hP (by positivity)
+        _ = 12 * (J : ℝ) * Real.log ((2 : ℝ) ^ e * Y) ^ 2 * M := by ring
 
 end Formalism.RankGapBounds.LocalQuadraticParts
 end -- clump:auto
@@ -666,15 +686,22 @@ lemma tail_step (y : ℝ) (hy : 3 ≤ y) : Real.log y / y ^ 2 ≤ 2 * (gT (y - 1
     have : 1 / (y - 1) ≤ 1 / 2 := by
       rw [div_le_div_iff₀ hy1 (by norm_num)]; linarith
     linarith
-  have hDy : y * (L - L1) ≤ 3 / 2 := by nlinarith
+  have hDy : y * (L - L1) ≤ 3 / 2 := by
+    have : y * (L - L1) = (L - L1) * (y - 1) + (L - L1) := by ring
+    linarith
   have hG : L * (y - 1) ≤ 2 * y * (y * (L1 + 1) - (y - 1) * (L + 1)) := by
-    nlinarith [mul_le_mul_of_nonneg_left hDy hy0.le]
+    have h1 : y * (y * (L - L1)) ≤ y * (3 / 2) := mul_le_mul_of_nonneg_left hDy hy0.le
+    have h2 : 0 ≤ y * (L - 1) := mul_nonneg hy0.le (by linarith)
+    have h3 : 2 * y * (y * (L1 + 1) - (y - 1) * (L + 1)) - L * (y - 1) =
+        y * (L - 1) + L + 2 * (y * (3 / 2) - y * (y * (L - L1))) := by ring
+    linarith
   have e2 : 2 * ((L1 + 1) / (y - 1) - (L + 1) / y) =
       2 * (y * (L1 + 1) - (y - 1) * (L + 1)) / (y * (y - 1)) := by
     field_simp
   rw [e2, div_le_div_iff₀ (by positivity) (by positivity)]
-  have := mul_le_mul_of_nonneg_left hG hy0.le
-  nlinarith [this]
+  calc L * (y * (y - 1)) = y * (L * (y - 1)) := by ring
+    _ ≤ y * (2 * y * (y * (L1 + 1) - (y - 1) * (L + 1))) := mul_le_mul_of_nonneg_left hG hy0.le
+    _ = 2 * (y * (L1 + 1) - (y - 1) * (L + 1)) * y ^ 2 := by ring
 
 lemma gT_nonneg (y : ℝ) (hy : 1 ≤ y) : 0 ≤ gT y := by
   unfold gT
@@ -745,7 +772,9 @@ lemma geom_odd (I : Finset ℕ) (q : ℝ) (hq0 : 0 ≤ q) (hq : q ≤ 1 / 2) (hI
   rw [Finset.sum_image (by intro a _ b _ h; simpa using h)] at h1
   have h2 : ∑ k ∈ Finset.range K, q ^ (2 * k + 1) = q * ∑ k ∈ Finset.range K, (q ^ 2) ^ k := by
     rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; rw [pow_succ, pow_mul]; ring
-  have hq2 : q ^ 2 ≤ 1 / 4 := by nlinarith
+  have hq2 : q ^ 2 ≤ 1 / 4 := by
+    calc q ^ 2 ≤ (1 / 2 : ℝ) ^ 2 := pow_le_pow_left₀ hq0 hq 2
+      _ = 1 / 4 := by norm_num
   have h3 : ∑ k ∈ Finset.range K, (q ^ 2) ^ k ≤ 4 / 3 := by
     have := geom_sum_Ico_le_of_lt_one (x := q ^ 2) (m := 0) (n := K) (sq_nonneg q) (by linarith)
     rw [Finset.range_eq_Ico]
@@ -753,7 +782,7 @@ lemma geom_odd (I : Finset ℕ) (q : ℝ) (hq0 : 0 ≤ q) (hq : q ≤ 1 / 2) (hI
     rw [pow_zero, div_le_iff₀ (by linarith)]
     linarith
   rw [h2] at h1
-  nlinarith [mul_le_mul_of_nonneg_left h3 hq0]
+  linarith [mul_le_mul_of_nonneg_left h3 hq0]
 
 lemma geom_pos (I : Finset ℕ) (q : ℝ) (hq0 : 0 ≤ q) (hq : q < 1) (hI : ∀ i ∈ I, 1 ≤ i) :
     ∑ i ∈ I, q ^ i ≤ q / (1 - q) := by
@@ -809,7 +838,10 @@ theorem d_term_bound : DTerm := by
     have hd1 : (0 : ℝ) < (d : ℝ) - 1 := by linarith
     rw [mul_one_div, div_le_div_iff₀ hd1 hd0]
     have ha' : 0 ≤ a := by linarith
-    nlinarith
+    calc at_ * (d : ℝ) ≤ (3 / 2 * a) * (d : ℝ) := mul_le_mul_of_nonneg_right hat hd0.le
+      _ = a * (3 / 2 * (d : ℝ)) := by ring
+      _ ≤ a * (2 * ((d : ℝ) - 1)) := mul_le_mul_of_nonneg_left (by linarith) ha'
+      _ = 2 * a * ((d : ℝ) - 1) := by ring
   have h4 := (h1.trans (mul_le_mul_of_nonneg_left h2 ha)).trans h3
   have hl : 0 ≤ Real.log d := Real.log_natCast_nonneg d
   have h5 := mul_le_mul_of_nonneg_left h4 hl
@@ -834,7 +866,7 @@ theorem interval_count : IntervalCount := by
 
 theorem band_count : BandCount := by
   intro P c s hP hc hs
-  have h := interval_count (P * (1 - c)) (P * (1 + c)) s (by nlinarith) hs
+  have h := interval_count (P * (1 - c)) (P * (1 + c)) s (mul_le_mul_of_nonneg_left (by linarith) hP) hs
   linarith
 
 theorem band_sum : BandSum := by
@@ -849,10 +881,14 @@ theorem band_sum : BandSum := by
     intro n hn
     obtain ⟨h1, h2, h3⟩ := hs n hn
     have hn0 : (0 : ℝ) < n := by linarith
-    have hlog : Real.log n ≤ Real.log (2 * P) := Real.log_le_log hn0 (by nlinarith)
+    have hlog : Real.log n ≤ Real.log (2 * P) := Real.log_le_log hn0 (h3.trans (by
+      calc P * (1 + c) ≤ P * 2 := mul_le_mul_of_nonneg_left (by linarith) hP0.le
+        _ = 2 * P := by ring))
     have hinv : 1 / (n : ℝ) ≤ μ := by
       apply le_min
-      · rw [div_le_div_iff₀ hn0 hP0]; nlinarith
+      · rw [div_le_div_iff₀ hn0 hP0]
+        have := mul_le_mul_of_nonneg_left (show 1 / 2 ≤ 1 - c by linarith) hP0.le
+        linarith
       · exact one_div_le_one_div_of_le hp0 h1
     calc Real.log n / n = Real.log n * (1 / (n : ℝ)) := by ring
       _ ≤ Real.log (2 * P) * μ :=
@@ -866,7 +902,8 @@ theorem band_sum : BandSum := by
       mul_le_mul_of_nonneg_left (min_le_left _ _) (by positivity)
     have h3 : μ ≤ 1 / p₀ := min_le_right _ _
     have e : 2 * c * P * (2 / P) = 4 * c := by field_simp; ring
-    nlinarith
+    have e' : (2 * c * P + 1) * μ = 2 * c * P * μ + μ := by ring
+    linarith
   calc ∑ n ∈ s, Real.log n / n ≤ s.card * (Real.log (2 * P) * μ) := hsum
     _ = (s.card * μ) * Real.log (2 * P) := by ring
     _ ≤ (4 * c + 1 / p₀) * Real.log (2 * P) := mul_le_mul_of_nonneg_right hcμ hl2P
@@ -913,22 +950,31 @@ theorem high_bucket_bound : HighBucket := by
         split_ifs with hlt
         · have h2 : at_ / (p : ℝ) ≤ at_ / X'' := div_le_div_of_nonneg_left hat0 hX0 hpX.le
           have h3 : at_ / X'' ≤ w'' * (1 + th) := by
-            rw [div_le_iff₀ hX0]; rw [← ha] at hat; nlinarith
+            rw [div_le_iff₀ hX0]; rw [← ha] at hat
+            exact hat.trans (le_of_eq (by ring))
           linarith [hw p hp 1 hiI]
         · have hge : X'' * (1 + th) ≤ p := not_lt.1 hlt
           have h2 : at_ / (p : ℝ) ≤ w'' := by
             rw [div_le_iff₀ hp0]; rw [← ha] at hat
-            nlinarith
+            calc at_ ≤ X'' * w'' * (1 + th) := hat
+              _ = w'' * (X'' * (1 + th)) := by ring
+              _ ≤ w'' * (p : ℝ) := mul_le_mul_of_nonneg_left hge hw''.le
           linarith [hw p hp 1 hiI]
       · rw [if_neg h1]
         apply max_le _ le_rfl
         have hi2 : 2 ≤ i := by omega
         have hpow : (p : ℝ) ^ 2 ≤ (p : ℝ) ^ i := pow_le_pow_right₀ (by linarith) hi2
-        have hp2 : 2 * X'' ≤ (p : ℝ) ^ 2 := by nlinarith
+        have hp2 : 2 * X'' ≤ (p : ℝ) ^ 2 := by
+          calc 2 * X'' ≤ X'' * X'' := mul_le_mul_of_nonneg_right hX hX0.le
+            _ ≤ (p : ℝ) * (p : ℝ) := mul_le_mul hpX.le hpX.le hX0.le hp0.le
+            _ = (p : ℝ) ^ 2 := by ring
         have hpi0 : (0 : ℝ) < (p : ℝ) ^ i := by positivity
         have h2 : at_ / (p : ℝ) ^ i ≤ w'' := by
           rw [div_le_iff₀ hpi0]; rw [← ha] at hat
-          have : at_ ≤ w'' * (2 * X'') := by nlinarith
+          have : at_ ≤ w'' * (2 * X'') := by
+            calc at_ ≤ X'' * w'' * (1 + th) := hat
+              _ ≤ X'' * w'' * 2 := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
+              _ = w'' * (2 * X'') := by ring
           have h5 : w'' * (2 * X'') ≤ w'' * (p : ℝ) ^ i :=
             mul_le_mul_of_nonneg_left (hp2.trans hpow) hw''.le
           linarith
@@ -944,14 +990,17 @@ theorem high_bucket_bound : HighBucket := by
     refine h6.trans ?_
     rw [hbp]
     split_ifs with hlt
-    · have hlog : Real.log p ≤ Real.log (2 * X'') := Real.log_le_log hp0 (by nlinarith)
-      have : 0 ≤ w'' * th := by positivity
-      nlinarith
+    · have hp2X : (p : ℝ) ≤ 2 * X'' := hlt.le.trans (by
+        calc X'' * (1 + th) ≤ X'' * 2 := mul_le_mul_of_nonneg_left (by linarith) hX0.le
+          _ = 2 * X'' := by ring)
+      have hlog : Real.log p ≤ Real.log (2 * X'') := Real.log_le_log hp0 hp2X
+      exact mul_le_mul_of_nonneg_right (by linarith) (by positivity)
     · simp
   refine (Finset.sum_le_sum hper).trans ?_
   rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
   have hcard := interval_count X'' (X'' * (1 + th))
-    (s.filter (fun p : ℕ => (p : ℝ) < X'' * (1 + th))) (by nlinarith) (by
+    (s.filter (fun p : ℕ => (p : ℝ) < X'' * (1 + th)))
+    (le_mul_of_one_le_right hX0.le (by linarith)) (by
       intro n hn
       rw [Finset.mem_filter] at hn
       exact ⟨(hs n hn.1).le, hn.2.le⟩)
@@ -979,8 +1028,10 @@ theorem floor_bucket_bound : FloorBucket := by
     rw [e]
     have h1 : Real.log a ^ 2 / Real.log p ≤ 2 * Real.log a ^ 2 := by
       rw [div_le_iff₀ hlp]
-      have : 0 ≤ Real.log a ^ 2 := sq_nonneg _
-      nlinarith
+      calc Real.log a ^ 2 = Real.log a ^ 2 * 1 := (mul_one _).symm
+        _ ≤ Real.log a ^ 2 * (2 * Real.log p) :=
+            mul_le_mul_of_nonneg_left (by linarith) (sq_nonneg _)
+        _ = 2 * Real.log a ^ 2 * Real.log p := by ring
     apply mul_le_mul_of_nonneg_left _ (by positivity)
     linarith
   have h1 := Finset.sum_le_card_nsmul s _ _ hterm
@@ -1015,7 +1066,8 @@ theorem pr_bucket_bound : PrBucket := by
     intro p _
     have hl : 0 ≤ Real.log p := Real.log_natCast_nonneg p
     split_ifs
-    · nlinarith [mul_nonneg hQ₂ hl]
+    · calc 2 * Real.log p * Q₁ = 2 * Q₁ * Real.log p := by ring
+        _ ≤ 2 * Q₁ * Real.log p + 2 * Q₂ * Real.log p := le_add_of_nonneg_right (by positivity)
     · linarith
   refine (Finset.sum_le_sum hterm).trans ?_
   rw [Finset.sum_add_distrib, ← Finset.sum_filter, ← Finset.mul_sum, ← Finset.mul_sum]
@@ -1111,8 +1163,9 @@ theorem loss_bound : SecondKindLoss := by
   have ha0 : 0 ≤ a := by linarith
   have hat32 : ∀ t ∈ TT, at_ t ≤ 3 / 2 * a := by
     intro t ht
-    have := (hat t ht).2
-    nlinarith
+    calc at_ t ≤ a * (1 + th) := (hat t ht).2
+      _ ≤ a * (3 / 2) := mul_le_mul_of_nonneg_left (by linarith) ha0
+      _ = 3 / 2 * a := by ring
   have hTop : ∀ j ∈ J, ∀ t ∈ TT, ∀ p ∈ Ps,
       2 * Real.log p * vonMangoldtClassSum j t p ≤ 4 * a * Real.log p / p := by
     intro j hj t ht p hp
@@ -1278,7 +1331,9 @@ theorem band_exponent_bound : BandExponent := by
   have hp0 : (0 : ℝ) < p := by linarith
   have hpow0 : (0 : ℝ) < (p : ℝ) ^ i := by positivity
   have h1 : Real.log ((p : ℝ) ^ i) ≤ Real.log (2 * X') :=
-    Real.log_le_log hpow0 (by nlinarith)
+    Real.log_le_log hpow0 (hpi.trans (by
+      calc X' * (1 + ρ) ≤ X' * 2 := mul_le_mul_of_nonneg_left (by linarith) (by linarith)
+        _ = 2 * X' := by ring))
   rw [Real.log_pow, Real.log_mul (by norm_num) (by linarith)] at h1
   have h2 : Real.log 2 ≤ Real.log X' := Real.log_le_log (by norm_num) hX
   have h8 : Real.log 8 ≤ Real.log p := Real.log_le_log (by norm_num) hp8
@@ -1287,7 +1342,8 @@ theorem band_exponent_bound : BandExponent := by
   have hl2 := Real.log_two_gt_d9
   have hlp : 2 ≤ Real.log p := by linarith
   have hi0 : (0 : ℝ) ≤ i := Nat.cast_nonneg i
-  nlinarith
+  have hmul : (i : ℝ) * 2 ≤ (i : ℝ) * Real.log p := mul_le_mul_of_nonneg_left hlp hi0
+  linarith
 
 theorem first_kind_bucket_bound : FirstKindBucket := by
   obtain ⟨C, hC⟩ := Formalism.RankGapBounds.LocalQuadraticParts.ordersSumY_of Formalism.RankGapBounds.LocalQuadraticParts.powTwoPowEqOneIff_holds

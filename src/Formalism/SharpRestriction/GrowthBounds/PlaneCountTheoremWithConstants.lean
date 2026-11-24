@@ -89,7 +89,8 @@ theorem sc_one_le_b (s : Scale) : 1 ≤ s.b := by
 
 theorem sc_one_lt_a (s : Scale) : 1 < s.a := by
   unfold Scale.a
-  nlinarith [s.one_lt_alt, sc_one_le_b s]
+  calc (1 : ℝ) < s.x := s.one_lt_alt
+    _ ≤ s.x * s.b := le_mul_of_one_le_right (sc_x_pos s).le (sc_one_le_b s)
 
 theorem sc_b'_nonneg (s : Scale) : 0 ≤ s.b' := by
   unfold Scale.b' Scale.X'
@@ -126,10 +127,8 @@ theorem exponent_ge_least_exponent (L : SizeData₂ D) (p : ℕ) (hp : p.Prime) 
       linarith
     · exact_mod_cast h
   have hp0' : (p : ℝ) < (D.R.k : ℝ) ^ 2 * y := h0
-  have hz1 : 1 ≤ (D.R.k : ℝ) ^ 2 * y ^ 3 := by
-    have h1 : 1 ≤ (D.R.k : ℝ) ^ 2 := one_le_pow₀ hk
-    have h2 : 1 ≤ y ^ 3 := one_le_pow₀ hy1
-    nlinarith
+  have hz1 : 1 ≤ (D.R.k : ℝ) ^ 2 * y ^ 3 :=
+    one_le_mul_of_one_le_of_one_le (one_le_pow₀ hk) (one_le_pow₀ hy1)
   have hlog : Real.logb p ((D.R.k : ℝ) ^ 2 * y ^ 3) + 1 ≤ Real.logb p (((D.R.k : ℝ) * y) ^ 4) := by
     have h1 : Real.logb p ((D.R.k : ℝ) ^ 2 * y ^ 3) + 1 = Real.logb p ((D.R.k : ℝ) ^ 2 * y ^ 3 * p) := by
       rw [Real.logb_mul (by positivity) hp0.ne', Real.logb_self_eq_one hp1]
@@ -327,8 +326,8 @@ theorem X'_le_X'' (s : Scale) (n : ℕ) (hn : 1 ≤ n) : s.X' ≤ s.X'' n := by
     unfold Scale.X'' Scale.w'' Scale.b'
     field_simp
   rw [h]
-  have : 1 ≤ s.x * n := by nlinarith [s.one_lt_alt]
-  nlinarith
+  have h1 : 1 ≤ s.x * n := one_le_mul_of_one_le_of_one_le s.one_lt_alt.le hn'
+  exact le_mul_of_one_le_right hX.le h1
 
 theorem cand_of_VV_ne (X : Inst D L) (K : Consts) (a b : HH D → ℤ) (p : ℕ) (h : VV X K a b p ≠ ∅) :
     Cand D L K p := by
@@ -398,7 +397,7 @@ theorem w''_le (s : Scale) (n : ℕ) (hn : 1 ≤ n) : s.w'' n ≤ s.b' / s.x ∧
   constructor
   · unfold Scale.w''
     apply div_le_div_of_nonneg_left hb hx
-    nlinarith
+    exact le_mul_of_one_le_right hx.le hn'
   · exact div_le_self hb s.one_lt_alt.le
 
 theorem two_b'_le_a (s : Scale) : 2 * s.b' ≤ s.a := by
@@ -411,7 +410,9 @@ theorem two_b'_le_a (s : Scale) : 2 * s.b' ≤ s.a := by
   have h : s.b' * s.X' = s.a := by
     unfold Scale.b'
     exact div_mul_cancel₀ _ (by linarith)
-  nlinarith
+  calc 2 * s.b' = s.b' * 2 := mul_comm _ _
+    _ ≤ s.b' * s.X' := mul_le_mul_of_nonneg_left hX hb
+    _ = s.a := h
 
 theorem fill_nonneg (X : Inst D L) (j : ℕ) (z : Bool × HH D) : 0 ≤ fill X (bL L) j z := by
   have hb := sc_b'_nonneg L.sc
@@ -445,8 +446,10 @@ theorem ceil_bound (S B R : ℝ) (hSB : S ≤ B) (h : (B = 0 ∧ R = 0) ∨ B + 
 
 theorem fin_arith (m N q : ℝ) (hm : 2 ≤ m) (hN : 1 ≤ N) (hq : 500 ≤ q) :
     m * (8 / 5 * (N * q)) + 1 ≤ 2 * (m * (N * q)) := by
-  have h2 : 500 ≤ N * q := by nlinarith
-  have h3 : 1000 ≤ m * (N * q) := by nlinarith
+  have h2 : 500 ≤ N * q := le_trans hq (le_mul_of_one_le_left (by linarith) hN)
+  have h3 : 1000 ≤ m * (N * q) := by
+    calc (1000 : ℝ) = 2 * 500 := by norm_num
+      _ ≤ m * (N * q) := mul_le_mul hm h2 (by norm_num) (by linarith)
   linarith
 
 theorem svBound_of (X : Inst D L) (K : Consts) (hK : K.Nonneg) (P : ParameterChoice' D L) : SvBound X K := by
@@ -480,8 +483,8 @@ theorem svBound_of (X : Inst D L) (K : Consts) (hK : K.Nonneg) (P : ParameterCho
     obtain ⟨h2, h3⟩ := L.aT_win ⟨s, hTT s hs⟩
     have h4 : L.sc.a / ((D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2)) ≤ L.sc.a / 5 := by
       apply div_le_div_of_nonneg_left (by linarith) (by norm_num)
-      have : 1 ≤ L.sc.x ^ (Scale.A / 2) := Real.one_le_rpow L.sc.one_lt_alt.le (by unfold Scale.A; norm_num)
-      nlinarith
+      have h1 : 1 ≤ L.sc.x ^ (Scale.A / 2) := Real.one_le_rpow L.sc.one_lt_alt.le (by unfold Scale.A; norm_num)
+      exact le_trans hk (le_mul_of_one_le_right (by linarith) h1)
     unfold al cG
     rw [h1]
     constructor <;> linarith
@@ -530,7 +533,9 @@ theorem svBound_of (X : Inst D L) (K : Consts) (hK : K.Nonneg) (P : ParameterCho
     · exact mul_nonneg (Nat.cast_nonneg _)
         (add_nonneg (mul_nonneg (Nat.cast_nonneg _) (by linarith)) (mul_nonneg (Nat.cast_nonneg _) hbase))
   have hgam : 0 ≤ gam p ∧ gam p * L.sc.a ≤ 4 / 3 * (L.sc.a / p) := by
-    have hp4 : (4 : ℝ) ≤ (p : ℝ) ^ 2 := by nlinarith
+    have hp4 : (4 : ℝ) ≤ (p : ℝ) ^ 2 := by
+      calc (4 : ℝ) = 2 ^ 2 := by norm_num
+        _ ≤ (p : ℝ) ^ 2 := pow_le_pow_left₀ (by norm_num) hp2 2
     have hd : (0 : ℝ) < (p : ℝ) ^ 2 - 1 := by linarith
     unfold gam
     refine ⟨div_nonneg hp0.le hd.le, ?_⟩
@@ -803,7 +808,7 @@ theorem linkG_at_core (X : Inst D L) (Y : LatInst D) (K : Consts) (hK : K.Nonneg
               have := D.R.m_add_three_le_k
               exact_mod_cast (show 1 ≤ D.R.k by omega)
             have hx1 : 1 ≤ L.sc.x ^ (Scale.A / 2) := Real.one_le_rpow L.sc.one_lt_alt.le (by unfold Scale.A; norm_num)
-            nlinarith
+            exact one_le_mul_of_one_le_of_one_le hk1 hx1
           exact div_le_self (by linarith) hk
         rw [h1]
         linarith
@@ -1376,7 +1381,8 @@ theorem sizes_bound_of_log_estimates (K : Consts) (δ Ce : ℝ) (hLa : 0 < K.La)
       rw [div_le_iff₀ hLa] at hC
       linarith
     have h2 : (1 : ℝ) ≤ (N1 L.sc : ℝ) ^ 2 := one_le_pow₀ hN1
-    have h3 : xe ≤ (N1 L.sc : ℝ) ^ 2 * (l + xe) := by nlinarith
+    have h3 : xe ≤ (N1 L.sc : ℝ) ^ 2 * (l + xe) :=
+      le_trans (by linarith) (le_mul_of_one_le_left (by linarith) h2)
     calc xe ≤ (N1 L.sc : ℝ) ^ 2 * (l + xe) := h3
       _ ≤ (K.La * xd) * ((N1 L.sc : ℝ) ^ 2 * (l + xe)) := le_mul_of_one_le_left (by positivity) h1
       _ = K.La * (N1 L.sc : ℝ) ^ 2 * (l + xe) * xd := by ring
@@ -1384,7 +1390,10 @@ theorem sizes_bound_of_log_estimates (K : Consts) (δ Ce : ℝ) (hLa : 0 < K.La)
     unfold La
     rw [hloga]
     have h1 : (N1 L.sc : ℝ) ^ 2 ≤ (Ce * l) ^ 2 := pow_le_pow_left₀ (by positivity) hN 2
-    have h2 : l + xe ≤ 2 * l * xe := by nlinarith
+    have h2 : l + xe ≤ 2 * l * xe := by
+      have h2a : l ≤ l * xe := le_mul_of_one_le_right (by linarith) hxe1
+      have h2b : xe ≤ l * xe := le_mul_of_one_le_left (by linarith) hl1
+      linarith
     calc K.La * (N1 L.sc : ℝ) ^ 2 * (l + xe) ≤ K.La * (Ce * l) ^ 2 * (2 * l * xe) := by gcongr
       _ = xe * (2 * K.La * Ce ^ 2 * l ^ 3) := by ring
       _ ≤ xe * xd := mul_le_mul_of_nonneg_left hA (by positivity)
@@ -1424,7 +1433,11 @@ theorem sizes_bound_of_log_estimates (K : Consts) (δ Ce : ℝ) (hLa : 0 < K.La)
     unfold Qp
     rw [Real.log_pow, hsplit]
     have h5 : Ce * l ≤ xd := by
-      have : Ce * l ≤ 38 * Ce * l ^ 3 := by nlinarith
+      have h5a : Ce * l ≤ Ce * l ^ 3 := mul_le_mul_of_nonneg_left hl13 (by positivity)
+      have h5b : Ce * l ^ 3 ≤ 38 * Ce * l ^ 3 := by
+        have hpos : 0 ≤ Ce * l ^ 3 := by positivity
+        have heq : 38 * Ce * l ^ 3 = 38 * (Ce * l ^ 3) := by ring
+        linarith
       linarith
     calc (Gp L.sc : ℝ) * Real.log p ≤ (Ce * l * x ^ (e / 8)) * x ^ (e / 3) := by gcongr
       _ = x ^ (e / 8) * x ^ (e / 3) * (Ce * l) := by ring

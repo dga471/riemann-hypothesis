@@ -151,14 +151,13 @@ theorem base_sizes {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) :
   · calc (D.R.N D.R.m : ℝ) * (D.R.m : ℝ) ^ 12 = (D.R.m : ℝ) * ((D.R.N D.R.m : ℝ) * (D.R.m : ℝ) ^ 10 * D.R.m) := by ring
       _ ≤ (D.R.m : ℝ) * L.etaSz := mul_le_mul_of_nonneg_left h1 (by linarith)
       _ ≤ _ := hmη
-  · nlinarith
-  · have := P.kS_le
-    have hS := L.Sc_pos
-    nlinarith
+  · exact le_trans (le_mul_of_one_le_left (by linarith) (by linarith)) hmη
+  · exact le_trans (le_mul_of_one_le_left L.Sc_pos.le hk1) P.kS_le
   · refine le_trans ?_ h2
-    have : (D.R.m : ℝ) * D.R.t ≤ (D.R.m : ℝ) * ((D.R.t : ℝ) + 1) := by linarith
-    have h3 : 0 ≤ (D.R.m : ℝ) * ((D.R.t : ℝ) + 1) := by positivity
-    nlinarith
+    calc (D.R.m : ℝ) * D.R.t ≤ (D.R.m : ℝ) * ((D.R.t : ℝ) + 1) :=
+          mul_le_mul_of_nonneg_left (by linarith) (by linarith)
+      _ ≤ (D.R.m : ℝ) * ((D.R.t : ℝ) + 1) * L.etaSz := le_mul_of_one_le_right (by positivity) hη
+      _ = _ := by ring
   · unfold Scale.w''
     field_simp
 
@@ -215,7 +214,9 @@ theorem bT_le_five_quarters_alt {D : D7} {L : SizeData₂ D} (P : ParameterChoic
       4 * (LevelStarExponents.Nstar L * L.sc.x ^ L.sc.eps * L.LaG / D.R.k) := by ring
   rw [h6] at h1
   rw [h7] at h2
-  nlinarith
+  have h8 : LevelStarExponents.Nstar L * L.sc.x ^ L.sc.eps * L.LaG / D.R.k ≤ 1 / 4 := by linarith
+  have h9 := mul_le_mul_of_nonneg_right h8 s7.le
+  linarith
 
 theorem lam_top {D : D7} (L : SizeData₂ D) (u : D.what₂.Word) (τ : D.what₂.Tau) (t : D.host.TT)
     (ht : (D.eTau τ : D.R.GG) = D.R.tau1 t) :
@@ -284,10 +285,12 @@ theorem base_sizes2 {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hX 
   have hb0 : 0 < L.sc.b := Real.exp_pos _
   refine ⟨hNW, ?_, ?_⟩
   · rw [s5, le_div_iff₀ (by linarith)]
-    nlinarith
+    calc L.sc.w'' D.R.n * L.sc.x = L.sc.x * 1 * L.sc.w'' D.R.n := by ring
+      _ ≤ L.sc.x * D.R.n * L.sc.w'' D.R.n :=
+        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hn1 (by linarith)) hW0
   · unfold Scale.b' Scale.a
-    rw [div_le_iff₀ (show 0 < L.sc.X' from Real.exp_pos _)]
-    nlinarith
+    rw [div_le_iff₀ (show 0 < L.sc.X' from Real.exp_pos _), mul_comm L.sc.b]
+    exact mul_le_mul_of_nonneg_right hX hb0.le
 
 theorem sub_aux (R : Ranks) (j : ℕ) :
     0 ≤ (R.k : ℝ) / 2 + (2 * ((j : ℝ) + 1) - 1) * ((R.t : ℝ) + 1) / 2 ∧
@@ -330,13 +333,13 @@ theorem wts_lam {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (Cn : �
         apply div_le_self ha0.le
         have : (1 : ℝ) ≤ L.sc.x ^ (Scale.A / 2) :=
           Real.one_le_rpow hx.le (by unfold Scale.A; norm_num)
-        nlinarith
+        exact one_le_mul_of_one_le_of_one_le (by linarith) this
       linarith
     · have := bT_le_five_quarters_alt P t
       linarith
   · intro hT i hi
     obtain ⟨h1, h2⟩ := lam_off P u τ hT i hi
-    exact ⟨h1, le_trans h2 (by nlinarith)⟩
+    exact ⟨h1, le_trans h2 (mul_le_mul_of_nonneg_right hCn hS0.le)⟩
 
 theorem weights_in_short_window {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hX : L.sc.x ≤ L.sc.X') (τ : D.what₂.Tau) :
     ∃ lo : ℝ, L.sc.w'' D.R.n ≤ lo ∧ (∀ j, 1 ≤ j → j ≤ D.R.m → lo ≤ wj D j τ ∧ wj D j τ ≤ lo + L.etaSz + 1) := by
@@ -423,7 +426,8 @@ theorem wts_last {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hX : L
   obtain ⟨lo, l1, l2⟩ := weights_in_short_window P hX τ
   have h1 := (l2 1 (le_refl _) (by omega)).1
   have h2 := (l2 D.R.m (by omega) (le_refl _)).2
-  have hprod : 1 ≤ ((D.R.m : ℝ) - 1) * ((D.R.t : ℝ) + 1) := by nlinarith
+  have hprod : 1 ≤ ((D.R.m : ℝ) - 1) * ((D.R.t : ℝ) + 1) :=
+    one_le_mul_of_one_le_of_one_le (by linarith) (by linarith)
   push_cast
   linarith
 
@@ -489,7 +493,10 @@ theorem two_le_rdE {R : Ranks} (H : Host R) : 2 ≤ H.rdE := by
       Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by simp)
     have : (0 : ℝ) ≤ R.e := Nat.cast_nonneg _
     linarith
-  nlinarith
+  calc (2 : ℝ) = 2 * 1 := by ring
+    _ ≤ Real.sqrt (H.d : ℝ) * (2 : ℝ) ^ ((R.e : ℝ) + 1 - (2 : ℝ) ^ (-(R.e : ℝ))) :=
+      mul_le_mul h1 h2 zero_le_one (by positivity)
+    _ = _ := by ring
 
 theorem log_g_le {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (i : Fin 2) :
     0 < (D.host.g i : ℝ) ∧ Real.log (D.host.g i : ℝ) ≤ (P.CYL + 1) * L.sc.L := by
@@ -550,9 +557,9 @@ theorem nums_small {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hn3 
   · rw [L.Sc_eq]
     have h1 := P.Del_ge.2.2.2
     have h2 : (1 : ℝ) ≤ (D.R.m : ℝ) ^ 10 := one_le_pow₀ (by linarith)
-    have h3 : (1 : ℝ) ≤ (D.R.N D.R.m : ℝ) * (D.R.m : ℝ) ^ 10 := by nlinarith
+    have h3 : (1 : ℝ) ≤ (D.R.N D.R.m : ℝ) * (D.R.m : ℝ) ^ 10 := one_le_mul_of_one_le_of_one_le hN1 h2
     have h4 : (1 : ℝ) ≤ (D.s.Del : ℝ) := le_trans h3 h1
-    nlinarith
+    exact one_le_mul_of_one_le_of_one_le (by linarith) (by linarith)
   · have : L.sc.b' / L.sc.x = D.R.n * L.sc.w'' D.R.n := by
       rw [s5]
       field_simp
@@ -709,7 +716,9 @@ theorem size_bounds_of_scale {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 
       linarith
     refine le_trans ?_ h1
     rw [Real.rpow_two]
-    nlinarith
+    calc (3 : ℝ) ≤ 4 * 4 := by norm_num
+      _ ≤ L.sc.x * L.sc.x := mul_le_mul hx hx (by norm_num) (by linarith)
+      _ = L.sc.x ^ 2 := (sq _).symm
   · have h1 := Real.log_le_log hn0 hn2
     rw [Real.log_rpow hx0] at h1
     have h2 := Real.log_nonneg hx1
