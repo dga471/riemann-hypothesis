@@ -326,14 +326,15 @@ theorem core {J G H : Matrix (Fin n) (Fin n) ℂ} (hJ : J * J = 1) (hHG : H * G 
     rcases ha3 i with h | h | h
     · have h' := hα i (by rw [← hfa, h])
       rw [h]
-      nlinarith
+      norm_num
+      exact mul_le_mul_of_nonneg_right h' hc
     · have h' := hβ i (by rw [← hfa, h])
       rw [h]
-      nlinarith
+      norm_num
+      exact mul_le_mul_of_nonneg_right h' hc
     · rw [h]
-      have := hpos i
-      have h3 : 0 ≤ lam i * ‖(Uᴴ *ᵥ y) i‖ ^ 2 := by positivity
-      nlinarith
+      norm_num
+      exact mul_nonneg (hpos i).le hc
 
 end GlobalTheory.CompanionTheory.UGeo.SpecGrad
 
@@ -385,7 +386,14 @@ theorem norm_entry_le {M : Matrix (Fin n) (Fin n) ℂ} (h : Formalism.REAL.hs M 
   have h1 := (norm_entry_sq_le_hs M i j).trans h
   by_contra hc
   push Not at hc
-  nlinarith
+  have h2 : ((n : ℝ) + 1) ^ 2 < ‖M i j‖ ^ 2 :=
+    pow_lt_pow_left₀ hc (by positivity) (by norm_num)
+  have h3 : (n : ℝ) < ((n : ℝ) + 1) ^ 2 := by
+    rw [add_sq]
+    have : 0 ≤ (n : ℝ) ^ 2 := sq_nonneg _
+    have : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+    linarith
+  linarith
 
 theorem hs_le_quarter {M : Matrix (Fin n) (Fin n) ℂ}
     (h : ∀ i j, ‖M i j‖ < 1 / (2 * ((n : ℝ) + 1))) : Formalism.REAL.hs M ≤ 1 / 4 := by
@@ -402,7 +410,9 @@ theorem hs_le_quarter {M : Matrix (Fin n) (Fin n) ℂ}
     linarith
   have h3 : 0 ≤ (n : ℝ) * (1 / (2 * ((n : ℝ) + 1))) := by positivity
   rw [e] at h1
-  nlinarith
+  calc Formalism.REAL.hs M ≤ ((n : ℝ) * (1 / (2 * ((n : ℝ) + 1)))) ^ 2 := h1
+    _ ≤ (1 / 2 : ℝ) ^ 2 := pow_le_pow_left₀ h3 h2 2
+    _ = 1 / 4 := by norm_num
 
 section
 open scoped Matrix.Norms.L2Operator
@@ -513,7 +523,8 @@ theorem nsq_add_le (u v : Fin n → ℂ) : nsq (u + v) ≤ 2 * nsq u + 2 * nsq v
   refine Finset.sum_le_sum fun i _ => ?_
   have h := norm_add_le (u i) (v i)
   have h1 : ‖(u + v) i‖ ^ 2 ≤ (‖u i‖ + ‖v i‖) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) h 2
-  nlinarith [sq_nonneg (‖u i‖ - ‖v i‖)]
+  have h2 : (‖u i‖ + ‖v i‖) ^ 2 + (‖u i‖ - ‖v i‖) ^ 2 = 2 * ‖u i‖ ^ 2 + 2 * ‖v i‖ ^ 2 := by ring
+  linarith [sq_nonneg (‖u i‖ - ‖v i‖)]
 
 theorem nsq_mulVec_le (M : Matrix (Fin n) (Fin n) ℂ) (y : Fin n → ℂ) :
     nsq (M *ᵥ y) ≤ Formalism.REAL.hs M * nsq y := by
@@ -623,7 +634,11 @@ theorem est : ∀ (n : ℕ) (ε : Fin n → Bool) (A₀ A' : Matrix (Fin n) (Fin
     have h5 : β⁻¹ * nsq (Pm A' *ᵥ y) ≤ α * nsq (Pm A' *ᵥ y) :=
       mul_le_mul_of_nonneg_right (by linarith) (nsq_nonneg _)
     have h6 := H y
-    nlinarith
+    calc 3 / 4 * β⁻¹ * nsq y = β⁻¹ * (3 / 4 * nsq y) := by ring
+      _ ≤ β⁻¹ * (nsq (Pm A' *ᵥ y) + nsq (Pz A' *ᵥ y)) := h4
+      _ = β⁻¹ * nsq (Pm A' *ᵥ y) + β⁻¹ * nsq (Pz A' *ᵥ y) := mul_add _ _ _
+      _ ≤ α * nsq (Pm A' *ᵥ y) + β⁻¹ * nsq (Pz A' *ᵥ y) := add_le_add_left h5 _
+      _ ≤ nsq (S7.toM ((x : S7.UJ ε)⁻¹) *ᵥ y) := h6
   constructor
   · have hc : ∀ j, nsq (S7.toM (x : S7.UJ ε) *ᵥ fun i => Pm A₀ i j) ≤ 4 / α * nsq (fun i => Pm A₀ i j) := by
       intro j
@@ -658,7 +673,8 @@ theorem est : ∀ (n : ℕ) (ε : Fin n → Bool) (A₀ A' : Matrix (Fin n) (Fin
         field_simp
       rw [e] at h1
       have h2 : 0 ≤ β * nsq (fun i => Pz A₀ i j) := mul_nonneg hβ0.le (nsq_nonneg _)
-      nlinarith
+      rw [mul_assoc]
+      linarith
     have h1 := hs_mul_le_of_cols hc
     have h2 := hs_proj_le (Pz_conj h0) (Pz_idem h0)
     have h3 : 4 * β * Formalism.REAL.hs (Pz A₀) ≤ 4 * β * n :=
@@ -943,9 +959,9 @@ theorem hs_lines (hA : IsGrad ε A) (x : S7.UJ ε) (t : ℝ) (h0 : 0 ≤ tauG A 
   have ha : 0 ≤ a := hs_nonneg _
   have hb : 0 ≤ b := hs_nonneg _
   have hc : 0 ≤ c := hs_nonneg _
-  have ha1 : a ≤ 1 := by nlinarith
+  have ha1 : a ≤ 1 := (le_mul_of_one_le_right ha (by linarith)).trans hprod
   have hab : a * b ≤ 1 := by linarith
-  have hc1 : 1 ≤ c := by nlinarith
+  have hc1 : 1 ≤ c := hac.trans (mul_le_of_le_one_left hc ha1)
   have hbc : b ≤ c := by linarith [mul_le_mul_of_nonneg_right hab hc, mul_le_mul_of_nonneg_left hac hb]
   have hE : Real.exp t ^ 2 = Real.exp (2 * t) := by rw [← Real.exp_nat_mul]; norm_num
   have hE' : Real.exp (-t) ^ 2 ≤ Real.exp (2 * t) := by
@@ -955,8 +971,17 @@ theorem hs_lines (hA : IsGrad ε A) (x : S7.UJ ε) (t : ℝ) (h0 : 0 ≤ tauG A 
   have hE0 : 0 ≤ Real.exp (-t) ^ 2 := by positivity
   rw [e1, e2, hE]
   constructor
-  · nlinarith [mul_nonneg hE0 ha]
-  · nlinarith [mul_le_mul_of_nonneg_right hE' ha]
+  · have h1 : (3 : ℝ)⁻¹ * Real.exp (2 * t) * (a + b + c) ≤ Real.exp (2 * t) * c := by
+      have : a + b + c ≤ 3 * c := by linarith
+      calc (3 : ℝ)⁻¹ * Real.exp (2 * t) * (a + b + c)
+          ≤ (3 : ℝ)⁻¹ * Real.exp (2 * t) * (3 * c) :=
+            mul_le_mul_of_nonneg_left this (by positivity)
+        _ = Real.exp (2 * t) * c := by ring
+    linarith [mul_nonneg hE0 ha]
+  · have h1 : Real.exp (-t) ^ 2 * a ≤ Real.exp (2 * t) * a := mul_le_mul_of_nonneg_right hE' ha
+    have h2 : b ≤ Real.exp (2 * t) * b := le_mul_of_one_le_left hb hE1
+    rw [mul_add, mul_add]
+    linarith
 
 theorem Pm_A (hA : IsGrad ε A) : Pm A * A = -Pm A := by
   have := congrArg conjTranspose (A_Pm hA)
@@ -1045,9 +1070,11 @@ theorem contraction (hA : IsGrad ε A) (x : S7.UJ ε) {Y : Matrix (Fin n) (Fin n
   have ha : 0 ≤ a := hs_nonneg _
   have hb : 0 ≤ b := hs_nonneg _
   have hy : 0 ≤ hs Y := hs_nonneg _
-  have ha1 : a ≤ 1 := by nlinarith
-  have k1 : a * a ≤ a * (1 + b) := by nlinarith
-  have k2 : 4 * (a * a) + 6 * (a * b) ≤ 6 * (a * (1 + b)) := by nlinarith
+  have ha1 : a ≤ 1 := (le_mul_of_one_le_right ha (by linarith)).trans hprod
+  have k1 : a * a ≤ a := mul_le_of_le_one_right ha ha1
+  have k2 : 4 * (a * a) + 6 * (a * b) ≤ 6 * (a * (1 + b)) := by
+    have : 6 * (a * (1 + b)) = 6 * a + 6 * (a * b) := by ring
+    linarith
   have k3 := mul_le_mul_of_nonneg_right k2 hy
   linarith
 
@@ -1160,7 +1187,9 @@ theorem gap (g : S7.UJ ε) (hn : (n : ℝ) < hs (S7.toM g)) :
       have h1 := hzero i₀ hi
       have h2 : ((r : ℝ) + 1) ≤ n := by exact_mod_cast hr
       have h3 : L < ((r : ℝ) + 1) * w := h1
-      nlinarith⟩
+      have h4 : ((r : ℝ) + 1) * w ≤ ((n : ℝ) + 1) * w :=
+        mul_le_mul_of_nonneg_right (by linarith) hwpos.le
+      linarith⟩
   refine ⟨A', α, β, hA', hβ1, hβα, ?_, hy⟩
   rw [hα, hβ, Real.log_exp, Real.log_exp]
   have : Real.log (h / n) / ((n : ℝ) + 1) ≤ w := div_le_div_of_nonneg_right hLlog (by positivity)

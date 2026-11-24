@@ -53,17 +53,27 @@ theorem sizes (Cg m N P s : ℝ) (hCg : 1000 ≤ Cg) (hm2 : 2 ≤ m) (hmN : m �
     120 * N ^ 3 ≤ Cg * (m ^ 4 * s) * P / 4 ∧ 125 * m ^ 2 * N ^ 3 ≤ Cg * m ^ 4 * P / 32 := by
   have hN1 : (1 : ℝ) ≤ N := by linarith
   have hN3 : (0 : ℝ) ≤ N ^ 3 := by positivity
-  have hm2' : (4 : ℝ) ≤ m ^ 2 := by nlinarith
+  have hm2' : (4 : ℝ) ≤ m ^ 2 := by
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num]
+    exact pow_le_pow_left₀ (by norm_num) hm2 2
   have hm4e : m ^ 4 = m ^ 2 * m ^ 2 := by ring
-  have hm4 : (16 : ℝ) ≤ m ^ 4 := by rw [hm4e]; nlinarith
-  have hm4' : 4 * m ^ 2 ≤ m ^ 4 := by rw [hm4e]; nlinarith
+  have hm4 : (16 : ℝ) ≤ m ^ 4 := by
+    rw [show (16 : ℝ) = 2 ^ 4 by norm_num]
+    exact pow_le_pow_left₀ (by norm_num) hm2 4
+  have hm4' : 4 * m ^ 2 ≤ m ^ 4 := by
+    rw [hm4e]
+    exact mul_le_mul_of_nonneg_right hm2' (by positivity)
   constructor
   · have a : (16 : ℝ) ≤ m ^ 4 * s := le_trans hm4 (le_mul_of_one_le_right (by positivity) hs)
-    have b : (16000 : ℝ) ≤ Cg * (m ^ 4 * s) := by nlinarith
+    have b : (16000 : ℝ) ≤ Cg * (m ^ 4 * s) := by
+      calc (16000 : ℝ) = 1000 * 16 := by norm_num
+        _ ≤ Cg * (m ^ 4 * s) := mul_le_mul hCg a (by norm_num) (by positivity)
     have c : 16000 * N ^ 3 ≤ Cg * (m ^ 4 * s) * P :=
       le_trans (mul_le_mul_of_nonneg_right b hN3) (mul_le_mul_of_nonneg_left hPN (by positivity))
     linarith
-  · have b : 4000 * m ^ 2 ≤ Cg * m ^ 4 := by nlinarith
+  · have b : 4000 * m ^ 2 ≤ Cg * m ^ 4 := by
+      calc 4000 * m ^ 2 = 1000 * (4 * m ^ 2) := by ring
+        _ ≤ Cg * m ^ 4 := mul_le_mul hCg hm4' (by positivity) (by positivity)
     have c : 4000 * m ^ 2 * N ^ 3 ≤ Cg * m ^ 4 * P :=
       le_trans (mul_le_mul_of_nonneg_right b hN3) (mul_le_mul_of_nonneg_left hPN (by positivity))
     linarith
@@ -74,23 +84,38 @@ theorem consts (k r : ℕ) (hk : 1 ≤ k) :
     Formalism.FourierDecayAlt.ThreeDimData.AG k r ≤ 4 * (2 * (r : ℝ) + k + 1) ^ 3 ∧ 0 ≤ Formalism.FourierDecayAlt.ThreeDimData.AG k r := by
   have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast hk
   set N : ℝ := 2 * (r : ℝ) + k + 1 with hN
-  have hN2 : N ^ 2 ≤ N ^ 3 := by nlinarith
-  have hdN : Formalism.FourierDecayAlt.ThreeDimData.dN k r ≤ 2 * N ^ 2 := by unfold Formalism.FourierDecayAlt.ThreeDimData.dN; rw [hN]; nlinarith
-  have hdN0 : 0 ≤ Formalism.FourierDecayAlt.ThreeDimData.dN k r := by unfold Formalism.FourierDecayAlt.ThreeDimData.dN; nlinarith
+  have hN1 : (1 : ℝ) ≤ N := by
+    have : (0 : ℝ) ≤ r := Nat.cast_nonneg r
+    rw [hN]; linarith
+  have hN2 : N ^ 2 ≤ N ^ 3 := pow_le_pow_right₀ hN1 (by norm_num)
+  have hdN : Formalism.FourierDecayAlt.ThreeDimData.dN k r ≤ 2 * N ^ 2 := by
+    unfold Formalism.FourierDecayAlt.ThreeDimData.dN; rw [hN]
+    have hdiff : 2 * (2 * (r : ℝ) + (k : ℝ) + 1) ^ 2 -
+        ((r : ℝ) * ((r : ℝ) - 1) + 2 * (r : ℝ) * ((k : ℝ) + 1) + (r : ℝ) ^ 2) =
+        6 * (r : ℝ) ^ 2 + 6 * (r : ℝ) * (k : ℝ) + 7 * (r : ℝ) + 2 * (k : ℝ) ^ 2 + 4 * (k : ℝ) + 2 := by ring
+    have hnonneg : 0 ≤ 6 * (r : ℝ) ^ 2 + 6 * (r : ℝ) * (k : ℝ) + 7 * (r : ℝ) + 2 * (k : ℝ) ^ 2 + 4 * (k : ℝ) + 2 := by positivity
+    linarith
+  have hdN0 : 0 ≤ Formalism.FourierDecayAlt.ThreeDimData.dN k r := by
+    unfold Formalism.FourierDecayAlt.ThreeDimData.dN
+    have hrew : (r : ℝ) * ((r : ℝ) - 1) + 2 * (r : ℝ) * ((k : ℝ) + 1) + (r : ℝ) ^ 2 =
+        2 * (r : ℝ) ^ 2 + 2 * (r : ℝ) * (k : ℝ) + (r : ℝ) := by ring
+    rw [hrew]; positivity
   have hnk : ((2 * r + k : ℕ) : ℝ) ≤ N := by rw [hN]; push_cast; linarith
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
-  · unfold Formalism.FourierDecayAlt.ThreeDimData.Mexp; nlinarith
+  · unfold Formalism.FourierDecayAlt.ThreeDimData.Mexp; linarith
   · unfold Formalism.FourierDecayAlt.ThreeDimData.Mexp; positivity
   · unfold Formalism.FourierDecayAlt.ThreeDimData.AS
     have : ((2 * r + k : ℕ) : ℝ) * Formalism.FourierDecayAlt.ThreeDimData.dN k r ≤ N * (2 * N ^ 2) :=
       mul_le_mul hnk hdN hdN0 (by linarith)
-    nlinarith
+    have hmul : N * (2 * N ^ 2) = 2 * N ^ 3 := by ring
+    linarith
   · unfold Formalism.FourierDecayAlt.ThreeDimData.AS; positivity
   · unfold Formalism.FourierDecayAlt.ThreeDimData.AG
     have e1 : ((k : ℝ) + r) ≤ N := by rw [hN]; linarith
     have e2 : ((r : ℝ) + 1) ≤ N := by rw [hN]; linarith
     have e3 : ((k : ℝ) + r) * ((r : ℝ) + 1) ≤ N * N := mul_le_mul e1 e2 (by linarith) (by linarith)
-    nlinarith
+    have hsqN : N * N = N ^ 2 := by ring
+    linarith
   · unfold Formalism.FourierDecayAlt.ThreeDimData.AG; positivity
 
 theorem gapOK_of (k r : ℕ) (hk : 1 ≤ k) (Cg : ℝ) (hCg : 1000 ≤ Cg) :
@@ -128,10 +153,11 @@ theorem gapOK_of (k r : ℕ) (hk : 1 ≤ k) (Cg : ℝ) (hCg : 1000 ≤ Cg) :
   obtain ⟨cM, cM0, cS, cS0, cG, cG0⟩ := consts k r hk
   rw [hm] at cM
   rw [hN] at cS cG
-  have hm2' : (4 : ℝ) ≤ m ^ 2 := by nlinarith
+  have hm2' : (4 : ℝ) ≤ m ^ 2 := by
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num]
+    exact pow_le_pow_left₀ (by norm_num) hm2 2
   have hN3' : (0 : ℝ) ≤ N ^ 3 := by positivity
-  have hmm : m ^ 2 * N ^ 3 ≥ 4 * N ^ 3 := by nlinarith
-  have hX : 4 * N ^ 3 ≤ m ^ 2 * N ^ 3 := by nlinarith
+  have hX : 4 * N ^ 3 ≤ m ^ 2 * N ^ 3 := mul_le_mul_of_nonneg_right hm2' hN3'
   have hX1 : (4 : ℝ) ≤ m ^ 2 * N ^ 3 := by linarith
   refine ⟨hk, ?_, ?_, ?_⟩
   · rw [h92]; linarith
@@ -151,7 +177,9 @@ theorem gapOK_of (k r : ℕ) (hk : 1 ≤ k) (Cg : ℝ) (hCg : 1000 ≤ Cg) :
     have h9 : 9 * ((r : ℝ) + 1) = 4.5 * m := by rw [← hm]; ring
     have e1 : 9 * ((r : ℝ) + 1) * N ^ 2 ≤ 4.5 * m * N ^ 3 := by
       rw [h9]; exact mul_le_mul_of_nonneg_left hN23 (by positivity)
-    have hq : 4.5 * m ≤ 3 * m ^ 2 := by nlinarith only [hm2]
+    have hq : 4.5 * m ≤ 3 * m ^ 2 := by
+      calc 4.5 * m ≤ (3 * m) * m := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+        _ = 3 * m ^ 2 := by ring
     have e2 : 4.5 * m * N ^ 3 ≤ 3 * (m ^ 2 * N ^ 3) := by
       have := mul_le_mul_of_nonneg_right hq hN3'
       linarith only [this]

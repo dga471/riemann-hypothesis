@@ -63,7 +63,7 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
   [MeasurableSpace E] [BorelSpace E]
 
 theorem one_le_sqrt_one_add_norm_sq (ξ : E) : 1 ≤ Real.sqrt (1 + ‖ξ‖ ^ 2) := by
-  rw [Real.one_le_sqrt]; nlinarith [sq_nonneg ‖ξ‖]
+  rw [Real.one_le_sqrt]; exact le_add_of_nonneg_right (sq_nonneg _)
 
 theorem norm_le_sqrt_one_add_norm_sq (ξ : E) : ‖ξ‖ ≤ Real.sqrt (1 + ‖ξ‖ ^ 2) :=
   Real.le_sqrt_of_sq_le (by linarith)
@@ -153,7 +153,7 @@ theorem norm_rhoSymb {μ : ℝ} (hμ : 0 ≤ μ) (ξ : E) :
 
 theorem norm_rhoSymb_le_one {μ : ℝ} (hμ : 0 ≤ μ) (ξ : E) : ‖rhoSymb c w μ ξ‖ ≤ 1 := by
   rw [norm_rhoSymb c w hμ]
-  exact inv_le_one_of_one_le₀ (by nlinarith [sq_nonneg ‖symb0 c w ξ‖])
+  exact inv_le_one_of_one_le₀ (le_add_of_nonneg_right (by positivity))
 
 theorem norm_qSymb {μ : ℝ} (hμ : 0 ≤ μ) (ξ : E) :
     ‖qSymb c w μ ξ‖ = μ * ‖symb0 c w ξ‖ * (1 + μ * ‖symb0 c w ξ‖ ^ 2)⁻¹ := by
@@ -197,12 +197,15 @@ theorem sqrt_one_add_norm_sq_le_two_mul {ξ : E} (h : 1 ≤ ‖ξ‖) :
     Real.sqrt (1 + ‖ξ‖ ^ 2) ≤ 2 * ‖ξ‖ := by
   rw [Real.sqrt_le_iff]; constructor
   · positivity
-  · nlinarith
+  · have h1 : (1 : ℝ) ≤ ‖ξ‖ ^ 2 := one_le_pow₀ h
+    have h2 : (2 * ‖ξ‖) ^ 2 = 4 * ‖ξ‖ ^ 2 := by ring
+    linarith
 
 theorem sqrt_one_add_norm_sq_le_two {ξ : E} (h : ‖ξ‖ ≤ 1) : Real.sqrt (1 + ‖ξ‖ ^ 2) ≤ 2 := by
   rw [Real.sqrt_le_iff]; constructor
   · norm_num
-  · nlinarith [norm_nonneg ξ]
+  · have h1 : ‖ξ‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg ξ) h
+    linarith
 
 variable (hcl : 0 < cl) (hCu : 0 ≤ Cu) (hlow : ∀ ξ, cl * ‖ξ‖ ^ m ≤ ‖symb0 c w ξ‖)
   (hup : ∀ ξ, ‖symb0 c w ξ‖ ≤ Cu * ‖ξ‖ ^ m)
@@ -251,7 +254,7 @@ theorem exists_qSymb_small (hm : 1 ≤ m) {ε : ℝ} (hε : 0 < ε) :
   set lam := max 1 (2 * CQ / ε)
   have hlam1 : 1 ≤ lam := le_max_left _ _
   set S0 := Real.sqrt (1 + lam ^ 2)
-  have hS01 : 1 ≤ S0 := by rw [Real.one_le_sqrt]; nlinarith
+  have hS01 : 1 ≤ S0 := by rw [Real.one_le_sqrt]; exact le_add_of_nonneg_right (sq_nonneg _)
   set D := (Cu + 1) * S0 ^ (2 * m)
   have hD : 0 < D := by positivity
   refine ⟨min 1 (ε / (2 * D)), lt_min one_pos (by positivity), min_le_left _ _, fun ξ ↦ ?_⟩
@@ -275,7 +278,8 @@ theorem exists_qSymb_small (hm : 1 ≤ m) {ε : ℝ} (hε : 0 < ε) :
       _ ≤ CQ / (2 * CQ / ε) := by gcongr; exact le_max_right _ _
       _ = ε / 2 := by field_simp
       _ ≤ ε := by linarith
-  · have hSS0 : S ≤ S0 := Real.sqrt_le_sqrt (by nlinarith [norm_nonneg ξ])
+  · have hSS0 : S ≤ S0 := Real.sqrt_le_sqrt
+      (add_le_add_right (pow_le_pow_left₀ (norm_nonneg ξ) h.le 2) 1)
     have hξS : ‖ξ‖ ^ m ≤ S ^ m := pow_le_pow_left₀ (norm_nonneg _) (norm_le_sqrt_one_add_norm_sq ξ) m
     have hq : ‖qSymb c w μ ξ‖ ≤ μ * (Cu * S ^ m) := by
       calc ‖qSymb c w μ ξ‖ ≤ μ * ‖symb0 c w ξ‖ := norm_qSymb_le c w hμ0 ξ
@@ -296,9 +300,8 @@ theorem exists_qSymb_small (hm : 1 ≤ m) {ε : ℝ} (hε : 0 < ε) :
 theorem rhoSymb_mul_sqrt_pow_le {μ : ℝ} (hμ : 0 < μ) (ξ : E) :
     ‖rhoSymb c w μ ξ‖ * Real.sqrt (1 + ‖ξ‖ ^ 2) ^ (2 * m) ≤ 4 ^ m * (1 + (μ * cl ^ 2)⁻¹) := by
   have hr0 := norm_nonneg (rhoSymb c w μ ξ)
-  have hK : 4 ^ m ≤ 4 ^ m * (1 + (μ * cl ^ 2)⁻¹) := by
-    have : 0 ≤ (μ * cl ^ 2)⁻¹ := by positivity
-    nlinarith [pow_pos (by norm_num : (0:ℝ) < 4) m]
+  have hK : 4 ^ m ≤ 4 ^ m * (1 + (μ * cl ^ 2)⁻¹) :=
+    le_mul_of_one_le_right (by positivity) (le_add_of_nonneg_right (by positivity))
   rcases le_or_gt 1 ‖ξ‖ with h | h
   · have hS := pow_le_pow_left₀ (Real.sqrt_nonneg _) (sqrt_one_add_norm_sq_le_two_mul h) (2 * m)
     have hξ : 0 < ‖ξ‖ := by linarith
@@ -309,7 +312,9 @@ theorem rhoSymb_mul_sqrt_pow_le {μ : ℝ} (hμ : 0 < μ) (ξ : E) :
       rw [norm_rhoSymb c w hμ.le]
       apply inv_anti₀ hpos
       have : μ * cl ^ 2 * ‖ξ‖ ^ (2 * m) = μ * (cl * ‖ξ‖ ^ m) ^ 2 := by ring
-      rw [this]; nlinarith
+      rw [this]
+      have := mul_le_mul_of_nonneg_left hp2 hμ.le
+      linarith
     calc ‖rhoSymb c w μ ξ‖ * Real.sqrt (1 + ‖ξ‖ ^ 2) ^ (2 * m)
         ≤ (μ * cl ^ 2 * ‖ξ‖ ^ (2 * m))⁻¹ * (2 * ‖ξ‖) ^ (2 * m) := by gcongr
       _ = 4 ^ m * (μ * cl ^ 2)⁻¹ := by
@@ -790,17 +795,18 @@ theorem exists_small (hm : 1 ≤ m) (hN : HasOrder N ((m : ℝ) - 1)) (k : ℕ) 
   refine ⟨μ, hμ0, hμ1, fun s hs ↦ ?_⟩
   have hXs : X s ≤ ∑ s ∈ S, X s := Finset.single_le_sum (fun s _ ↦ hX0 s) hs
   have hkε : (k : ℝ) * ε * X s ≤ 1 / 4 := by
-    have h1 : (k : ℝ) * X s ≤ (k + 1) * (∑ s ∈ S, X s + 1) := by
-      have := hX0 s
-      nlinarith
+    have h1 : (k : ℝ) * X s ≤ (k + 1) * (∑ s ∈ S, X s + 1) :=
+      mul_le_mul (by linarith) (by linarith) (hX0 s) (by positivity)
     have hpos : 0 < 4 * (k + 1) * (∑ s ∈ S, X s + 1) := by positivity
     rw [hε_def, show (k : ℝ) * (1 / (4 * (k + 1) * (∑ s ∈ S, X s + 1))) * X s =
       (k * X s) / (4 * (k + 1) * (∑ s ∈ S, X s + 1)) by ring, div_le_iff₀ hpos]
-    nlinarith
+    have : (1 / 4 : ℝ) * (4 * (k + 1) * (∑ s ∈ S, X s + 1)) = (k + 1) * (∑ s ∈ S, X s + 1) := by
+      ring
+    linarith
   have hηSP : CQ * (η * SP) ≤ 1 / 4 := by
     rw [hη_def, show CQ * (1 / (4 * (CQ * SP + 1)) * SP) = (CQ * SP) / (4 * (CQ * SP + 1)) by ring,
       div_le_iff₀ (by positivity)]
-    nlinarith
+    linarith
   have hQ : ∀ t, OpBound (Qop a w x₀ μ k) (t - m) t CQ := fun t ↦ by
     rw [hCQ_def]; exact opBound_Qop a w x₀ hcl hCu hlow hup hμ0.le hμ1 k t
   have hQs : ∀ t, OpBound (Qop a w x₀ μ k) (t - m + 1) t (k * ε) :=
@@ -815,9 +821,10 @@ theorem exists_small (hm : 1 ≤ m) (hN : HasOrder N ((m : ℝ) - 1)) (k : ℕ) 
     have : ∑ i, Cr i (s - m) (s - m) * ∏ j, (2 * Real.pi * ‖w i j‖) +
         mulConst (s - m + 1) (bump x₀ hδ) * CN s ≤ X s := by
       have h2 := Finset.sum_nonneg fun i (_ : i ∈ Finset.univ) ↦ mul_nonneg (hCr0 i s (s - 1)) (hP i)
-      have := mulConst_nonneg s (bump x₀ hδ); have := hCN0 (s + m - 1)
-      rw [hXs_def]; nlinarith
-    nlinarith
+      have := mul_nonneg (mulConst_nonneg s (bump x₀ hδ)) (hCN0 (s + m - 1))
+      rw [hXs_def]; linarith
+    have := mul_le_mul_of_nonneg_left this hkε0
+    linarith
   · refine (opBound_locM_Q a w N x₀ hδ _ s hη.le hCQ0 hkε0 hg ((hQ (s + m)).congr_idx (by ring) rfl)
       ((hQs (s + m - 1)).congr_idx (by ring) rfl) (fun i ↦ hCr0 i s (s - 1))
       (fun i ↦ (hCr i s (s - 1)).congr_idx rfl (by ring))
@@ -826,9 +833,10 @@ theorem exists_small (hm : 1 ≤ m) (hN : HasOrder N ((m : ℝ) - 1)) (k : ℕ) 
     have : ∑ i, Cr i s (s - 1) * ∏ j, (2 * Real.pi * ‖w i j‖) +
         mulConst s (bump x₀ hδ) * CN (s + m - 1) ≤ X s := by
       have h1 := Finset.sum_nonneg fun i (_ : i ∈ Finset.univ) ↦ mul_nonneg (hCr0 i (s - m) (s - m)) (hP i)
-      have := mulConst_nonneg (s - m + 1) (bump x₀ hδ); have := hCN0 s
-      rw [hXs_def]; nlinarith
-    nlinarith
+      have := mul_nonneg (mulConst_nonneg (s - m + 1) (bump x₀ hδ)) (hCN0 s)
+      rw [hXs_def]; linarith
+    have := mul_le_mul_of_nonneg_left this hkε0
+    linarith
 
 end Exists
 

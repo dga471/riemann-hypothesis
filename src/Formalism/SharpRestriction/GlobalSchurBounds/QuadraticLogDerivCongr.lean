@@ -1015,7 +1015,7 @@ theorem numN_at {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hS : Si
   have hn := one_le_n D.R
   have hb1 := one_le_b L.sc
   have hw1 : 1 ≤ L.sc.w'' D.R.n := le_trans (Real.one_le_sqrt.mpr hb1) sW
-  have hxn : 1 ≤ L.sc.x * D.R.n := by nlinarith
+  have hxn : 1 ≤ L.sc.x * D.R.n := one_le_mul_of_one_le_of_one_le (by linarith) hn
   have hwb : L.sc.w'' D.R.n ≤ L.sc.b' := by
     unfold Scale.w''
     exact div_le_self hb'.le hxn
@@ -1025,15 +1025,12 @@ theorem numN_at {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hS : Si
       omega
     exact_mod_cast this
   have hη0 := L.etaSz_pos
-  have hη : L.etaSz ≤ L.sc.w'' D.R.n / L.sc.x := by
-    have := P.teta
-    nlinarith
-  have hwx : L.sc.w'' D.R.n / L.sc.x ≤ L.sc.b' / 3 := by
-    rw [div_le_div_iff₀ hx (by norm_num)]
-    nlinarith
-  have hbx : L.sc.b' / L.sc.x ≤ L.sc.b' / 3 := by
-    rw [div_le_div_iff₀ hx (by norm_num)]
-    nlinarith
+  have hη : L.etaSz ≤ L.sc.w'' D.R.n / L.sc.x :=
+    (le_mul_of_one_le_left hη0.le ht).trans P.teta
+  have hwx : L.sc.w'' D.R.n / L.sc.x ≤ L.sc.b' / 3 :=
+    div_le_div₀ hb'.le hwb (by norm_num) h3
+  have hbx : L.sc.b' / L.sc.x ≤ L.sc.b' / 3 :=
+    div_le_div_of_nonneg_left hb'.le (by norm_num) h3
   refine ⟨hw1, le_trans hw1 hwb, by linarith, fun t => ?_⟩
   have hk : (0 : ℝ) < D.R.k := by
     have : 0 < D.R.k := by have := D.R.m_add_three_le_k; omega
@@ -1045,7 +1042,8 @@ theorem numN_at {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hS : Si
   have hx2 : L.sc.x ^ (-2 : ℝ) ≤ 1 / 9 := by
     rw [Real.rpow_neg hx.le, show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast, ← one_div]
     apply one_div_le_one_div_of_le (by norm_num)
-    nlinarith
+    calc (9 : ℝ) = 3 ^ 2 := by norm_num
+      _ ≤ L.sc.x ^ 2 := pow_le_pow_left₀ (by norm_num) h3 2
   have hrho := P.rho_le
   unfold LevelStarExponents.rhoP at hrho
   have hA : LevelStarExponents.Nstar L * L.sc.x ^ L.sc.eps * L.LaG / D.R.k ≤ 1 / 36 := by
@@ -1200,7 +1198,7 @@ theorem kx_ge_one (L : SizeData₂ D) : 1 ≤ (D.R.k : ℝ) * L.sc.x ^ (Scale.A 
     exact_mod_cast this
   have hx1 : 1 ≤ L.sc.x ^ (Scale.A / 2) :=
     Real.one_le_rpow L.sc.one_lt_alt.le (by unfold Scale.A; norm_num)
-  nlinarith
+  exact one_le_mul_of_one_le_of_one_le hk hx1
 
 theorem winH (L : SizeData₂ D) (t : D.host.TT) : (L.aT t : ℝ) ≤ 2 * L.sc.a := by
   have ha := (sc_pos L.sc).2.2.1
@@ -1218,7 +1216,8 @@ theorem winO (L : SizeData₂ D) (t : D.host.TT) : |(L.aT t : ℝ) / L.sc.b - L.
   have hxA : L.sc.x ≤ L.sc.x ^ (Scale.A / 2) := by
     have := rpow_mono' L.sc (a := 1) (b := Scale.A / 2) (by unfold Scale.A; norm_num)
     rwa [Real.rpow_one] at this
-  have hden : L.sc.x ≤ (D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2) := by nlinarith
+  have hden : L.sc.x ≤ (D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2) :=
+    hxA.trans (le_mul_of_one_le_left (hx.le.trans hxA) hk)
   have hdpos : 0 < (D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2) := lt_of_lt_of_le hx hden
   have h1 : L.sc.x ≤ (L.aT t : ℝ) / L.sc.b := by
     rw [← hab]; exact div_le_div_of_nonneg_right h.1 hb.le
@@ -1267,7 +1266,7 @@ theorem X'_le_a (s : Scale) : s.X' ≤ s.a := by
     unfold Scale.X' Scale.b Scale.L
     exact Real.exp_le_exp.mpr (rpow_mono' s (by linarith [s.eps_pos]))
   unfold Scale.a
-  nlinarith [s.one_lt_alt]
+  exact h1.trans (le_mul_of_one_le_left hb.le s.one_lt_alt.le)
 
 theorem winF' (sK : SizeK L) (hE1 : L.sc.x ^ (5 : ℝ) ≤ Real.exp (1 * L.sc.x ^ (L.sc.eps / 3))) :
     D.R.k * L.sc.b' ≤ L.sc.a := by
@@ -1283,8 +1282,12 @@ theorem winG (hw1 : 1 ≤ L.sc.w'' D.R.n) : L.sc.X'' D.R.n ≤ L.sc.a := by
   exact div_le_self (sc_pos L.sc).2.2.1.le hw1
 
 theorem four_le (x : ℝ) (h3 : 3 ≤ x) : 4 * (x + 1) ≤ x ^ 3 := by
-  have h2 : 9 ≤ x ^ 2 := by nlinarith
-  have h4 : 9 * x ≤ x ^ 3 := by nlinarith
+  have h2 : 9 ≤ x ^ 2 := by
+    calc (9 : ℝ) = 3 ^ 2 := by norm_num
+      _ ≤ x ^ 2 := pow_le_pow_left₀ (by norm_num) h3 2
+  have h4 : 9 * x ≤ x ^ 3 := by
+    calc 9 * x ≤ x ^ 2 * x := mul_le_mul_of_nonneg_right h2 (by linarith)
+      _ = x ^ 3 := by ring
   linarith
 
 theorem f_le (sN : SizeN L) : (D.R.f : ℝ) ≤ 2 * L.sc.x ^ 3 := by
@@ -1350,7 +1353,9 @@ theorem winK (P : ParameterChoice' D L) (sN : SizeN L) (sK : SizeK L) (h3 : 3 �
             _ ≤ (D.R.t : ℝ) ^ 3 * (D.R.k : ℝ) ^ 3 := by gcongr
       _ = L.etaSz * ((D.R.t : ℝ) ^ 3 * D.R.f * (D.R.k : ℝ) ^ 3) := by ring
       _ ≤ L.sc.b := hA0
-  have hx2 : 9 ≤ L.sc.x ^ 2 := by nlinarith
+  have hx2 : 9 ≤ L.sc.x ^ 2 := by
+    calc (9 : ℝ) = 3 ^ 2 := by norm_num
+      _ ≤ L.sc.x ^ 2 := pow_le_pow_left₀ (by norm_num) h3 2
   have A2 : 12 * L.sc.x * (L.sc.x + 1) ≤ L.sc.x ^ 12 := by
     calc 12 * L.sc.x * (L.sc.x + 1) = 3 * L.sc.x * (4 * (L.sc.x + 1)) := by ring
       _ ≤ 3 * L.sc.x * L.sc.x ^ 3 := by gcongr
@@ -1387,12 +1392,12 @@ theorem winE (sN : SizeN L) (sQD : SizeQD L) (h3 : 3 ≤ L.sc.x)
   obtain ⟨-, -, hq, -, hd, -, hrd1, hrd2⟩ := sQD
   have hrd0 : 0 < D.host.rdE := by linarith
   have ha1 : 1 ≤ L.sc.a := by
-    have := one_le_b L.sc
-    unfold Scale.a; nlinarith
+    unfold Scale.a
+    exact one_le_mul_of_one_le_of_one_le L.sc.one_lt_alt.le (one_le_b L.sc)
   constructor
   · unfold SizeData₂.La
     apply Real.log_nonneg
-    nlinarith
+    exact one_le_mul_of_one_le_of_one_le ha1 (by linarith)
   have hq0 : (0 : ℝ) < D.host.q := by exact_mod_cast D.host.hyp.1.pos
   have hd0 : (0 : ℝ) < D.host.d := by exact_mod_cast D.host.hyp.2.1.pos
   have hn0 : (0 : ℝ) < D.R.n := lt_of_lt_of_le one_pos (one_le_n D.R)

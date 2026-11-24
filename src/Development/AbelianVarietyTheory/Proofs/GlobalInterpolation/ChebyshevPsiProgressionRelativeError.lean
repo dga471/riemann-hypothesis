@@ -153,7 +153,7 @@ theorem explicit_formula_closed : ∃ C : ℝ, ∀ (q : ℕ) [NeZero q] (χ : Di
   have hZ0 : 0 ≤ zsumR χ 0 1 (fun ρ => 1 / ‖ρ‖) :=
     finsum_nonneg fun ρ => finsum_nonneg fun _ => by positivity
   have hq : (1 : ℝ) ≤ q := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne q)
-  have hB : 0 ≤ Real.log (q * u) := Real.log_nonneg (by nlinarith)
+  have hB : 0 ≤ Real.log (q * u) := Real.log_nonneg (one_le_mul_of_one_le_of_one_le hq (by linarith))
   have key : ∀ P Z Z' : ℂ, ‖P + Z'‖ ≤ ‖P + Z‖ + ‖Z' - Z‖ := by
     intro P Z Z'
     have : P + Z' = (P + Z) + (Z' - Z) := by ring
@@ -169,7 +169,7 @@ theorem explicit_formula_closed : ∃ C : ℝ, ∀ (q : ℕ) [NeZero q] (χ : Di
   generalize Real.log (q * u) = B at hB ⊢
   have a1 : C₁ * (A + B + Z) ≤ C₁ * (A + B + Z') := mul_le_mul_of_nonneg_left (by linarith) hC₁.le
   have a2 : C₂ * A ≤ C₂ * (A + B + Z') := mul_le_mul_of_nonneg_left (by linarith) hC₂.le
-  nlinarith
+  linarith [add_mul C₁ C₂ (A + B + Z')]
 
 end GlobalTheory.ExplicitFormulaClosed
 end -- clump:auto
@@ -499,7 +499,7 @@ theorem zsumR_recip_le : GlobalTheory.Mem.An.ZeroCount → ∃ C : ℝ, ∀ (q :
     intro q _ χ hχ t
     refine (hC0 q χ hχ t).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.log_nonneg ?_))
     have : (1 : ℝ) ≤ q := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne q)
-    nlinarith [abs_nonneg t]
+    exact one_le_mul_of_one_le_of_one_le this (by linarith [abs_nonneg t])
   refine ⟨12 * D, ?_⟩
   intro q _ χ hχ T hT
   have hq : (1 : ℝ) ≤ q := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne q)
@@ -519,7 +519,7 @@ theorem zsumR_recip_le : GlobalTheory.Mem.An.ZeroCount → ∃ C : ℝ, ∀ (q :
       apply Finset.sum_congr rfl
       intro ρ _
       ring
-    have hLA : 0 ≤ Real.log (q * (T + 2)) := Real.log_nonneg (by nlinarith)
+    have hLA : 0 ≤ Real.log (q * (T + 2)) := Real.log_nonneg (one_le_mul_of_one_le_of_one_le hq (by linarith))
     calc ∑ ρ ∈ hfin.toFinset, (zmult χ ρ : ℝ) * (if 1 < |ρ.im| then 1 / ‖ρ‖ else 0)
         ≤ ∑ ρ ∈ hfin.toFinset, (zmult χ ρ : ℝ) * ∑ k ∈ Icc 1 ⌊T⌋₊, (k : ℝ)⁻¹ *
             ((if ρ ∈ zerosIn χ (k : ℝ) 1 then 1 else 0) + (if ρ ∈ zerosIn χ (-(k : ℝ)) 1 then 1 else 0)) := by
@@ -543,9 +543,9 @@ theorem zsumR_recip_le : GlobalTheory.Mem.An.ZeroCount → ∃ C : ℝ, ∀ (q :
             (hZ q χ hχ (-(k : ℝ)))
           rw [abs_neg] at e2
           have hlog : Real.log (q * (|(k : ℝ)| + 2)) ≤ Real.log (q * (T + 2)) := by
-            apply Real.log_le_log (by nlinarith [abs_nonneg (k : ℝ)])
+            apply Real.log_le_log (mul_pos (by linarith) (by linarith [abs_nonneg (k : ℝ)]))
             rw [abs_of_nonneg (Nat.cast_nonneg k)]
-            nlinarith
+            exact mul_le_mul_of_nonneg_left (by linarith) (by linarith)
           have := mul_le_mul_of_nonneg_left hlog hD0
           linarith
       _ = 2 * D * Real.log (q * (T + 2)) * ∑ k ∈ Icc 1 ⌊T⌋₊, (k : ℝ)⁻¹ := by
@@ -560,16 +560,17 @@ theorem zsumR_recip_le : GlobalTheory.Mem.An.ZeroCount → ∃ C : ℝ, ∀ (q :
           have := Real.log_le_log hNpos hNT
           linarith
       _ ≤ 12 * D * Real.log (q * T) ^ 2 := by
-          have hqT : 2 ≤ (q : ℝ) * T := by nlinarith
+          have hqT : 2 ≤ (q : ℝ) * T := le_trans hT (le_mul_of_one_le_left (by linarith) hq)
           have hu : Real.log 2 ≤ Real.log (q * T) := Real.log_le_log (by norm_num) hqT
           have hl2 := Real.log_two_gt_d9
           have hA : Real.log (q * (T + 2)) ≤ 2 * Real.log (q * T) := by
-            have h := Real.log_le_log (by nlinarith : (0 : ℝ) < q * (T + 2))
-              (by nlinarith : (q : ℝ) * (T + 2) ≤ 2 * (q * T))
-            rw [Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) (ne_of_gt (by nlinarith : (0 : ℝ) < q * T))] at h
+            have h := Real.log_le_log (mul_pos (by linarith) (by linarith) : (0 : ℝ) < q * (T + 2))
+              (by calc (q : ℝ) * (T + 2) ≤ (q : ℝ) * (2 * T) := mul_le_mul_of_nonneg_left (by linarith) (by linarith)
+                  _ = 2 * ((q : ℝ) * T) := by ring)
+            rw [Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) (ne_of_gt (by linarith : (0 : ℝ) < q * T))] at h
             linarith
           have hB : 1 + Real.log T ≤ 3 * Real.log (q * T) := by
-            have := Real.log_le_log (by linarith : (0 : ℝ) < T) (by nlinarith : T ≤ (q : ℝ) * T)
+            have := Real.log_le_log (by linarith : (0 : ℝ) < T) (le_mul_of_one_le_left (by linarith) hq : T ≤ (q : ℝ) * T)
             linarith
           have hB0 : 0 ≤ 1 + Real.log T := by
             have := Real.log_nonneg (by linarith : (1 : ℝ) ≤ T)
@@ -585,7 +586,7 @@ theorem zsumR_recip_le : GlobalTheory.Mem.An.ZeroCount → ∃ C : ℝ, ∀ (q :
     refine h.trans ?_
     have h1 : Real.log (q * 2) ≤ Real.log (3 * q) := Real.log_le_log (by linarith) (by linarith)
     have h2 : 0 ≤ Real.log (3 * q) := Real.log_nonneg (by linarith)
-    nlinarith [mul_le_mul_of_nonneg_left h1 hD0, mul_nonneg hD0 h2]
+    linarith [mul_le_mul_of_nonneg_left h1 hD0, mul_nonneg hD0 h2]
 
 end GlobalTheory.Mem.An
 end -- clump:auto
@@ -716,7 +717,9 @@ theorem logs {N q u T : ℝ} (hN : 1 ≤ N) (hq : N ≤ q) (hT : 2 ≤ T) (hu : 
       (Nat.log 2 ⌊u⌋₊ : ℝ) * Real.log q ≤ 2 * L ^ 2 := by
   have hq1 : 1 ≤ q := hN.trans hq
   have hu2 : 2 ≤ u := hT.trans hu
-  have huT : 4 ≤ u * T := by nlinarith
+  have huT : 4 ≤ u * T := by
+    calc (4 : ℝ) = 2 * 2 := by norm_num
+      _ ≤ u * T := mul_le_mul hu2 hT (by norm_num) (by linarith)
   have hlog : ∀ x : ℝ, 0 < x → x ≤ q * u * T → Real.log x ≤ L := fun x hx h =>
     hL ▸ Real.log_le_log hx h
   have key : ∀ a b : ℝ, 0 ≤ a → a ≤ q → 0 ≤ b → b ≤ u * T → a * b ≤ q * u * T := by
@@ -731,13 +734,13 @@ theorem logs {N q u T : ℝ} (hN : 1 ≤ N) (hq : N ≤ q) (hT : 2 ≤ T) (hu : 
     linarith
   have sq_le : ∀ x : ℝ, 1 ≤ x → x ≤ q * u * T → Real.log x ^ 2 ≤ L ^ 2 := fun x hx hc =>
     pow_le_pow_left₀ (Real.log_nonneg hx) (hlog x (by linarith) hc) 2
-  have huu : u ≤ u * T := by nlinarith
-  have hTT : T ≤ u * T := by nlinarith
-  refine ⟨hL1, sq_le _ ?_ ?_, ?_, sq_le _ (by linarith) ?_, sq_le _ (by nlinarith) ?_, ?_⟩
-  · rw [mul_assoc]; nlinarith
+  have huu : u ≤ u * T := le_mul_of_one_le_right (by linarith) (by linarith)
+  have hTT : T ≤ u * T := le_mul_of_one_le_left (by linarith) (by linarith)
+  refine ⟨hL1, sq_le _ ?_ ?_, ?_, sq_le _ (by linarith) ?_, sq_le _ (one_le_mul_of_one_le_of_one_le hN (by linarith)) ?_, ?_⟩
+  · rw [mul_assoc]; exact one_le_mul_of_one_le_of_one_le hN (by linarith)
   · rw [mul_assoc]; exact key _ _ (by linarith) hq (by linarith) le_rfl
   · have := hlog (N * u) (by positivity) (key _ _ (by linarith) hq (by linarith) huu)
-    nlinarith
+    exact this.trans (by rw [sq]; exact le_mul_of_one_le_right (by linarith) hL1)
   · rw [mul_comm]; exact key _ _ (by linarith) hq (by linarith) (by linarith)
   · exact key _ _ (by linarith) hq (by linarith) hTT
   · have a1 : Real.log q ≤ L :=
@@ -752,8 +755,10 @@ theorem logs {N q u T : ℝ} (hN : 1 ≤ N) (hq : N ≤ q) (hT : 2 ≤ T) (hu : 
       refine Real.log_le_log (by positivity) (le_trans ?_ (Nat.floor_le (by linarith)))
       exact_mod_cast Nat.pow_log_le_self 2 hfl
     have a4 : (Nat.log 2 ⌊u⌋₊ : ℝ) ≤ 2 * L := by
-      have : (0 : ℝ) ≤ Nat.log 2 ⌊u⌋₊ := by positivity
-      nlinarith
+      have h0 : (0 : ℝ) ≤ Nat.log 2 ⌊u⌋₊ := by positivity
+      have hhalf : (Nat.log 2 ⌊u⌋₊ : ℝ) * (1 / 2) ≤ (Nat.log 2 ⌊u⌋₊ : ℝ) * Real.log 2 :=
+        mul_le_mul_of_nonneg_left (by linarith) h0
+      linarith
     calc _ ≤ (2 * L) * L := mul_le_mul a4 a1 (Real.log_nonneg hq1) (by linarith)
       _ = _ := by ring
 
@@ -838,7 +843,7 @@ theorem explicit_formula_right : ∃ C : ℝ, 0 < C ∧ ∀ (q : ℕ) [NeZero q]
   have hZ0 : 0 ≤ zsumR χ.primitiveCharacter 0 1 (fun ρ => 1 / ‖ρ‖) := by
     rw [zsumR_eq]
     exact Finset.sum_nonneg fun ρ _ => by positivity
-  have hl0 : 0 ≤ Real.log (χ.conductor * u) := Real.log_nonneg (by nlinarith)
+  have hl0 : 0 ≤ Real.log (χ.conductor * u) := Real.log_nonneg (one_le_mul_of_one_le_of_one_le hN (by linarith))
   have hE' := hE.trans (mul_le_mul_of_nonneg_right (le_abs_self A) (by positivity))
   refine combine (abs_nonneg A) hB.le (Real.one_le_sqrt.mpr (by linarith)) (by positivity)
     (by positivity) hN hq ?_ (hP.trans l5) hE' hD ?_ l2 l3 l4 hZ₁ hZ
@@ -893,8 +898,7 @@ theorem normSq_geomSum_le_fejer (w : ℂ) (hw : ‖w‖ ≤ 1) (J : ℕ) :
     have h3 := hre (J + 1)
     have hw2 : Complex.normSq w ≤ 1 := by
       rw [Complex.normSq_eq_norm_sq]
-      have := norm_nonneg w
-      nlinarith
+      exact pow_le_one₀ (norm_nonneg w) hw
     rw [h2]
     set S := ∑ j ∈ Finset.range (J + 1), w ^ j
     rw [h1] at h3 ⊢
@@ -904,9 +908,11 @@ theorem normSq_geomSum_le_fejer (w : ℂ) (hw : ‖w‖ ≤ 1) (J : ℕ) :
       simp
       ring
     have h5 := Complex.normSq_nonneg S
+    have h6 : Complex.normSq w * Complex.normSq S ≤ Complex.normSq S :=
+      mul_le_of_le_one_left h5 hw2
     rw [h4, h3]
     push_cast
-    nlinarith
+    linarith
 
 theorem fejer_re_ge (w : ℂ) (hw : ‖w‖ ≤ 1) (J : ℕ) :
     -(1 / 2) ≤ ∑ j ∈ Finset.Icc 1 J, (1 - (j : ℝ) / (J + 1)) * (w ^ j).re := by
@@ -1047,7 +1053,7 @@ theorem powerSum_weighted_ineq {ι : Type} (S : Finset ι) (z : ι → ℂ) (b :
     have h1 := Finset.single_le_sum hnn hi₁S
     have hb1 : (1 : ℝ) ≤ b i₁ := by exact_mod_cast hb₁
     have h2 := hF1' _ (hwn i₁ hi₁S hb₁)
-    have h3 : F (w i₁) + 1 ≤ (b i₁ : ℝ) * (F (w i₁) + 1) := by nlinarith
+    have h3 : F (w i₁) + 1 ≤ (b i₁ : ℝ) * (F (w i₁) + 1) := le_mul_of_one_le_left (by linarith) hb1
     have h4 : ∑ i ∈ S, (b i : ℝ) * (F (w i) + 1)
         = ∑ i ∈ S, (b i : ℝ) * F (w i) + ∑ i ∈ S, (b i : ℝ) := by
       rw [← Finset.sum_add_distrib]
@@ -1084,7 +1090,9 @@ theorem powerSum_weighted_ineq {ι : Type} (S : Finset ι) (z : ι → ℂ) (b :
     have hc0 : 0 ≤ c j := mul_nonneg ha0 (by linarith)
     have hc2 : c j ≤ 2 := by
       show (1 - (j : ℝ) / (J + 1)) * (1 + Real.cos (j * θ)) ≤ 2
-      nlinarith
+      calc (1 - (j : ℝ) / (J + 1)) * (1 + Real.cos (j * θ))
+          ≤ 1 * 2 := mul_le_mul ha1 (by linarith) (by linarith) zero_le_one
+        _ = 2 := by norm_num
     have hq : R⁻¹ ^ j ≤ (1 + x) ^ j := pow_le_pow_left₀ hRinv0 hRinv j
     have hq2 : (1 + x) ^ j ≤ (1 + x) ^ J := pow_le_pow_right₀ (by linarith) hjJ
     have hq3 : (1 + x) ^ j ≤ (3 / 2 : ℝ) ^ j := pow_le_pow_left₀ h1x.le (by linarith) j
@@ -1128,7 +1136,8 @@ theorem powerSum_repulsion :
     rw [mul_comm, Real.exp_nat_mul]
     exact pow_le_pow_left₀ (by linarith) (by linarith [Real.add_one_le_exp x]) J
   have hP0 : 0 < (1 + x) ^ J := by positivity
-  have h1 : (J : ℝ) * 1 ≤ J * (32 * J * δ * (1 + x) ^ J) := by nlinarith
+  have h1 : (J : ℝ) * 1 ≤ J * (32 * J * δ * (1 + x) ^ J) := by
+    linarith [show (J : ℝ) * (32 * (J : ℝ) * δ * (1 + x) ^ J) = 8 * (4 * (J : ℝ) ^ 2 * δ * (1 + x) ^ J) by ring]
   have h2 : 1 ≤ 32 * J * δ * (1 + x) ^ J := le_of_mul_le_mul_left h1 hJ0
   have h3 : 32 * J * δ * (1 + x) ^ J ≤ 2080 * L * δ * Real.exp (x * J) := by
     have : 32 * (J : ℝ) ≤ 2080 * L := by linarith
@@ -1465,7 +1474,9 @@ theorem repulsion : ∃ c : ℝ, 0 < c ∧ ∀ (q : ℕ) [NeZero q] (χ₁ χ : 
       (V2 + V3).map (fun w => 1 / ((2 : ℂ) + t * I - w))) (1 / ((2 : ℂ) + t * I - ρ))
       ((8 * C + 4) * L) (1 - β) (1 - ρ.re)
       (Multiset.mem_add.2 (Or.inr (Multiset.mem_map_of_mem _ (Multiset.mem_add.2 (Or.inl hρV)))))
-      (by nlinarith) (by linarith) (by linarith) (by linarith) ?_ ?_ ?_
+      (by calc (1 : ℝ) ≤ 4 * (1 / 2) := by norm_num
+            _ ≤ (8 * C + 4) * L := mul_le_mul (by linarith) hLh (by norm_num) (by linarith))
+      (by linarith) (by linarith) (by linarith) ?_ ?_ ?_
   · have hL' : 0 < L := by linarith
     have hδ : 0 < 1 - β := by linarith
     convert key using 1
@@ -1479,7 +1490,7 @@ theorem repulsion : ∃ c : ℝ, 0 < c ∧ ∀ (q : ℕ) [NeZero q] (χ₁ χ : 
     have d2' : (V2.card : ℝ) ≤ W2.card := by exact_mod_cast d2
     have d3' : (V3.card : ℝ) ≤ W3.card := by exact_mod_cast d3
     push_cast
-    nlinarith
+    linarith [show (8 * C + 4) * L = 8 * (C * L) + 4 * L by ring]
   · intro j hj
     obtain ⟨k, rfl⟩ : ∃ k, j = k + 1 := ⟨j - 1, by omega⟩
     have e : (Multiset.map (fun y => y ^ (k + 1)) ((W0 + V1).map (fun w => 1 / ((2 : ℂ) + (0 : ℝ) * I - w)) +
