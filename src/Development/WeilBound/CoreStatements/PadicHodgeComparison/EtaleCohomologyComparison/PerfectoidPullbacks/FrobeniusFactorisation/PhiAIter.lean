@@ -84,24 +84,6 @@ import Mathlib.RingTheory.AdicCompletion.Completeness
 import Mathlib.RingTheory.Coalgebra.CoassocSimps
 import Mathlib.RingTheory.RegularLocalRing.Defs
 
-attribute [-instance]
-  isWellOrder_lt instWellQuasiOrderedLEOfWellFoundedLT
-  NormedSpace.toModule NormedAlgebra.toAlgebra
-  Subalgebra.normedCommRing Subalgebra.seminormedRing
-  Subalgebra.seminormedCommRing Subalgebra.normedRing
-  Submodule.normedSpace Submodule.seminormedAddCommGroup
-  Submodule.normedAddCommGroup SubalgebraClass.toNormedAlgebra
-  Subalgebra.isScalarTower_left Subalgebra.isScalarTower_mid
-  Submonoid.instIsScalarTowerSubtypeMem Submonoid.instSMulCommClassSubtypeMem_1
-  Subalgebra.smulCommClass_right Subalgebra.smulCommClass_left
-  MulSemiringAction.toDistribMulAction
-  RingHomClass.toLinearMapClassNNRat RingHomClass.toLinearMapClassRat
-  NonUnitalAlgHomClass.instLinearMapClass
-  NonUnitalAlgHomClass.instSemilinearMapClassOfNonUnitalAlgSemiHomClassOfClassRingHom
-  Algebra.TensorProduct.instNonUnitalSemiring Algebra.TensorProduct.instNonUnitalRing
-attribute [local instance high]
-  Submodule.module TensorProduct.leftModule Algebra.TensorProduct.leftAlgebra
-
 local elab "exact_kern " t:term : tactic =>
   Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ =>
     Lean.Elab.Tactic.elabTerm t none
