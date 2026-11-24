@@ -1383,6 +1383,43 @@ instance (priority := high) RW.instHSMulTensorProduct (LL : FinExt l) {M : Type*
     HSMul (RW LL) (RW LL ⊗[↥(OL LL)] M) (RW LL ⊗[↥(OL LL)] M) :=
   @instHSMul _ _ TensorProduct.leftModule.toSMul
 
+
+instance (priority := high) OL.instModuleQuotient (LL : FinExt l) {M : Type*} [AddCommGroup M]
+    [Module ↥(OL LL) M] (S : Submodule ↥(OL LL) M) : Module ↥(OL LL) (M ⧸ S) :=
+  Submodule.Quotient.module S
+
+instance (priority := high) OL.instSMulQuotient (LL : FinExt l) {M : Type*} [AddCommGroup M]
+    [Module ↥(OL LL) M] (S : Submodule ↥(OL LL) M) : SMul ↥(OL LL) (M ⧸ S) :=
+  (Submodule.Quotient.module S).toSMul
+
+instance (priority := high) OL.instHSMulQuotient (LL : FinExt l) {M : Type*} [AddCommGroup M]
+    [Module ↥(OL LL) M] (S : Submodule ↥(OL LL) M) : HSMul ↥(OL LL) (M ⧸ S) (M ⧸ S) :=
+  @instHSMul _ _ (Submodule.Quotient.module S).toSMul
+
+instance (priority := high) FinExt.instModuleQuotient (LL : FinExt l) {M : Type*} [AddCommGroup M]
+    [Module ↥LL.1 M] (S : Submodule ↥LL.1 M) : Module ↥LL.1 (M ⧸ S) :=
+  Submodule.Quotient.module S
+
+instance (priority := high) FinExt.instSMulQuotient (LL : FinExt l) {M : Type*} [AddCommGroup M]
+    [Module ↥LL.1 M] (S : Submodule ↥LL.1 M) : SMul ↥LL.1 (M ⧸ S) :=
+  (Submodule.Quotient.module S).toSMul
+
+instance (priority := high) FinExt.instHSMulQuotient (LL : FinExt l) {M : Type*} [AddCommGroup M]
+    [Module ↥LL.1 M] (S : Submodule ↥LL.1 M) : HSMul ↥LL.1 (M ⧸ S) (M ⧸ S) :=
+  @instHSMul _ _ (Submodule.Quotient.module S).toSMul
+
+instance (priority := high) OL.instModulePowerSeries (LL : FinExt l) :
+    Module ↥(OL LL) (PowerSeries ↥(OL LL)) :=
+  MvPowerSeries.instAlgebra.toModule
+
+instance (priority := high) OL.instSMulPowerSeries (LL : FinExt l) :
+    SMul ↥(OL LL) (PowerSeries ↥(OL LL)) :=
+  MvPowerSeries.instAlgebra.toModule.toSMul
+
+instance (priority := high) OL.instHSMulPowerSeries (LL : FinExt l) :
+    HSMul ↥(OL LL) (PowerSeries ↥(OL LL)) (PowerSeries ↥(OL LL)) :=
+  @instHSMul _ _ MvPowerSeries.instAlgebra.toModule.toSMul
+
 end Loc
 
 end Formalism.BasicNotions
