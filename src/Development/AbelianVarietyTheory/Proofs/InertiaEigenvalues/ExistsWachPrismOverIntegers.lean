@@ -73,6 +73,25 @@ import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.NormEqZpowOfMe
 import Mathlib.RingTheory.PowerSeries.NoZeroDivisors
 import Std.Tactic.BVDecide.Normalize.Prop
 
+attribute [-instance]
+  isWellOrder_lt instWellQuasiOrderedLEOfWellFoundedLT
+  NormedSpace.toModule NormedAlgebra.toAlgebra
+  Subalgebra.normedCommRing Subalgebra.seminormedRing
+  Subalgebra.seminormedCommRing Subalgebra.normedRing
+  Submodule.normedSpace Submodule.seminormedAddCommGroup
+  Submodule.normedAddCommGroup SubalgebraClass.toNormedAlgebra
+  Subalgebra.isScalarTower_left Subalgebra.isScalarTower_mid
+  Submonoid.instIsScalarTowerSubtypeMem Submonoid.instSMulCommClassSubtypeMem_1
+  Subalgebra.smulCommClass_right Subalgebra.smulCommClass_left
+  MulSemiringAction.toDistribMulAction
+  RingHomClass.toLinearMapClassNNRat RingHomClass.toLinearMapClassRat
+  NonUnitalAlgHomClass.instLinearMapClass
+  NonUnitalAlgHomClass.instSemilinearMapClassOfNonUnitalAlgSemiHomClassOfClassRingHom
+  Algebra.TensorProduct.instNonUnitalSemiring Algebra.TensorProduct.instNonUnitalRing
+  FiniteDimensional.finiteDimensional_subalgebra
+attribute [local instance high]
+  Submodule.module TensorProduct.leftModule Algebra.TensorProduct.leftAlgebra
+
 -- This file was produced by scripts/clump.py from the modules listed below.
 -- Members: Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.CDvdOfMapEqZero, Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ExistsUniqueUnramifiedIntegersCoordsBasis, Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ExistsWachInclusionPowerSeriesIntoOneTmulAinf, Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ExistsWachPrismOverIntegers
 
@@ -744,7 +763,6 @@ theorem letEmb_QQ (R : WSer Γ) (h : R.φ₀ = phi l ↥(OL LL)) : letEmb Γ.emb
     funext fun i => (map_QQ (embW (Γ.emb i)).toRingHom s).trans h1
   exact h2.trans (letφ_pow_const R.φ₀ (s - 1) R.q₀).symm
 
-set_option synthInstance.maxHeartbeats 200000 in
 theorem one_tmul_inj (LL : FinExt l) {a b : Ainf l}
     (h : (1 : ↥(OL LL)) ⊗ₜ[ℤ_[l]] inclW l a = (1 : ↥(OL LL)) ⊗ₜ[ℤ_[l]] inclW l b) : a = b := by
   obtain ⟨_, _, -, -, _, -⟩ := GlobalTheory.Per.integers_completeDVR l LL
@@ -788,7 +806,6 @@ theorem exists_str {R S C : Type} [CommRing R] [CommRing S] [CommRing C] (f : S 
   rw [RingEquiv.eq_symm_apply, Subtype.ext_iff]
   rfl
 
-set_option synthInstance.maxHeartbeats 200000 in
 theorem ker_theta_io (AI : LocAinf l P) (hs : 1 ≤ s) (hK : K.1 ≤ Ks K s) (io : (WK K)⟦X⟧ →+* Ainf l)
     (hX : io X = WittVector.teichmuller l (AI.εroot s) - 1)
     (hC : ∀ w : WK K, Formalism.Per.θ l (io (C w)) = intToOC (unr K) w) :
@@ -842,7 +859,6 @@ theorem coeff_not_isUnit (K : FinExt l) : ¬ IsUnit (l : WK K) := by
   obtain ⟨_, -, -, lu, -⟩ := GlobalTheory.Per.integers_completeDVR l (unr K)
   exact lu
 
-set_option synthInstance.maxHeartbeats 200000 in
 def prismS (P : LocPrime l) (hs : 1 ≤ s) (f : (WK K)⟦X⟧ →+* OC l) (hf : RingHom.ker f = Ideal.span {QQ l (WK K) s})
     (str : ↥(OL K) →+* (WK K)⟦X⟧ ⧸ Ideal.span {QQ l (WK K) s}) : Obj l ↥(OL K) where
   A := (WK K)⟦X⟧

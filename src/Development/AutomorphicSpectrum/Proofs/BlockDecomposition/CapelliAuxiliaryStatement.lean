@@ -47,6 +47,15 @@ import Development.WeilBound.CoreStatements.TemperedRepresentationTheory.AffineG
 @[expose] public section
 
 noncomputable section
+attribute [-instance] Submodule.seminormedAddCommGroup Submodule.normedAddCommGroup
+local instance (priority := high) {E : Type} [Field E] [NumberField E] [_root_.NumberField.IsTotallyComplex E] {N : ℕ} :
+    AddCommGroup (GlobalTheory.CuspRep.Sm E N) := Submodule.addCommGroup _
+local instance (priority := high) {E : Type} [Field E] [NumberField E] [_root_.NumberField.IsTotallyComplex E] {N : ℕ} :
+    Module ℂ (GlobalTheory.CuspRep.Sm E N) := Submodule.module _
+local instance (priority := high) {E : Type} [Field E] [NumberField E] [_root_.NumberField.IsTotallyComplex E] {N : ℕ} :
+    MulAction ℂ (GlobalTheory.CuspRep.Sm E N) := MulActionWithZero.toMulAction
+local instance (priority := high) {E : Type} [Field E] [NumberField E] [_root_.NumberField.IsTotallyComplex E] {N : ℕ} :
+    SMulCommClass ℂ ℂ (GlobalTheory.CuspRep.Sm E N) := smulCommClass_self _ _
 
 open NumberField GlobalTheory.CuspRep MeasureTheory PositivityTheory.Affgl GlobalTheory.CompanionTheory.CTFin Matrix Topology
 

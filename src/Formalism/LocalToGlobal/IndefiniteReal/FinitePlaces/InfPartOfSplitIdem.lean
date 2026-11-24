@@ -59,6 +59,112 @@ namespace Formalism.IndefR.Fin.LevelGroupLemmas.Lat
 
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
+section InfPartInsts
+
+attribute [-instance] IsCMField.starRing CStarAlgebra.toStarRing NonUnitalCStarAlgebra.toStarRing RCLike.toStarRing Matrix.SpecialLinearGroup.instCoeInt
+
+local instance (priority := high) instCommRingAE (D : D7) : CommRing (AE D) :=
+  Algebra.TensorProduct.instCommRing
+
+local instance (priority := high) instRingAE (D : D7) : Ring (AE D) :=
+  CommRing.toRing
+
+local instance (priority := high) instCommSemiringAE (D : D7) : CommSemiring (AE D) :=
+  CommRing.toCommSemiring
+
+local instance (priority := high) instSemiringAE (D : D7) : Semiring (AE D) :=
+  Ring.toSemiring
+
+local instance (priority := high) instNonAssocSemiringAE (D : D7) : NonAssocSemiring (AE D) :=
+  Semiring.toNonAssocSemiring
+
+local instance (priority := high) instNonUnitalNonAssocSemiringAE (D : D7) : NonUnitalNonAssocSemiring (AE D) :=
+  NonAssocSemiring.toNonUnitalNonAssocSemiring
+
+local instance (priority := high) instAddCommGroupAE (D : D7) : AddCommGroup (AE D) :=
+  Ring.toAddCommGroup
+
+local instance (priority := high) instAddCommMonoidAE (D : D7) : AddCommMonoid (AE D) :=
+  AddCommGroup.toAddCommMonoid
+
+local instance (priority := high) instAddMonoidAE (D : D7) : AddMonoid (AE D) :=
+  AddCommMonoid.toAddMonoid
+
+local instance (priority := high) instCommRingEAf (D : D7) : CommRing (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  Algebra.TensorProduct.instCommRing
+
+local instance (priority := high) instRingEAf (D : D7) : Ring (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  CommRing.toRing
+
+local instance (priority := high) instCommSemiringEAf (D : D7) : CommSemiring (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  CommRing.toCommSemiring
+
+local instance (priority := high) instSemiringEAf (D : D7) : Semiring (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  Ring.toSemiring
+
+local instance (priority := high) instNonAssocSemiringEAf (D : D7) : NonAssocSemiring (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  Semiring.toNonAssocSemiring
+
+local instance (priority := high) instNonUnitalNonAssocSemiringEAf (D : D7) : NonUnitalNonAssocSemiring (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  NonAssocSemiring.toNonUnitalNonAssocSemiring
+
+local instance (priority := high) instAddCommGroupEAf (D : D7) : AddCommGroup (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  Ring.toAddCommGroup
+
+local instance (priority := high) instAddCommMonoidEAf (D : D7) : AddCommMonoid (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  AddCommGroup.toAddCommMonoid
+
+local instance (priority := high) instAddMonoidEAf (D : D7) : AddMonoid (Af D.host.F ⊗[D.host.F] D.host.E) :=
+  AddCommMonoid.toAddMonoid
+
+local instance (priority := high) instCommRingEAinf (D : D7) : CommRing (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  Algebra.TensorProduct.instCommRing
+
+local instance (priority := high) instRingEAinf (D : D7) : Ring (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  CommRing.toRing
+
+local instance (priority := high) instCommSemiringEAinf (D : D7) : CommSemiring (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  CommRing.toCommSemiring
+
+local instance (priority := high) instSemiringEAinf (D : D7) : Semiring (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  Ring.toSemiring
+
+local instance (priority := high) instNonAssocSemiringEAinf (D : D7) : NonAssocSemiring (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  Semiring.toNonAssocSemiring
+
+local instance (priority := high) instNonUnitalNonAssocSemiringEAinf (D : D7) : NonUnitalNonAssocSemiring (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  NonAssocSemiring.toNonUnitalNonAssocSemiring
+
+local instance (priority := high) instAddCommGroupEAinf (D : D7) : AddCommGroup (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  Ring.toAddCommGroup
+
+local instance (priority := high) instAddCommMonoidEAinf (D : D7) : AddCommMonoid (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  AddCommGroup.toAddCommMonoid
+
+local instance (priority := high) instAddMonoidEAinf (D : D7) : AddMonoid (Ainf D.host.F ⊗[D.host.F] D.host.E) :=
+  AddCommMonoid.toAddMonoid
+
+local instance (priority := high) instCommRingIntAf (D : D7) : CommRing ↥(Formalism.L2.Herm.intAf D.host.F D.host.E) :=
+  Subring.toCommRing _
+
+local instance (priority := high) instRingIntAf (D : D7) : Ring ↥(Formalism.L2.Herm.intAf D.host.F D.host.E) :=
+  CommRing.toRing
+
+local instance (priority := high) instSemiringIntAf (D : D7) : Semiring ↥(Formalism.L2.Herm.intAf D.host.F D.host.E) :=
+  Ring.toSemiring
+
+local instance (priority := high) instAddMonoidHomClassRingHom {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] :
+    AddMonoidHomClass (R →+* S) R S :=
+  RingHomClass.toAddMonoidHomClass
+
+local instance (priority := high) instAddHomClassRingHom {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] :
+    AddHomClass (R →+* S) R S :=
+  AddMonoidHomClass.toAddHomClass
+
+local instance (priority := high) instZeroHomClassRingHom {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] :
+    ZeroHomClass (R →+* S) R S :=
+  AddMonoidHomClass.toZeroHomClass
+
 section Lift
 
 variable (F : Type) [Field F] [NumberField F]
@@ -951,6 +1057,8 @@ theorem infPart_cA_idemSum {e : AE D} {P : Finset (Formalism.L2.DIV.Pl D.host.E)
 
 
 end Lat
+
+end InfPartInsts
 
 end Formalism.IndefR.Fin.LevelGroupLemmas.Lat
 

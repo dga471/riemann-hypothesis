@@ -195,6 +195,7 @@ section -- clump:auto
 @[expose] public section
 
 noncomputable section
+attribute [-instance] Submodule.seminormedAddCommGroup
 
 open NumberField IsDedekindDomain Topology Matrix MeasureTheory Neutral.B1 ReciprocityTheory.Neutral.Bridge.HCFR Formalism.L2.Host
 open scoped ContDiff
