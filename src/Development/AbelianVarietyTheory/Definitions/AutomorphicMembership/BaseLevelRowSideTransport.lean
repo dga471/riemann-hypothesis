@@ -47,6 +47,10 @@ open scoped TensorProduct
 
 namespace GlobalTheory.Mem.R3
 
+local elab "exact_kern " t:term : tactic =>
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => Lean.Elab.Tactic.elabTerm t none
+
+
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
 variable {B : Base} {C : Cols B}
@@ -169,21 +173,21 @@ theorem okB_imp {l : Bool} {μ : a.D.what₂.Tup} (h : okB c F tupT hm hTop l μ
   chain_ioOK c.to F tupT hm hTop ((h))
 
 def ioCB (l : Bool) (μ : a.D.what₂.Tup) (k : ℕ) (v : (toChainReal R F tupT hm hTop).CC l μ (k + 1)) : (toChainReal R F tupT hm hTop).Amb k :=
-  (by with_unfolding_all exact (((chainB c.to F tupT hm hTop).ioC l ((by with_unfolding_all exact (μ :))) k
-    ((by with_unfolding_all exact ((LinearEquiv.ofEq _ _ (congrFun (congrFun (congrFun (spCC_eq c F tupT hm hTop) l) μ) (k + 1)) v) :)))).1 :))
+  (by exact_kern (((chainB c.to F tupT hm hTop).ioC l ((by exact_kern (μ))) k
+    ((by exact_kern ((LinearEquiv.ofEq _ _ (congrFun (congrFun (congrFun (spCC_eq c F tupT hm hTop) l) μ) (k + 1)) v))))).1))
 
 theorem ioCB_eq (l : Bool) (μ : a.D.what₂.Tup) (k : ℕ) (v : (toChainReal R F tupT hm hTop).CC l μ (k + 1)) :
     ioCB c l μ k v = ((toChainReal R F tupT hm hTop).ioC l μ k v).1 :=
-  (by with_unfolding_all exact ((chain_ioC c.to (R := R) (tupT μ) k ((v.1))
-    (((LinearEquiv.ofEq _ _ (congrFun (congrFun (congrFun (spCC_eq c F tupT hm hTop) l) μ) (k + 1)) v).2)) ((v.2))) : _))
+  (by exact_kern ((chain_ioC c.to (R := R) (tupT μ) k ((v.1))
+    (((LinearEquiv.ofEq _ _ (congrFun (congrFun (congrFun (spCC_eq c F tupT hm hTop) l) μ) (k + 1)) v).2)) ((v.2)))))
 
 def ioXB' (l : Bool) (μ : a.D.what₂.Tup) (v : (toChainReal R F tupT hm hTop).CCX l μ) : (toChainReal R F tupT hm hTop).Amb (a.D.R.m - 1) :=
-  (by with_unfolding_all exact (((chainB c.to F tupT hm hTop).ioX l ((by with_unfolding_all exact (μ :))) ((by with_unfolding_all exact ((LinearEquiv.ofEq _ _ (congrFun (congrFun (spCCX_eq c F tupT hm hTop) l) μ) v) :)))).1 :))
+  (by exact_kern (((chainB c.to F tupT hm hTop).ioX l ((by exact_kern (μ))) ((by exact_kern ((LinearEquiv.ofEq _ _ (congrFun (congrFun (spCCX_eq c F tupT hm hTop) l) μ) v))))).1))
 
 theorem ioXB'_eq (l : Bool) (μ : a.D.what₂.Tup) (v : (toChainReal R F tupT hm hTop).CCX l μ) :
     ioXB' c l μ v = ((toChainReal R F tupT hm hTop).ioX l μ v).1 :=
-  (by with_unfolding_all exact ((chain_ioX c.to (R := R) hm hTop (tupT μ) ((by with_unfolding_all exact (v.1 :))) ((by with_unfolding_all exact ((topMult_tr c.to hTop) :)))
-    ((by with_unfolding_all exact ((LinearEquiv.ofEq _ _ (congrFun (congrFun (spCCX_eq c F tupT hm hTop) l) μ) v).2 :))) ((by with_unfolding_all exact (v.2 :)))) :))
+  (by exact_kern ((chain_ioX c.to (R := R) hm hTop (tupT μ) ((by exact_kern (v.1))) ((by exact_kern ((topMult_tr c.to hTop))))
+    ((by exact_kern ((LinearEquiv.ofEq _ _ (congrFun (congrFun (spCCX_eq c F tupT hm hTop) l) μ) v).2))) ((by exact_kern (v.2))))))
 
 end Chain
 
