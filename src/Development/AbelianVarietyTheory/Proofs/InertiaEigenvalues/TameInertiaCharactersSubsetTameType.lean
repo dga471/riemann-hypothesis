@@ -681,9 +681,36 @@ private theorem eval_eq_zero_of_aeval_eq_zero {K V : Type} [Field K] [AddCommGro
     (hx : x ≠ 0) (h : f x = z • x) (hp : Polynomial.aeval f p x = 0) : p.eval z = 0 :=
   (smul_eq_zero.mp ((Module.End.aeval_apply_of_mem_apply_eq_smul h).symm.trans hp)).resolve_right hx
 
-set_option synthInstance.maxHeartbeats 400000 in
-set_option maxHeartbeats 8000000 in
 open GlobalTheory.CharsDesc in
+-- Short-circuit `SMul`/`Module` on `invL l (S ↥(OL LL) ↥LL.1 e)` and `PhiMod.MMl` so
+-- `chars_subset_sig` avoids multi-second dead-end `SeminormedRing`/`SeminormedAddCommGroup` searches.
+@[reducible] noncomputable local instance (priority := high) instSMulOLInvL
+    {l e : ℕ} [Fact l.Prime] [NeZero e] {LL : FinExt l} :
+    SMul ↥(OL LL) ↥(invL l (S ↥(OL LL) ↥LL.1 e)) :=
+  Algebra.toSMul
+
+@[reducible] noncomputable local instance (priority := high) instSMulInvLPow
+    {l e : ℕ} [Fact l.Prime] [NeZero e] {LL : FinExt l} :
+    SMul ↥(invL l (S ↥(OL LL) ↥LL.1 e)) (PowerSeries ↥LL.1) :=
+  Submonoid.smul _
+
+local instance (priority := high) instIsScalarTowerOLInvLVec
+    {l a e : ℕ} [Fact l.Prime] [NeZero a] [NeZero e] {LL : FinExt l} {ι : Type} :
+    IsScalarTower ↥(OL LL) ↥(invL l (S ↥(OL LL) ↥LL.1 e)) (Vec ↥LL.1 a ι) :=
+  ⟨fun r s v => funext fun τ => funext fun i => smul_assoc r s (v τ i)⟩
+
+@[reducible] noncomputable local instance (priority := high) instModuleOLMMl
+    {l a e : ℕ} [Fact l.Prime] [NeZero a] [NeZero e] {LL : FinExt l}
+    {ι : Type} [Fintype ι] [DecidableEq ι] (P : PhiMod ↥(OL LL) ↥LL.1 l e a ι) :
+    Module ↥(OL LL) P.MMl :=
+  Submodule.module' P.MMl
+
+@[reducible] noncomputable local instance (priority := high) instSMulOLMMl
+    {l a e : ℕ} [Fact l.Prime] [NeZero a] [NeZero e] {LL : FinExt l}
+    {ι : Type} [Fintype ι] [DecidableEq ι] (P : PhiMod ↥(OL LL) ↥LL.1 l e a ι) :
+    SMul ↥(OL LL) P.MMl :=
+  (instModuleOLMMl P).toSMul
+
 theorem GlobalTheory.CharsDesc.chars_subset_sig : ∀ (l : ℕ) [Fact l.Prime] (a e : ℕ) [NeZero a] [NeZero e] (ϖ : PiSys l e) (LL : FinExt l) [HasUnr a LL] [TameDescentExponentData ↥LL.1 l e a], l ≠ 2 → ∀ (ι : Type) [Fintype ι] [DecidableEq ι] (P : PhiMod ↥(OL LL) ↥LL.1 l e a ι) (T : QLat LL) (I : Ident (thetaW a LL) ϖ P T) (jB : (ι → OB l ↥(OL LL)) ≃ₗ[OB l ↥(OL LL)] TW (OB l ↥(OL LL)) T) (Δ : Descent P) (Pl : LocPrime l) (AI : LocAinf l Pl), IsStd Pl AI → IsCrisCmp I jB → IsHoriz (thetaW a LL) ϖ (sQ l) P jB → IsGalDesc (sQ l) I Δ → ∀ Sig : Finset (ZMod e), TameType a ϖ Pl T Sig → ∀ τ, Δ.chars τ ⊆ (Sig : Set (ZMod e)) := by
   intro l _ a e _ _ ϖ LL _ _ _ ι _ _ P T I jB Δ Pl AI hStd hCmp hHor hDesc Sig hType τ c hc
   have hpoly : ∀ (z : ↥LL.1) (n : ℕ),

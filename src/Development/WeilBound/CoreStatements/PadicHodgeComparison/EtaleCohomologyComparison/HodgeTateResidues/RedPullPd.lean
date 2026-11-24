@@ -108,6 +108,8 @@ theorem pd_om_sh {b b' : Base} {L : b.Fun} {L' : b'.Fun} {σ : b.R →+* b'.R} (
 
 variable {l : ℕ} [Fact l.Prime] {K : IntermediateField ℚ_[l] (PadicAlgCl l)}
 
+attribute [local irreducible] pdOm pdSh CH.Mor.pull
+
 section F
 variable {O : Type} [CommRing O] (F : B.Fn O) (κ : O →+* OC l)
 

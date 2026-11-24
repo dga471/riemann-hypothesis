@@ -60,6 +60,31 @@ open UpperTheory.ConvolutionTheory UpperTheory.ConvolutionTheory.C PositivityThe
 open GlobalTheory.PRep GlobalTheory.SmGL Formalism.BasicNotions GlobalTheory.CuspRep
 open scoped TensorProduct Classical
 
+-- Short-circuit Prop-valued topological/measure instances on `G1 K n` and `quotientMeasure`
+-- (all Prop-valued, hence proof-irrelevant and zero diamond risk).
+local instance (priority := high) instT2SpaceG1 {K : Type} [Field K] [NumberField K] {n : ℕ} :
+    T2Space (G1 K n) :=
+  inferInstance
+
+local instance (priority := high) instFirstCountableG1 {K : Type} [Field K] [NumberField K] {n : ℕ} :
+    FirstCountableTopology (G1 K n) :=
+  @TopologicalSpace.SecondCountableTopology.to_firstCountableTopology _ _ inferInstance
+
+local instance (priority := high) instSigmaFiniteQuotientMeasureGam {K : Type} [Field K]
+    [NumberField K] {n : ℕ} {μ : Measure (G1 K n)} [μ.IsHaarMeasure] :
+    SigmaFinite (quotientMeasure (Gam K n) μ) :=
+  inferInstance
+
+local instance (priority := high) instSFiniteQuotientMeasureGam {K : Type} [Field K]
+    [NumberField K] {n : ℕ} {μ : Measure (G1 K n)} [μ.IsHaarMeasure] :
+    SFinite (quotientMeasure (Gam K n) μ) :=
+  @instSFiniteOfSigmaFinite _ _ (quotientMeasure (Gam K n) μ) (instSigmaFiniteQuotientMeasureGam (μ := μ))
+
+local instance (priority := high) instSFiniteRestrictQuotientMeasureGam {K : Type} [Field K]
+    [NumberField K] {n : ℕ} {μ : Measure (G1 K n)} [μ.IsHaarMeasure] {s : Set (RightCosetSpace (Gam K n))} :
+    SFinite ((quotientMeasure (Gam K n) μ).restrict s) :=
+  inferInstance
+
 section Avg
 
 open Function Set
@@ -87,8 +112,6 @@ private theorem integ_of {Y E : Type*} [TopologicalSpace Y] [MeasurableSpace Y] 
   rwa [IntegrableOn, Measure.restrict_eq_self_of_ae_mem hs] at h
 
 variable (μ) in
-set_option maxHeartbeats 1000000 in
-set_option synthInstance.maxHeartbeats 200000 in
 private theorem avg_rep {Y : Type*} [TopologicalSpace Y] [T2Space Y] [SecondCountableTopology Y] [MeasurableSpace Y] [BorelSpace Y]
     (ν : Measure Y) [IsFiniteMeasure ν] {C : Set Y} (hC : IsCompact C) (hs : ∀ᵐ k ∂ν, k ∈ C)
     {j : Y → G1 K n} (hj : Continuous j) {c : Y → ℂ} (hc : Continuous c) {w : L2 μ} {F : G1 K n → ℂ}
@@ -326,8 +349,6 @@ private theorem fixed_of (D : TypeDat K n) {κ : Measure (archCompact K n)} {e :
   simp only [inner_smul_right]
   simpa using hfix
 
-set_option maxHeartbeats 1000000 in
-set_option synthInstance.maxHeartbeats 200000 in
 private theorem rep_in {τ : Submodule ℂ (L2 μ)} (hcl : IsClosed (τ : Set (L2 μ)))
     (hinv : ∀ g, ∀ v ∈ τ, rightRegularRep (Gam K n) μ g v ∈ τ) (D : TypeDat K n)
     (E : Submodule ℂ (G1 K n → ℂ)) [FiniteDimensional ℂ E] (hE : ∀ φ ∈ E, ∃ v : L2 μ, IsContRep μ v φ)
