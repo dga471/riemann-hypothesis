@@ -41,8 +41,20 @@ import Mathlib.Tactic.NormNum.RealSqrt
 
 noncomputable section
 
-local elab "exact_kern " t:term : tactic =>
-  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => Lean.Elab.Tactic.elabTerm t none
+-- Compare the types in the kernel to avoid unfolding the stage records in the elaborator.
+open Lean Elab Tactic in
+local elab "exact_by_kernel " term:term : tactic =>
+  closeMainGoalUsing `exact_by_kernel fun target _ => do
+    let value ← elabTerm term none
+    Term.synthesizeSyntheticMVarsNoPostponing
+    let value ← instantiateMVars value
+    let actual ← instantiateMVars (← Meta.inferType value)
+    let target ← instantiateMVars target
+    let lctx ← instantiateLCtxMVars (← getLCtx)
+    match Kernel.isDefEq (← getEnv) lctx actual target with
+    | .ok true => pure value
+    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
+    | .error error => throwError (error.toMessageData (← getOptions))
 
 
 open Formalism.BasicNotions Formalism.MainNotions Formalism.BasicNotions.TH Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes Formalism.MainNotions.StandardLattice Formalism.MainNotions.S MeasureTheory IsDedekindDomain NumberField
@@ -62,7 +74,7 @@ open DivX (md) in
 def divBack (X : DivX (GlobalTheory.EX.OB.setDiv D N h)) : DivX D := { X with md := fun S κ p _ la z => { md X S κ p la z with } }
 
 theorem idxDefs_fwd {X : DivX (GlobalTheory.EX.OB.setDiv D N h)} (H : IdxDefs D (divBack N h X)) : IdxDefs (GlobalTheory.EX.OB.setDiv D N h) X :=
-  ⟨(by exact_kern (H.Ij_def)), (by exact_kern (H.jw_def))⟩
+  ⟨by exact_by_kernel H.Ij_def, by exact_by_kernel H.jw_def⟩
 
 end Gen
 
@@ -128,8 +140,8 @@ variable {K : Ctx} {B : Base} {f : Fr B.toPre} {T : TwDat B} {w : ColW B f T} {Z
 def sameG : SameGrp (B := B) (C := w.C) Z (Db.setDivZ Z N h) :=
   SameGrp.ofN Z.N Z.V (Db.setDivZ Z N h).V Z.S Z.S Z.G Z.G
 
-def datMv {hX : B.fields.Ok} (z : Dat (w.st Z) w.I hX T Wt) : Dat (w.st (Db.setDivZ Z N h)) w.I hX T Wt :=
-  (by exact_kern ((Mv.cpDat (a := Z) (Db.setDivZ Z N h) (sameG N h) z)))
+def datMv {hX : B.fields.Ok} (z : Dat (w.st Z) w.I hX T Wt) : Dat (w.st (Db.setDivZ Z N h)) w.I hX T Wt := by
+  exact_by_kernel Mv.cpDat (a := Z) (Db.setDivZ Z N h) (sameG N h) z
 
 def p0Mv (p0 : BaseLevelRowSide (w.D Z)) : BaseLevelRowSide (w.D (Db.setDivZ Z N h)) :=
   ⟨{ p0.s with }⟩
@@ -159,23 +171,23 @@ def objMv (O : Obj2 (w.D Z)) : Obj2 (w.D (Db.setDivZ Z N h)) where
   amb0 := { O.amb0 with }
   gauge := O.gauge
 
-theorem datMv_cG {hX : B.fields.Ok} (z : Dat (w.st Z) w.I hX T Wt) : HEq (datMv N h z).cG z.cG := (by exact_kern ((HEq.refl z.cG)))
+theorem datMv_cG {hX : B.fields.Ok} (z : Dat (w.st Z) w.I hX T Wt) : HEq (datMv N h z).cG z.cG := by exact_by_kernel HEq.refl z.cG
 
 section Ties
 
 variable {hX : B.fields.Ok} (z : Dat (w.st Z) w.I hX T Wt)
 
-def cxMv : Cx.CxData (famR (w.st Z) w.I hX (usedOf w.I T Wt) z.Xg z.tr).fam3.amb3 :=
-  (by exact_kern (((datMv N h z).R.toCx3 (datMv N h z).F)))
+def cxMv : Cx.CxData (famR (w.st Z) w.I hX (usedOf w.I T Wt) z.Xg z.tr).fam3.amb3 := by
+  exact_by_kernel (datMv N h z).R.toCx3 (datMv N h z).F
 
-theorem cxMv_eq : z.R.toCx3 z.F = cxMv N h z := (by exact_kern ((toCx3_eq (a := Z) (Db.setDivZ Z N h) (iK := z.alg) z.R z.F)))
+theorem cxMv_eq : z.R.toCx3 z.F = cxMv N h z := by exact_by_kernel toCx3_eq (a := Z) (Db.setDivZ Z N h) (iK := z.alg) z.R z.F
 
 
 
 theorem mjW_fwd {X : DivX (w.D Z)} {jW : JwT z.F (cxMv N h z)} (H : MjW z.F X (cxMv N h z) jW) :
     MjW (datMv N h z).F (divMv N h X) ((datMv N h z).R.toCx3 (datMv N h z).F) jW := by
   obtain ⟨J, HJ⟩ := H
-  exact ⟨⟨(by exact_kern (J.eW))⟩, ⟨(by exact_kern (HJ.j_eq)), (by exact_kern (HJ.hlat))⟩⟩
+  exact ⟨⟨by exact_by_kernel J.eW⟩, ⟨by exact_by_kernel HJ.j_eq, by exact_by_kernel HJ.hlat⟩⟩
 
 
 
@@ -183,7 +195,7 @@ theorem mjW_back {X : DivX (w.D (Db.setDivZ Z N h))} {jW : JwT (datMv N h z).F (
     (H : MjW (datMv N h z).F X ((datMv N h z).R.toCx3 (datMv N h z).F) jW) :
     MjW z.F (divUnmv N h X) (cxMv N h z) jW := by
   obtain ⟨J, HJ⟩ := H
-  exact ⟨⟨(by exact_kern (J.eW))⟩, ⟨(by exact_kern (HJ.j_eq)), (by exact_kern (HJ.hlat))⟩⟩
+  exact ⟨⟨by exact_by_kernel J.eW⟩, ⟨by exact_by_kernel HJ.j_eq, by exact_by_kernel HJ.hlat⟩⟩
 
 end Ties
 
@@ -209,8 +221,8 @@ structure ReadSame (Y : Read (datMv N h t.r.z).R.toRealDat (datMv N h t.r.z).F.l
   eRR : HEq L.eRR t.r.Z.eRR
   eRR0 : HEq L.eRR0 t.r.Z.eRR0
 
-variable {N h t} {Y : Read (datMv N h t.r.z).R.toRealDat (datMv N h t.r.z).F.lv2 ((by exact_kern ((p0Mv N h p0))))}
-    {L : ReadL (datMv N h t.r.z).R (datMv N h t.r.z).F ((by exact_kern ((p0Mv N h p0)))) Y}
+variable {N h t} {Y : Read (datMv N h t.r.z).R.toRealDat (datMv N h t.r.z).F.lv2 (by exact_by_kernel p0Mv N h p0)}
+    {L : ReadL (datMv N h t.r.z).R (datMv N h t.r.z).F (by exact_by_kernel p0Mv N h p0) Y}
 
 theorem ReadSame.tup_eq (s : ReadSame N h t Y L) : ((by exact Y.tup) : type_of% t.r.Y.tup) = t.r.Y.tup := eq_of_heq ((by exact s.tup))
 
@@ -218,7 +230,7 @@ theorem ReadSame.tup_eq (s : ReadSame N h t Y L) : ((by exact Y.tup) : type_of% 
 
 theorem ReadSame.mj_back (s : ReadSame N h t Y L) {X : DivX (w.D (Db.setDivZ Z N h))} (H : MjAre L X) :
     MjAre t.r.Z (divUnmv N h X) := by
-  exact_kern (MjW.congr (F := t.r.z.F) (Xd := divUnmv N h X) (cxMv_eq N h t.r.z)
+  exact_by_kernel (MjW.congr (F := t.r.z.F) (Xd := divUnmv N h X) (cxMv_eq N h t.r.z)
       (jW := t.r.Z.jW) (jW' := L.jW) s.jW).2
       (mjW_back N h t.r.z (X := X) (jW := L.jW) H)
 
@@ -226,7 +238,7 @@ theorem ReadSame.mj_back (s : ReadSame N h t Y L) {X : DivX (w.D (Db.setDivZ Z N
 
 theorem ReadSame.mj_fwd (s : ReadSame N h t Y L) {X : DivX (w.D Z)} (H : MjAre t.r.Z X) :
     MjAre L (divMv N h X) := by
-  exact_kern mjW_fwd N h t.r.z (X := X) (jW := L.jW)
+  exact_by_kernel mjW_fwd N h t.r.z (X := X) (jW := L.jW)
       ((MjW.congr (cxMv_eq N h t.r.z) (jW := t.r.Z.jW) (jW' := L.jW) s.jW).1 H)
 
 
@@ -234,30 +246,30 @@ theorem ReadSame.mj_fwd (s : ReadSame N h t Y L) {X : DivX (w.D Z)} (H : MjAre t
 def ReadSame.rowsAre (s : ReadSame N h t Y L) :
     R3.RowsAre (w.st (Db.setDivZ Z N h)) w.I t.hX T Wt (Equiv.refl _) (p0Mv N h p0) where
   z := datMv N h t.r.z
-  intersectionNumber_baseChange := (by exact_kern ((Mv.cp_holds (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z t.r.intersectionNumber_baseChange)))
-  Y := (by exact_kern (Y))
-  Z := (by exact_kern (L))
-  tup_ix u := (by exact_kern (((congrFun s.tup_eq u).trans (t.r.tup_ix u))))
+  intersectionNumber_baseChange := by exact_by_kernel Mv.cp_holds (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z t.r.intersectionNumber_baseChange
+  Y := by exact_by_kernel Y
+  Z := by exact_by_kernel L
+  tup_ix u := by exact_by_kernel (congrFun s.tup_eq u).trans (t.r.tup_ix u)
 
 
 
 def ReadSame.what₂ (s : ReadSame N h t Y L) : RowsT K w (Db.setDivZ Z N h) Wt (p0Mv N h p0) where
   hX := t.hX
   r := s.rowsAre
-  exAt := (by exact_kern ((Mv.cp_exAt (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z t.exAt)))
-  inGeo := (by exact_kern ((Mv.cp_inGeo (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z t.inGeo)))
-  grpAt := ⟨(by exact_kern (t.grpAt.pl)), (by exact_kern (t.grpAt.idem)), (by exact_kern (t.grpAt.cen))⟩
+  exAt := by exact_by_kernel Mv.cp_exAt (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z t.exAt
+  inGeo := by exact_by_kernel Mv.cp_inGeo (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z t.inGeo
+  grpAt := ⟨by exact_by_kernel t.grpAt.pl, by exact_by_kernel t.grpAt.idem, by exact_by_kernel t.grpAt.cen⟩
   grp := t.grp
   mu := ⟨t.mu.inj, t.mu.range, t.mu.mu0, t.mu.star, t.mu.star', t.mu.tw, t.mu.on, t.mu.off, t.mu.sub, t.mu.supp⟩
-  exact := (by exact_kern ((t.exact.trans (Mv.forcedContentPlaces_eq_transport_sameFiniteGroup (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z (((F0K K.s (w.D Z))))).symm)))
-  untw := (by exact_kern (t.untw))
-  emt0 := (by exact_kern (t.emt0))
-  emt := (by exact_kern (t.emt))
-  etaF := (by exact_kern (t.etaF))
-  rowInt := ⟨(by exact_kern (t.rowInt.ref)), (by exact_kern (t.rowInt.tw))⟩
+  exact := by exact_by_kernel t.exact.trans (Mv.forcedContentPlaces_eq_transport_sameFiniteGroup (a := Z) (Db.setDivZ Z N h) (sameG N h) t.r.z (F0K K.s (w.D Z))).symm
+  untw := by exact_by_kernel t.untw
+  emt0 := by exact_by_kernel t.emt0
+  emt := by exact_by_kernel t.emt
+  etaF := by exact_by_kernel t.etaF
+  rowInt := ⟨by exact_by_kernel t.rowInt.ref, by exact_by_kernel t.rowInt.tw⟩
   idx X H := by
     have hIdx := t.idx (divUnmv N h X) (s.mj_back H)
-    refine ⟨by exact_kern hIdx.Ij_def, by exact_kern hIdx.jw_def⟩
+    refine ⟨by exact_by_kernel hIdx.Ij_def, by exact_by_kernel hIdx.jw_def⟩
 
 
 
@@ -265,32 +277,32 @@ theorem ReadSame.rowsSame (s : ReadSame N h t Y L) : RowsSame t s.what₂ := by
   exact {
     Xg := rfl
     tr := rfl
-    core := (by exact_kern ((HEq.refl (datMv N h t.r.z).core)))
-    R := (by exact_kern ((HEq.refl (datMv N h t.r.z).R)))
-    cG := (by exact_kern ((datMv_cG N h t.r.z)))
-    tup := (by exact_kern (s.tup))
-    tupT := (by exact_kern (s.tupT))
-    PY := (by exact_kern (s.PY))
-    PW := (by exact_kern (s.PW))
-    rep := (by exact_kern (s.rep))
-    jE := (by exact_kern (s.jE))
-    heq_eigen_embedding_zero := (by exact_kern (s.heq_eigen_embedding_zero))
-    eE := (by exact_kern (s.eE))
-    jA := (by exact_kern (s.jA))
-    jA0 := (by exact_kern (s.jA0))
-    eMt := (by exact_kern (s.eMt))
-    eW := (by exact_kern (s.eW))
-    jW := (by exact_kern (s.jW))
-    eRR := (by exact_kern (s.eRR))
-    eRR0 := (by exact_kern (s.eRR0))
+    core := by exact_by_kernel HEq.refl (datMv N h t.r.z).core
+    R := by exact_by_kernel HEq.refl (datMv N h t.r.z).R
+    cG := by exact_by_kernel datMv_cG N h t.r.z
+    tup := by exact_by_kernel s.tup
+    tupT := by exact_by_kernel s.tupT
+    PY := by exact_by_kernel s.PY
+    PW := by exact_by_kernel s.PW
+    rep := by exact_by_kernel s.rep
+    jE := by exact_by_kernel s.jE
+    heq_eigen_embedding_zero := by exact_by_kernel s.heq_eigen_embedding_zero
+    eE := by exact_by_kernel s.eE
+    jA := by exact_by_kernel s.jA
+    jA0 := by exact_by_kernel s.jA0
+    eMt := by exact_by_kernel s.eMt
+    eW := by exact_by_kernel s.eW
+    jW := by exact_by_kernel s.jW
+    eRR := by exact_by_kernel s.eRR
+    eRR0 := by exact_by_kernel s.eRR0
   }
 
 
 
 theorem ReadSame.pk (s : ReadSame N h t Y L) : HEq (SRe.pkOf s.what₂) ((SRe.pkOf t).up Z Z.S N h) := by
-  have e : ((by exact_kern (Y.eE)) : type_of% t.r.Y.eE) = t.r.Y.eE := eq_of_heq ((by exact_kern (s.eE)))
-  exact (by exact_kern ((heq_of_eq (congrArg (fun E : type_of% t.r.Y.eE =>
-    SRe.RowPk.up Z Z.S N h { SRe.pkOf t with eE := E }) e))))
+  have e : ((by exact_by_kernel Y.eE) : type_of% t.r.Y.eE) = t.r.Y.eE := eq_of_heq (by exact_by_kernel s.eE)
+  exact_by_kernel heq_of_eq (congrArg (fun E : type_of% t.r.Y.eE =>
+    SRe.RowPk.up Z Z.S N h { SRe.pkOf t with eE := E }) e)
 
 
 
@@ -304,10 +316,10 @@ theorem ReadSame.amb1 (s : ReadSame N h t Y L) {a : AmbForm (w.D Z) (RowSide.sha
   obtain ⟨M, j, a1, a2, a3, a4, a5⟩ := a'
   dsimp only at e1 e2
   subst e1
-  have e : ((by exact_kern (a.jAmb))) = j := eq_of_heq ((by exact_kern (e2.symm)))
+  have e : (by exact_by_kernel a.jAmb) = j := eq_of_heq (by exact_by_kernel e2.symm)
   subst e
-  obtain ⟨J, HJ⟩ := AmbW.congr H ((by exact_kern (Y.tup))) ((by exact_kern (s.tup_eq))) ((by exact_kern (Y.jA))) ((by exact_kern (s.jA)))
-  exact ⟨⟨(by exact_kern (J.eA))⟩, ⟨(by exact_kern (HJ.j_eq)), (by exact_kern (HJ.lat)), (by exact_kern (HJ.metric))⟩⟩
+  obtain ⟨J, HJ⟩ := AmbW.congr H (by exact_by_kernel Y.tup) (by exact_by_kernel s.tup_eq) (by exact_by_kernel Y.jA) (by exact_by_kernel s.jA)
+  exact ⟨⟨by exact_by_kernel J.eA⟩, ⟨by exact_by_kernel HJ.j_eq, by exact_by_kernel HJ.lat, by exact_by_kernel HJ.metric⟩⟩
 
 
 
@@ -321,10 +333,10 @@ theorem ReadSame.amb0 (s : ReadSame N h t Y L) {a : AmbForm (w.D Z) p0.s}
   obtain ⟨M, j, a1, a2, a3, a4, a5⟩ := a'
   dsimp only at e1 e2
   subst e1
-  have e : ((by exact_kern (a.jAmb))) = j := eq_of_heq ((by exact_kern (e2.symm)))
+  have e : (by exact_by_kernel a.jAmb) = j := eq_of_heq (by exact_by_kernel e2.symm)
   subst e
-  obtain ⟨J, HJ⟩ := AmbW.congr H ((by exact_kern (Y.tup))) ((by exact_kern (s.tup_eq))) ((by exact_kern (Y.jA0))) ((by exact_kern (s.jA0)))
-  exact ⟨⟨(by exact_kern (J.eA))⟩, ⟨(by exact_kern (HJ.j_eq)), (by exact_kern (HJ.lat)), (by exact_kern (HJ.metric))⟩⟩
+  obtain ⟨J, HJ⟩ := AmbW.congr H (by exact_by_kernel Y.tup) (by exact_by_kernel s.tup_eq) (by exact_by_kernel Y.jA0) (by exact_by_kernel s.jA0)
+  exact ⟨⟨by exact_by_kernel J.eA⟩, ⟨by exact_by_kernel HJ.j_eq, by exact_by_kernel HJ.lat, by exact_by_kernel HJ.metric⟩⟩
 
 
 variable (N h t) in
@@ -332,16 +344,16 @@ variable (N h t) in
 def allMv (x : RXs t) :
     AllT (w.st (Db.setDivZ Z N h)).toD7 (famR (w.st (Db.setDivZ Z N h)) w.I t.hX Set.univ t.r.z.Xg t.r.z.tr).A (lev0 w.I) (chr0 w.I)
       (lev1 w.I) (chr1 w.I) (p0Mv N h p0) (tAll w.I) (((datMv N h t.r.z).R.eG.trans (datMv N h t.r.z).cG)) where
-  jA := (by exact_kern (x.all.jA))
-  jA0 := (by exact_kern (x.all.jA0))
-  eMt := (by exact_kern (x.all.eMt))
-  formsA := (by exact_kern (x.all.formsA))
-  latA := (by exact_kern (x.all.latA))
-  formsAtBottomLevel := (by exact_kern (x.all.formsAtBottomLevel))
-  latA0 := (by exact_kern (x.all.latA0))
-  formsL := (by exact_kern (x.all.formsL))
-  latL := (by exact_kern (x.all.latL))
-  cen := (by exact_kern (x.all.cen))
+  jA := by exact_by_kernel x.all.jA
+  jA0 := by exact_by_kernel x.all.jA0
+  eMt := by exact_by_kernel x.all.eMt
+  formsA := by exact_by_kernel x.all.formsA
+  latA := by exact_by_kernel x.all.latA
+  formsAtBottomLevel := by exact_by_kernel x.all.formsAtBottomLevel
+  latA0 := by exact_by_kernel x.all.latA0
+  formsL := by exact_by_kernel x.all.formsL
+  latL := by exact_by_kernel x.all.latL
+  cen := by exact_by_kernel x.all.cen
 
 
 
@@ -352,7 +364,7 @@ theorem ReadSame.jA_use (s : ReadSame N h t Y L) (x : RXs t) (u) :
   sameOn_congr (fun μ => x.all.jA μ) s.tup_eq (k := fun u => t.r.Y.jA u)
     (heq_map (P := fun u μ => (Fin (rDim (w.st Z).toD7
       (famR (w.st Z) w.I t.hX (usedOf w.I T Wt) t.r.z.Xg t.r.z.tr).A t.r.z.F.P1 t.r.z.F.ψ1 u) → (w.st Z).toD7.what₂.LL) →ₛₗ[(w.st Z).toD7.what₂.embLL]
-        (w.st Z).toD7.what₂.Amb μ) (fun _ _ j => (j : _ → _)) s.tup_eq ((by exact_kern (s.jA)))) x.jA_use u
+        (w.st Z).toD7.what₂.Amb μ) (fun _ _ j => (j : _ → _)) s.tup_eq (by exact_by_kernel s.jA)) x.jA_use u
 
 
 
@@ -361,7 +373,7 @@ theorem ReadSame.movedReadingSameMaps_baseReading_agrees (s : ReadSame N h t Y L
       (famR (w.st Z) w.I t.hX (usedOf w.I T Wt) t.r.z.Xg t.r.z.tr).A p0.s t.r.z.F.P0 t.r.z.F.ψ0 u (((by exact Y.tup) : type_of% t.r.Y.tup) u)) u) :=
   sameOn_congr (fun μ => x.all.jA0 μ) s.tup_eq (k := fun u => t.r.Y.jA0 u)
     (heq_map (P := fun u μ => JAT (D := (w.st Z).toD7)
-      (famR (w.st Z) w.I t.hX (usedOf w.I T Wt) t.r.z.Xg t.r.z.tr).A p0.s t.r.z.F.P0 t.r.z.F.ψ0 u μ) (fun _ _ j => (j : _ → _)) s.tup_eq ((by exact_kern (s.jA0)))) x.movedReadingSameMaps_baseReading_agrees u
+      (famR (w.st Z) w.I t.hX (usedOf w.I T Wt) t.r.z.Xg t.r.z.tr).A p0.s t.r.z.F.P0 t.r.z.F.ψ0 u μ) (fun _ _ j => (j : _ → _)) s.tup_eq (by exact_by_kernel s.jA0)) x.movedReadingSameMaps_baseReading_agrees u
 
 abbrev EMtT (t : RowsT K w Z Wt p0) (i : Fin (w.st Z).toD7.R.m) (u : TupU w.I (usedOf w.I T Wt)) (μ : (w.st Z).toD7.what₂.Tup) : Type :=
   (Fin (lDim (w.st Z).toD7 (famR (w.st Z) w.I t.hX (usedOf w.I T Wt) t.r.z.Xg t.r.z.tr).A t.r.z.F.P0 t.r.z.F.ψ0 i u) → (w.st Z).toD7.what₂.LL) ≃ₗ[(w.st Z).toD7.what₂.LL]
@@ -380,27 +392,27 @@ theorem ReadSame.eMt_use (s : ReadSame N h t Y L) (x : RXs t) (i : Fin (w.st Z).
       (((by exact Y.eMt) : ∀ i u, EMtT t i u (((by exact Y.tup) : type_of% t.r.Y.tup) u)) i u) :=
   sameOn_congr (fun μ => x.all.eMt i μ) s.tup_eq (k := fun u => t.r.Y.eMt i u)
     (heq_map (P := fun u μ => EMtT t i u μ) (fun _ _ j => (j : _ → _)) s.tup_eq
-      (eMt_heq t s.tup_eq (k := t.r.Y.eMt) (k' := (by exact_kern (Y.eMt))) ((by exact_kern (s.eMt))) i)) (x.eMt_use i) u
+      (eMt_heq t s.tup_eq (k := t.r.Y.eMt) (k' := by exact_by_kernel Y.eMt) (by exact_by_kernel s.eMt) i)) (x.eMt_use i) u
 
 
 
 def ReadSame.rxs (s : ReadSame N h t Y L) (x : RXs t) : RXs s.what₂ where
-  all := (by exact_kern ((allMv N h t x)))
-  jA_use := (by exact_kern ((s.jA_use x)))
-  movedReadingSameMaps_baseReading_agrees := (by exact_kern ((s.movedReadingSameMaps_baseReading_agrees x)))
-  eMt_use := (by exact_kern ((s.eMt_use x)))
-  e := (by exact_kern (x.e))
-  eMt0 := (by exact_kern (x.eMt0))
-  eMtTw := (by exact_kern (x.eMtTw))
-  crd := (by exact_kern (x.crd))
-  io := (by exact_kern (x.io))
-  sha := (by exact_kern (x.sha))
-  laws := (by exact_kern ((Mv.lawsCore_tr (a := Z) (Db.setDivZ Z N h) x.laws)))
-  canon := (by exact_kern (x.canon))
-  rank := (by exact_kern (x.rank))
-  pb := (by exact_kern (x.pb))
+  all := by exact_by_kernel allMv N h t x
+  jA_use := by exact_by_kernel s.jA_use x
+  movedReadingSameMaps_baseReading_agrees := by exact_by_kernel s.movedReadingSameMaps_baseReading_agrees x
+  eMt_use := by exact_by_kernel s.eMt_use x
+  e := by exact_by_kernel x.e
+  eMt0 := by exact_by_kernel x.eMt0
+  eMtTw := by exact_by_kernel x.eMtTw
+  crd := by exact_by_kernel x.crd
+  io := by exact_by_kernel x.io
+  sha := by exact_by_kernel x.sha
+  laws := by exact_by_kernel Mv.lawsCore_tr (a := Z) (Db.setDivZ Z N h) x.laws
+  canon := by exact_by_kernel x.canon
+  rank := by exact_by_kernel x.rank
+  pb := by exact_by_kernel x.pb
   std := by
-    exact_kern StateChecks.std_cpR (a := Z) (Db.setDivZ Z N h) t.r.z x.std
+    exact_by_kernel StateChecks.std_cpR (a := Z) (Db.setDivZ Z N h) t.r.z x.std
 
 end Rows
 
@@ -414,8 +426,8 @@ theorem ReadSame.objT {N : ∀ u, Submodule (𝓞 B.LL) (Z.V.div.Nu u).V} {h : B
     ObjT (objMv N h O) s.what₂ := by
   exact {
     amb := by
-      refine ⟨by exact_kern s.amb1 (a := O.amb) (objMv N h O).amb rfl (HEq.refl O.amb.jAmb) H.amb.1,
-        by exact_kern s.amb0 (a := O.amb0) (objMv N h O).amb0 rfl (HEq.refl O.amb0.jAmb) H.amb.2⟩
+      refine ⟨by exact_by_kernel s.amb1 (a := O.amb) (objMv N h O).amb rfl (HEq.refl O.amb.jAmb) H.amb.1,
+        by exact_by_kernel s.amb0 (a := O.amb0) (objMv N h O).amb0 rfl (HEq.refl O.amb0.jAmb) H.amb.2⟩
     mjH := s.mj_fwd (X := O.X) H.mjH
     kapR σ := (H.kapR σ).trans (kapSharp_mv (w := w) (Z := Z) N h).symm
   }

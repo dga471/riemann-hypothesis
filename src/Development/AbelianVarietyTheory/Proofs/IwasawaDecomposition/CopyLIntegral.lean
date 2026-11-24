@@ -50,8 +50,20 @@ open GlobalTheory.Mem GlobalTheory.Mem.Col2 GlobalTheory.Mem.R3 GlobalTheory.Mem
 
 namespace GlobalTheory.Mem.R3.DatCopy
 
-local elab "exact_kern " t:term : tactic =>
-  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => Lean.Elab.Tactic.elabTerm t none
+-- Compare the types in the kernel to avoid unfolding the stage records in the elaborator.
+open Lean Elab Tactic in
+local elab "exact_by_kernel " term:term : tactic =>
+  closeMainGoalUsing `exact_by_kernel fun target _ => do
+    let value ← elabTerm term none
+    Term.synthesizeSyntheticMVarsNoPostponing
+    let value ← instantiateMVars value
+    let actual ← instantiateMVars (← Meta.inferType value)
+    let target ← instantiateMVars target
+    let lctx ← instantiateLCtxMVars (← getLCtx)
+    match Kernel.isDefEq (← getEnv) lctx actual target with
+    | .ok true => pure value
+    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
+    | .error error => throwError (error.toMessageData (← getOptions))
 
 
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
@@ -71,49 +83,46 @@ variable {Ks : Type} [Field Ks] [NumberField Ks] [iK : Algebra Ks a.D.what₂.LL
 
 section Three
 
-set_option backward.isDefEq.lazyProjDelta false
-set_option backward.isDefEq.lazyWhnfCore false
-
 variable {A : FamIn3 a.D.what₂.LL G Pl0 I0 (List ℕ) T a.D.R.m} (R : RealDat3 a.D A Ks) {F : Face3 a.D A}
 
-def twice : RealDat3 a.D A Ks := (by exact_kern ((real3 (a := b) a (iK := alg b iK) (real3 b R))))
+def twice : RealDat3 a.D A Ks := by exact_by_kernel real3 (a := b) a (iK := alg b iK) (real3 b R)
 
 def twiceY : type_of% R.ioY := by
-  exact_kern ((twice b R).ioY)
+  exact_by_kernel (twice b R).ioY
 
 def twiceX : type_of% R.ioX := by
-  exact_kern ((twice b R).ioX)
+  exact_by_kernel (twice b R).ioX
 
 theorem twiceY_eq : R.ioY = twiceY b R := by
   apply eq_of_heq
-  exact_kern (HEq.trans (real_ioY b R.toRealDat)
-      (real_ioY (a := b) a (iK := alg b iK) (real b R.toRealDat)))
+  exact_by_kernel HEq.trans (real_ioY b R.toRealDat)
+      (real_ioY (a := b) a (iK := alg b iK) (real b R.toRealDat))
 
 theorem twiceX_eq : R.ioX = twiceX b R := by
   apply eq_of_heq
-  exact_kern (HEq.trans (real_ioX b R.toRealDat)
-      (real_ioX (a := b) a (iK := alg b iK) (real b R.toRealDat)))
+  exact_by_kernel HEq.trans (real_ioX b R.toRealDat)
+      (real_ioX (a := b) a (iK := alg b iK) (real b R.toRealDat))
 
-theorem twice_eq : R = twice b R := (by exact_kern ((congrArg₂ (setIo R) (twiceY_eq b R) (twiceX_eq b R))))
+theorem twice_eq : R = twice b R := by exact_by_kernel congrArg₂ (setIo R) (twiceY_eq b R) (twiceX_eq b R)
 
 variable {R}
 
 theorem holds_back (h : letI := alg b iK; Holds (real3 b R) (face3 b F)) : Holds R F := by
   have h2 := holds_tr (a := b) a (iK := alg b iK) h
-  exact (by exact_kern ((cast (congrArg (fun R' : RealDat3 a.D A Ks => Holds R' F) (twice_eq b R).symm) ((h2)))))
+  exact_by_kernel cast (congrArg (fun R' : RealDat3 a.D A Ks => Holds R' F) (twice_eq b R).symm) h2
 
 theorem rowTest_tr (h : Rat.RowTest (R.toCx3 F)) : letI := alg b iK; Rat.RowTest ((real3 b R).toCx3 (face3 b F)) := by
-  exact_kern ((congrArg (fun X : Cx.CxData A.fam3.amb3 => Rat.RowTest X) (toCx3_eq b R F)).mp h)
+  exact_by_kernel (congrArg (fun X : Cx.CxData A.fam3.amb3 => Rat.RowTest X) (toCx3_eq b R F)).mp h
 
 end Three
 
 theorem multEq_tr {A : FamIn a.D.what₂.LL G Pl0 T a.D.R.m} {R : RealDat a.D A Ks} (h : GlobalTheory.CuspMult.MultEq R) :
     letI := alg b iK; GlobalTheory.CuspMult.MultEq (real b R) := by
   intro i M₀ j Φ hI W _ _ σ h1 h2 h3
-  have key := h ((by exact_kern (i))) ((by exact_kern ((ds a M₀)))) ((by exact_kern (j))) ((by exact_kern (Φ))) ⟨(by exact_kern (hI.isom)), (by exact_kern (hI.conj)), (by exact_kern (hI.frame))⟩ W ((by exact_kern (σ))) ((by exact_kern (h1))) ((by exact_kern (h2))) ((by exact_kern (h3)))
+  have key := h (by exact_by_kernel i) (by exact_by_kernel ds a M₀) (by exact_by_kernel j) (by exact_by_kernel Φ) ⟨by exact_by_kernel hI.isom, by exact_by_kernel hI.conj, by exact_by_kernel hI.frame⟩ W (by exact_by_kernel σ) (by exact_by_kernel h1) (by exact_by_kernel h2) (by exact_by_kernel h3)
   delta GlobalTheory.CuspMult.cuspMult GlobalTheory.CuspMult.allMaps
   rewrite [mult_eq a b]
-  exact (by exact_kern (key))
+  exact_by_kernel key
 
 section Dat
 
@@ -122,33 +131,33 @@ variable {px : PreX B.toPre} {I : ColIn B px} {hX : B.fields.Ok} {Tw : Top.TwDat
 
 
 def copy (s : SameGrp a b) (z : Dat a.st I hX Tw Wt) : Dat b.st I hX Tw Wt :=
-  @Dat.mk b.st px I hX Tw Wt z.Xg z.tr (coreJ b z.core) ((by exact_kern ((alg b z.alg)))) ((by exact_kern (z.alg_eq))) ((by exact_kern ((real3 b (iK := z.alg) z.R))))
-    ((by exact_kern ((z.cG.trans s.iso)))) ((by exact_kern ((geoHalf b (iK := z.alg) z.geo)))) ((by exact_kern ((pins_tr b (iK := z.alg) s z.pins))))
-    ⟨(by exact_kern ((levIs_tr b z.lev.is))), (by exact_kern ((congrArg (chFr b) z.lev.C))), (by exact_kern (z.lev.xiH)), (by exact_kern (z.lev.Pg)), (by exact_kern (z.lev.Q)), (by exact_kern (z.lev.beta))⟩
-    ((by exact_kern (z.idG)))
+  @Dat.mk b.st px I hX Tw Wt z.Xg z.tr (coreJ b z.core) (by exact_by_kernel alg b z.alg) (by exact_by_kernel z.alg_eq) (by exact_by_kernel real3 b (iK := z.alg) z.R)
+    (by exact_by_kernel z.cG.trans s.iso) (by exact_by_kernel geoHalf b (iK := z.alg) z.geo) (by exact_by_kernel pins_tr b (iK := z.alg) s z.pins)
+    ⟨by exact_by_kernel levIs_tr b z.lev.is, by exact_by_kernel congrArg (chFr b) z.lev.C, by exact_by_kernel z.lev.xiH, by exact_by_kernel z.lev.Pg, by exact_by_kernel z.lev.Q, by exact_by_kernel z.lev.beta⟩
+    (by exact_by_kernel z.idG)
     (by
       have h := (goodSet_iff a.st (px := px) _ _).1 z.good
       have e : ∀ g, a.D.ntypes.e0.coeff ((z.R.eG.trans z.cG) g) = b.D.ntypes.e0.coeff (((z.R.eG.trans z.cG).trans s.iso) g) :=
         fun g => (s.e0 _).symm
       simp only [e] at h
-      exact (by exact_kern (((goodSet_iff b.st (px := px) ((z.R.eG.trans z.cG).trans s.iso) z.Xg).2 h))))
-    ((by exact_kern (z.mu))) ((by exact_kern (z.fieldValues_mem_fixedField))) ((by exact_kern (z.Ks_le)))
+      exact_by_kernel (goodSet_iff b.st (px := px) ((z.R.eG.trans z.cG).trans s.iso) z.Xg).2 h)
+    (by exact_by_kernel z.mu) (by exact_by_kernel z.fieldValues_mem_fixedField) (by exact_by_kernel z.Ks_le)
 
 variable (s : SameGrp a b) {z : Dat a.st I hX Tw Wt}
 
-theorem copy_exAt (h : z.R.toRealDat.ExAt) : (copy b s z).R.toRealDat.ExAt := (by exact_kern ((exAt_tr b (iK := z.alg) h)))
+theorem copy_exAt (h : z.R.toRealDat.ExAt) : (copy b s z).R.toRealDat.ExAt := by exact_by_kernel exAt_tr b (iK := z.alg) h
 
-theorem copy_lUnif (h : z.R.toRealDat.LUnif) : (copy b s z).R.toRealDat.LUnif := (by exact_kern (h))
+theorem copy_lUnif (h : z.R.toRealDat.LUnif) : (copy b s z).R.toRealDat.LUnif := by exact_by_kernel h
 
-theorem copy_lIntegral (h : z.R.toRealDat.LIntegral) : (copy b s z).R.toRealDat.LIntegral := (by exact_kern (h))
+theorem copy_lIntegral (h : z.R.toRealDat.LIntegral) : (copy b s z).R.toRealDat.LIntegral := by exact_by_kernel h
 
-theorem copy_multEq (h : GlobalTheory.CuspMult.MultEq z.R.toRealDat) : GlobalTheory.CuspMult.MultEq (copy b s z).R.toRealDat :=
-  (by exact_kern ((multEq_tr b (iK := z.alg) h)))
+theorem copy_multEq (h : GlobalTheory.CuspMult.MultEq z.R.toRealDat) : GlobalTheory.CuspMult.MultEq (copy b s z).R.toRealDat := by
+  exact_by_kernel multEq_tr b (iK := z.alg) h
 
-theorem copy_rowTest (h : Rat.RowTest (z.R.toCx3 z.F)) : Rat.RowTest ((copy b s z).R.toCx3 (copy b s z).F) :=
-  (by exact_kern ((rowTest_tr b (iK := z.alg) h)))
+theorem copy_rowTest (h : Rat.RowTest (z.R.toCx3 z.F)) : Rat.RowTest ((copy b s z).R.toCx3 (copy b s z).F) := by
+  exact_by_kernel rowTest_tr b (iK := z.alg) h
 
-theorem holds_of_copy (h : Holds (copy b s z).R (copy b s z).F) : Holds z.R z.F := holds_back b (iK := z.alg) ((by exact_kern (h)))
+theorem holds_of_copy (h : Holds (copy b s z).R (copy b s z).F) : Holds z.R z.F := holds_back b (iK := z.alg) (by exact_by_kernel h)
 
 end Dat
 

@@ -46,8 +46,21 @@ open Formalism.IndefR.RecTie Formalism.IndefR.Lev Formalism.L2.Rows GlobalTheory
 noncomputable section
 namespace GlobalTheory.Mem.R3
 
-local elab "exact_kern " t:term : tactic =>
-  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => Lean.Elab.Tactic.elabTerm t none
+-- Compare the types in the kernel to avoid unfolding the stage records in the elaborator.
+open Lean Elab Tactic in
+local elab "exact_by_kernel " term:term : tactic =>
+  closeMainGoalUsing `exact_by_kernel fun target _ => do
+    let value ← elabTerm term none
+    Term.synthesizeSyntheticMVarsNoPostponing
+    let value ← instantiateMVars value
+    let actual ← instantiateMVars (← Meta.inferType value)
+    let target ← instantiateMVars target
+    let lctx ← instantiateLCtxMVars (← getLCtx)
+    match Kernel.isDefEq (← getEnv) lctx actual target with
+    | .ok true => pure value
+    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
+    | .error error => throwError (error.toMessageData (← getOptions))
+
 variable {D : D7} {G : Type} [Group G] [Fintype G] {Pl0 I0 T : Type} {A3 : FamIn3 D.what₂.LL G Pl0 I0 (List ℕ) T D.R.m} {Ks : Type} [Field Ks] [NumberField Ks] [Algebra Ks D.what₂.LL]
 
 def reFaceErr (R : RealDat3 D A3 Ks) (F : Face3 D A3)
@@ -167,17 +180,18 @@ def reFaceReadL (R : RealDat3 D A3 Ks) (F : Face3 D A3)
     (Zsc : DefSub A3.fam3.amb3 → IndefScale A3.fam3.base3) (e : type_of% R.err0) (X0 : BaseLevelRowSide D)
     (Y : Read (A3 := A3) R.toRealDat F.lv2 X0) (Z : ReadL R F X0 Y) :
     ReadL (R.withErr e) (reFace F Dc Sp Zsc) X0 (reFaceRead R F Dc Sp Zsc e X0 Y) :=
-  { eRR := by exact_kern Z.eRR
-    eRR0 := by exact_kern Z.eRR0
-    jEE := by exact_kern Z.jEE
-    jEE0 := by exact_kern Z.jEE0
-    met := by exact_kern Z.met
-    met0 := by exact_kern Z.met0
+  -- Construct `ReadL` fieldwise instead of `{ Z with }`, whose record-update elaboration takes ~33 s.
+  { eRR := by exact_by_kernel Z.eRR
+    eRR0 := by exact_by_kernel Z.eRR0
+    jEE := by exact_by_kernel Z.jEE
+    jEE0 := by exact_by_kernel Z.jEE0
+    met := by exact_by_kernel Z.met
+    met0 := by exact_by_kernel Z.met0
     rr := Z.rr
     rr0 := Z.rr0
-    jW := by exact_kern Z.jW
-    jW_read := by exact_kern Z.jW_read
-    etaJ := by exact_kern Z.etaJ }
+    jW := by exact_by_kernel Z.jW
+    jW_read := by exact_by_kernel Z.jW_read
+    etaJ := by exact_by_kernel Z.etaJ }
 
 end GlobalTheory.Mem.R3
 
