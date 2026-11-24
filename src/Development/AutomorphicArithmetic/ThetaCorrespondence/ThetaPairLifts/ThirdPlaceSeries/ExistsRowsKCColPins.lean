@@ -995,6 +995,11 @@ open Formalism.BasicNotions Formalism.MainNotions NumberField IsDedekindDomain
 open Formalism.L2 Formalism.L2.DIV Formalism.L2.Indef Formalism.L2.Rows Formalism.IndefR Formalism.IndefR.Links Formalism.IndefR.Cx Formalism.IndefR.Lev
 open GlobalTheory.Mem GlobalTheory.Mem.Col2 GlobalTheory.Mem.Top GlobalTheory.Mem.Top.Bl GlobalTheory.Mem.R3 GlobalTheory.Mem.R3.Tr
 namespace GlobalTheory.Mem.R3.SelC
+local elab "exact_kern " t:term : tactic => Lean.Elab.Tactic.withMainContext do
+  let e ← Lean.Elab.Term.elabTerm t none
+  (← Lean.Elab.Tactic.getMainGoal).assign e
+  Lean.Elab.Tactic.replaceMainGoal []
+
 variable {K : Ctx} {B : Base} {f : Fr B.toPre} {T : TwDat B} {w : ColW B f T} {Z : w.Lt} {Wt : Set B.places.Pl}
 
 theorem jA_row_alt {p0 : BaseLevelRowSide (w.D Z)} (t : RowsT K w Z Wt p0) (r : RXs t) (pin : ColPin w)
@@ -1038,6 +1043,33 @@ theorem exists_readC_wU_eq_id (t : RowsT K w Z Wt ex.p0) (r : RXs t) (pin : ColP
       (hn u x) F z hz
   exact key (t.r.Y.tup s) s ((congrArg w.I.tup (t.r.tup_ix s)).trans (tup_ixOf w.I s)) (t.r.Y.jA s) (r.jA_use s) _ F
 
+private theorem pack_heq_mk {D : D7}
+    {G₁ G₂ : Type} {grp₁ : Group G₁} {grp₂ : Group G₂} {fin₁ : Fintype G₁} {fin₂ : Fintype G₂}
+    {Pl0₁ Pl0₂ I0₁ I0₂ T0₁ T0₂ : Type}
+    {A3₁ : FamIn3 D.what₂.LL G₁ Pl0₁ I0₁ (List ℕ) T0₁ D.R.m}
+    {A3₂ : FamIn3 D.what₂.LL G₂ Pl0₂ I0₂ (List ℕ) T0₂ D.R.m}
+    {C₁ C₂ : Formalism.L2.Pj.CoreJ D}
+    {alg₁ : Algebra C₁.Q.c.F D.what₂.LL} {alg₂ : Algebra C₂.Q.c.F D.what₂.LL}
+    {R₁ : RealDat3 D A3₁ C₁.Q.c.F} {R₂ : RealDat3 D A3₂ C₂.Q.c.F}
+    {F₁ : Face3 D A3₁} {F₂ : Face3 D A3₂}
+    {cG₁ : G0 R₁.Pg D.R.r ≃* G0g D.nd} {cG₂ : G0 R₂.Pg D.R.r ≃* G0g D.nd}
+    (e : (⟨G₁, grp₁, fin₁, Pl0₁, I0₁, T0₁, A3₁, C₁, alg₁, R₁, F₁, cG₁⟩ :
+        Σ' (G : Type) (_ : Group G) (_ : Fintype G) (Pl0 I0 T0 : Type)
+          (A3 : FamIn3 D.what₂.LL G Pl0 I0 (List ℕ) T0 D.R.m) (C : Formalism.L2.Pj.CoreJ D)
+          (_ : Algebra C.Q.c.F D.what₂.LL) (R : RealDat3 D A3 C.Q.c.F) (_ : Face3 D A3),
+          G0 R.Pg D.R.r ≃* G0g D.nd) =
+      ⟨G₂, grp₂, fin₂, Pl0₂, I0₂, T0₂, A3₂, C₂, alg₂, R₂, F₂, cG₂⟩) :
+    (G₁ = G₂ ∧ HEq grp₁ grp₂ ∧ Pl0₁ = Pl0₂ ∧ I0₁ = I0₂ ∧ T0₁ = T0₂ ∧ HEq A3₁ A3₂) ∧
+    (HEq F₁.P0 F₂.P0 ∧ HEq F₁.ψ0 F₂.ψ0 ∧ HEq F₁.P1 F₂.P1 ∧ HEq F₁.ψ1 F₂.ψ1 ∧
+      HEq F₁.Dc F₂.Dc ∧ HEq F₁.Sp F₂.Sp) ∧
+    HEq (zsOf R₁ F₁) (zsOf R₂ F₂) ∧
+    HEq (F₁.Dc (zsOf R₁ F₁)) (F₂.Dc (zsOf R₂ F₂)) ∧
+    HEq (F₁.Sp (zsOf R₁ F₁)) (F₂.Sp (zsOf R₂ F₂)) ∧
+    (F₁.Dc (zsOf R₁ F₁)).Mem = (F₂.Dc (zsOf R₂ F₂)).Mem := by
+  cases e
+  exact ⟨⟨rfl, HEq.rfl, rfl, rfl, rfl, HEq.rfl⟩, ⟨HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl⟩,
+    HEq.rfl, HEq.rfl, HEq.rfl, rfl⟩
+
 theorem args_pinned_heq_zsOf_mem_eq (t : RowsT K w Z Wt ex.p0) (a : TwArgs ex t) :
     (a.x.G = Gc B w.px ∧ HEq a.x.grp (inferInstance : Group (Gc B w.px)) ∧ a.x.Pl0 = PlS B w.px ∧ a.x.I0 = PlI B w.px ∧
       a.x.T = TupU w.I (usedOf w.I T Wt) ∧ HEq a.x.A3 (famC w.I t.hX (usedOf w.I T Wt) t.r.z.Xg t.r.z.tr)) ∧
@@ -1045,10 +1077,11 @@ theorem args_pinned_heq_zsOf_mem_eq (t : RowsT K w Z Wt ex.p0) (a : TwArgs ex t)
       HEq a.x.F.Sp a.Sp) ∧
     ∃ Zs : DefSub (famT t).fam3.amb3, HEq (zsOf a.x.R a.x.F) Zs ∧ HEq (a.x.F.Dc (zsOf a.x.R a.x.F)) (a.Dc Zs) ∧
       HEq (a.x.F.Sp (zsOf a.x.R a.x.F)) (a.Sp Zs) ∧ (a.x.F.Dc (zsOf a.x.R a.x.F)).Mem = (a.Dc Zs).Mem := by
-  have hpack := @pack_heq (w.st Z).toD7 _ _ a.pack
-  dsimp only at hpack
-  with_unfolding_all exact ⟨hpack.1, hpack.2.1,
-    zsOf ((t.r.z.R.updS t.r.z.R.kap a.lam).withErr a.err) (reFace t.r.z.F a.Dc a.Sp a.Zsc), hpack.2.2⟩
+  have hpack := pack_heq_mk a.pack
+  refine ⟨?_, ?_, zsOf ((t.r.z.R.updS t.r.z.R.kap a.lam).withErr a.err) (reFace t.r.z.F a.Dc a.Sp a.Zsc), ?_⟩
+  · exact_kern hpack.1
+  · exact_kern hpack.2.1
+  · exact_kern hpack.2.2
 
 theorem exists_square_integrable_columns_of_data (t : RowsT K w Z Wt ex.p0) (pin : ColPin w) (S : _root_.Formalism.L2.TiedDataSKAlt ex) (hS : TC.StdKer w.I w.l Z S.ker)
     (a : TwArgs ex t) (hD : a.Dc = (colRecK w.ok w.pins w.l Z pin.isTw pin.jets t.hX (usedOf w.I T Wt) t.r.z.Xg t.r.z.tr S.ker).face)
@@ -1068,7 +1101,7 @@ theorem exists_square_integrable_columns_of_data (t : RowsT K w Z Wt ex.p0) (pin
     rfl
   have e3 : HEq a.x.Y.tup (ixOf w.I (usedOf w.I T Wt)) := by
     have htup := funext t.r.tup_ix
-    with_unfolding_all exact a.tup.trans (heq_of_eq htup)
+    exact_kern (a.tup.trans (heq_of_eq htup))
   have e4 : ∀ u, HEq (a.x.C.wU u) u := fun u => heq_app e2 hw u
   have e5 := g14.trans (heq_of_eq e1)
   have e6 := g15.trans (hSp.2 Zs)
@@ -1081,7 +1114,7 @@ theorem exists_square_integrable_columns_of_data (t : RowsT K w Z Wt ex.p0) (pin
     ?_ ?_, ?_, ?_, ?_, ?_⟩
   · exact (c5)
   · exact (d1)
-  · with_unfolding_all exact c3.trans (hSp.1.symm.trans g12.symm)
+  · exact_kern (c3.trans (hSp.1.symm.trans g12.symm))
   · exact (c4)
   · exact (c6)
   · exact (c1)
