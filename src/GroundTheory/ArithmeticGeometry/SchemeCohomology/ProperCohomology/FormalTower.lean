@@ -49,6 +49,10 @@ import Mathlib.Tactic.TypeStar
 
 set_option maxSynthPendingDepth 1
 
+-- Use `sheafIsAbelian`, the instance Mathlib's `Sheaf.H` API is stated for, instead of the
+-- definitionally equal `TopCat.Sheaf.instAbelian`: the kernel is slow to identify the two.
+attribute [-instance] TopCat.Sheaf.instAbelian
+
 namespace GroundTheory.Arith.SchemeCoh
 
 open AlgebraicGeometry CategoryTheory Opposite TopologicalSpace Limits
@@ -105,9 +109,12 @@ abbrev formalδ (n : ℕ) : Sheaf.H.{u} (modulesAb (quotPow I F n)) q →ₗ[A]
 def formalQ (n : ℕ) : Submodule A (Sheaf.H.{u} (modulesAb (idealPow I F (n + 1))) (q + 1)) :=
   LinearMap.range (formalδ I F q n)
 
+lemma formalK_le_ker_formalβ (n : ℕ) : formalK I F q n ≤ LinearMap.ker (formalβ I F q n) :=
+  (ker_formalβ I F q n).ge
+
 def formalι (n : ℕ) : (Sheaf.H.{u} (modulesAb F) q ⧸ formalK I F q n) →ₗ[A]
     Sheaf.H.{u} (modulesAb (quotPow I F n)) q :=
-  (formalK I F q n).liftQ (formalβ I F q n) (ker_formalβ I F q n).ge
+  (formalK I F q n).liftQ (formalβ I F q n) (formalK_le_ker_formalβ I F q n)
 
 lemma formalι_injective (n : ℕ) : Function.Injective (formalι I F q n) :=
   LinearMap.ker_eq_bot.mp

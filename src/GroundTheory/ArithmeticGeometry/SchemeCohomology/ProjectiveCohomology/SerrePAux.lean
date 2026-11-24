@@ -52,6 +52,10 @@ import Mathlib
 
 set_option maxSynthPendingDepth 1
 
+-- Use `sheafIsAbelian`, the instance Mathlib's `Sheaf.H` API is stated for, instead of the
+-- definitionally equal `TopCat.Sheaf.instAbelian`: the kernel is slow to identify the two.
+attribute [-instance] TopCat.Sheaf.instAbelian
+
 namespace GroundTheory.Arith.SchemeCoh
 
 open AlgebraicGeometry CategoryTheory Opposite TopologicalSpace Limits MonoidalCategory
@@ -133,12 +137,24 @@ def abSmulEnd (S : ShortComplex X.Modules) (r : Γ(X, ⊤)) : abSC S ⟶ abSC S 
   comm₁₂ := smulAbRingHom_comp S.f r
   comm₂₃ := smulAbRingHom_comp S.g r
 
+/-- Generic `AddMonoidHom` to `LinearMap` constructor, keeping `LinearMap.mk` out of concrete
+`Sheaf.H` definitions so the kernel avoids unfolding `Sheaf.H` instances. -/
+def linearMapOfAddHom {R M N : Type*} [Semiring R] [AddCommMonoid M] [AddCommMonoid N]
+    [Module R M] [Module R N] (f : M →+ N) (hsmul : ∀ (a : R) (x : M), f (a • x) = a • f x) :
+    M →ₗ[R] N where
+  toAddHom := f.toAddHom
+  map_smul' := hsmul
+
+lemma H.δ_map_smul (p : ℕ) (a : A) (x : Sheaf.H.{w'} (modulesAb S.X₃) p) :
+    (show Sheaf.H.{w'} (modulesAb S.X₁) (p + 1) from H.δ hS p (p + 1) rfl (a • x)) =
+      a • (show Sheaf.H.{w'} (modulesAb S.X₁) (p + 1) from H.δ hS p (p + 1) rfl x) :=
+  H.δ_naturality hS hS (abSmulEnd S (algebraMap A Γ(X, ⊤) a)) p (p + 1) rfl x
+
 def H.δLinear (p : ℕ) :
-    Sheaf.H.{w'} (modulesAb S.X₃) p →ₗ[A] Sheaf.H.{w'} (modulesAb S.X₁) (p + 1) where
-  toFun := H.δ hS p (p + 1) rfl
-  map_add' := map_add _
-  map_smul' a x :=
-    H.δ_naturality hS hS (abSmulEnd S (algebraMap A Γ(X, ⊤) a)) p (p + 1) rfl x
+    Sheaf.H.{w'} (modulesAb S.X₃) p →ₗ[A] Sheaf.H.{w'} (modulesAb S.X₁) (p + 1) :=
+  linearMapOfAddHom (M := Sheaf.H.{w'} (modulesAb S.X₃) p)
+    (N := Sheaf.H.{w'} (modulesAb S.X₁) (p + 1))
+    (H.δ hS p (p + 1) rfl) (H.δ_map_smul A hS p)
 
 lemma H.δLinear_apply (p : ℕ) (x : Sheaf.H.{w'} (modulesAb S.X₃) p) :
     H.δLinear A hS p x = H.δ hS p (p + 1) rfl x := rfl
