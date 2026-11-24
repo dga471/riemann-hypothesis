@@ -154,18 +154,40 @@ open GlobalTheory.Mem GlobalTheory.Mem.Col2 GlobalTheory.Mem.Top GlobalTheory.Me
 
 noncomputable section
 
-local elab "exact_kern " t:term : tactic =>
-  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => Lean.Elab.Tactic.elabTerm t none
+-- Compare the types in the kernel to avoid unfolding the stage records in the elaborator.
+open Lean Elab Tactic in
+local elab "exact_by_kernel " term:term : tactic =>
+  closeMainGoalUsing `exact_by_kernel fun target _ => do
+    let value ← elabTerm term none
+    Term.synthesizeSyntheticMVarsNoPostponing
+    let value ← instantiateMVars value
+    let actual ← instantiateMVars (← Meta.inferType value)
+    let target ← instantiateMVars target
+    let lctx ← instantiateLCtxMVars (← getLCtx)
+    match Kernel.isDefEq (← getEnv) lctx actual target with
+    | .ok true => pure value
+    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
+    | .error error => throwError (error.toMessageData (← getOptions))
 
-local elab "rfl_kern" : tactic => do
-  let g ← Lean.Elab.Tactic.getMainGoal
-  let t ← Lean.Meta.whnf (← g.getType)
-  if let some (_, lhs, _) := t.eq? then
-    g.assign (← Lean.Meta.mkEqRefl lhs)
-  else if let some (_, lhs, _, _) := t.heq? then
-    g.assign (← Lean.Meta.mkHEqRefl lhs)
-  else
-    throwError "rfl_kern: expected Eq or HEq"
+-- Close `a = b`, `a ↔ b` or `HEq a b` by comparing `a` and `b` in the kernel,
+-- which avoids unfolding the transported terms in the elaborator.
+open Lean Elab Tactic Meta in
+local elab "rfl_by_kernel" : tactic =>
+  closeMainGoalUsing `rfl_by_kernel fun target _ => do
+    let target ← instantiateMVars target
+    let check (a b : Expr) : MetaM Unit := do
+      match Kernel.isDefEq (← getEnv) (← instantiateLCtxMVars (← getLCtx)) a b with
+      | .ok true => pure ()
+      | .ok false => throwError "the two sides are not definitionally equal:{indentExpr a}\nand{indentExpr b}"
+      | .error e => throwError (e.toMessageData (← getOptions))
+    if let some (_, a, b) := target.eq? then
+      check a b; mkEqRefl a
+    else if let some (a, b) := target.iff? then
+      check a b; pure (mkApp (mkConst ``Iff.refl) a)
+    else if let some (_, a, _, b) := target.heq? then
+      check a b; mkHEqRefl a
+    else
+      throwError "rfl_by_kernel: expected `=`, `↔` or `HEq`"
 
 namespace GlobalTheory.Mem.R3.Rw.ComplexificationCasts
 
@@ -358,9 +380,9 @@ theorem GlobalTheory.Mem.R3.Rw.read_of_moved : ∀ (B : Base) (f : Fr B.toPre) (
     eFT := eF
     ιW := m.y.ιW
     tied := ⟨h1R, h0R, hLT, colTie m.y hB hN.bu⟩
-    prtE := fun π => by exact_kern (h1P π).trans ((heF π).2.1 true).symm
-    prtE0 := fun π => by exact_kern (h0P π).trans ((heF π).2.1 false).symm
-    prtWE := fun i π => by exact_kern (hPW i π).trans ((heF π).2.2.1 i).symm
+    prtE := fun π => by exact_by_kernel (h1P π).trans ((heF π).2.1 true).symm
+    prtE0 := fun π => by exact_by_kernel (h0P π).trans ((heF π).2.1 false).symm
+    prtWE := fun i π => by exact_by_kernel (hPW i π).trans ((heF π).2.2.1 i).symm
     xi := fun _ _ => rfl
     isomFin := m.y.isomFin
     frameMatch := m.y.frameMatch
@@ -381,45 +403,45 @@ theorem GlobalTheory.Mem.R3.Rw.read_of_moved : ∀ (B : Base) (f : Fr B.toPre) (
       have h₁ := h1X _ h (e.symm v)
       have h₂ := congrArg ((m.t.ch true).jX (m.y.tup t)) (e.apply_symm_apply v)
       have h₃ := (m.t.ch true).top t ((hU _).1 h) x
-      exact_kern h₁.trans (h₂.trans h₃)
+      exact_by_kernel h₁.trans (h₂.trans h₃)
     topRead0 := fun t h x => by
       let e := (q.p.ch false).multTop (m.y.tup t)
       let v := (tieA false t).j x
       have h₁ := h0X _ h (e.symm v)
       have h₂ := congrArg ((m.t.ch false).jX (m.y.tup t)) (e.apply_symm_apply v)
       have h₃ := (m.t.ch false).top t ((hU _).1 h) x
-      exact_kern h₁.trans (h₂.trans h₃)
+      exact_by_kernel h₁.trans (h₂.trans h₃)
     mtRead := fun i t h x => by
       have h₁ := hMt _ h i ((tieL i t).j (eMt i t x))
       have h₂ := congrArg (m.t.lf.jMt (m.y.tup t) i) (cast_apply (m.t.hL i t) (tieL i t) x)
-      exact_kern h₁.trans (h₂.trans (m.t.lf.read i t ((hU _).1 h) x))
+      exact_by_kernel h₁.trans (h₂.trans (m.t.lf.read i t ((hU _).1 h) x))
     mj := mj
     mjRead := fun i v => by
       have h₁ := (hMj i v).trans (m.t.lf.jMj_read i v)
       have h₂ := congrArg (fun u => PiTensorProduct.lift ((m.z.R.HW i _).e u)) (hEW i v).symm
-      exact_kern h₁.trans h₂
-    stable := fun μ => by exact_kern (m.t.tA true μ).stable
-    stable0 := fun μ => by exact_kern (m.t.tA false μ).stable
-    eE := by exact_kern eE
-    eE_read := fun x => by exact_kern ((h1E x).trans (heE x))
-    dall := by exact_kern m.t.dall
+      exact_by_kernel h₁.trans h₂
+    stable := fun μ => by exact_by_kernel (m.t.tA true μ).stable
+    stable0 := fun μ => by exact_by_kernel (m.t.tA false μ).stable
+    eE := by exact_by_kernel eE
+    eE_read := fun x => by exact_by_kernel ((h1E x).trans (heE x))
+    dall := by exact_by_kernel m.t.dall
     junk := fun μ h => iota_eq_zero _ m.y.hm μ ((m.t.ch true).junk μ fun h' => h ((hU μ).2 h'))
     cen0 := fun cG hk t => by
-      exact_kern (cen_of_tie (tieA false t) (m.z.R.eG.trans cG) (fun z x => s.cen (m.y.tup t) z x)
+      exact_by_kernel (cen_of_tie (tieA false t) (m.z.R.eG.trans cG) (fun z x => s.cen (m.y.tup t) z x)
         (s.is _ (stdIso_of_keep m.z cG hk) (m.y.tup t)))
     cen1 := fun cG hk t => by
-      exact_kern (cen_of_tie (tieA true t) (m.z.R.eG.trans cG)
+      exact_by_kernel (cen_of_tie (tieA true t) (m.z.R.eG.trans cG)
         (fun z x => o.N.ntypes.cenAmb (m.y.tup t) z x) ((hfits.cen _ (stdIso_of_keep m.z cG hk)).amb (m.y.tup t)))
     lam := hN.lam
-    occ := by exact_kern hocc
+    occ := by exact_by_kernel hocc
     kap := q.kap o.η o.hη o.V o.S o.N o.G
     bu := hN.bu
     ze := hN.ze }
   refine ⟨Y, ?_⟩
-  refine ⟨by rfl_kern, by rfl_kern, by rfl_kern, by rfl_kern, fun t => by rfl_kern, fun t => by rfl_kern,
-    fun i t x => by exact_kern heq_funCongr (K := B.LL) (congrArg Mat1.n (m.t.hL i t)) x, fun π => by exact_kern (heF π).1,
-    fun x => by exact_kern heq_of_eq (h1E x), fun x => by exact_kern heq_of_eq (h0E x),
-    fun i x => by exact_kern heq_of_eq (hEW i x), fun μ h i x => by exact_kern heq_of_eq (hMt μ h i x)⟩
+  exact ⟨by rfl_by_kernel, by rfl_by_kernel, by rfl_by_kernel, by rfl_by_kernel, fun t => by rfl_by_kernel, fun t => by rfl_by_kernel,
+    fun i t x => by exact_by_kernel heq_funCongr (K := B.LL) (congrArg Mat1.n (m.t.hL i t)) x, fun π => by exact_by_kernel (heF π).1,
+    fun x => by exact_by_kernel heq_of_eq (h1E x), fun x => by exact_by_kernel heq_of_eq (h0E x),
+    fun i x => by exact_by_kernel heq_of_eq (hEW i x), fun μ h i x => by exact_by_kernel heq_of_eq (hMt μ h i x)⟩
 
 end
 end -- clump:auto
