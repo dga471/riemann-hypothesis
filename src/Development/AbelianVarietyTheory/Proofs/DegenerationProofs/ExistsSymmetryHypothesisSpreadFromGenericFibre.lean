@@ -4,9 +4,9 @@ public import Development.AbelianVarietyTheory.Definitions.Degenerations.RigGen
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.SabComp
 public import Development.AbelianVarietyTheory.Definitions.ThetaMetrics.MemNonzeroLocusIffPowFn
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsProjectiveModel
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.LineBundleSymmetryHypothesisBaseChange
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.LineBundleSymmetryHypothesisBaseChange
 import Development.AbelianVarietyTheory.Proofs.HomogeneousIdeals.IsSchemeTheoreticallyDominantSpecOfInjective
-import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.LbIsoLinComb
+public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.LbIsoLinComb
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -50,7 +50,7 @@ import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.T
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.LBLocal
 import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.LbIsoLinCombPull
 
-@[expose] public section
+public section
 
 open CategoryTheory Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open scoped CategoryTheory.Obj

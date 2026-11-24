@@ -1,7 +1,9 @@
 module
 
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.FamMod
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExpandsAtIffStalks
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.ProdExpPf
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.DivCalc
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExpandsAtIffStalks
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

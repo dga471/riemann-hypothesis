@@ -57,7 +57,7 @@ public import Mathlib.LinearAlgebra.Dimension.Constructions
 public import Mathlib.RingTheory.Algebraic.Basic
 public import Mathlib.RingTheory.Algebraic.Integral
 
-@[expose] public section
+public section
 
 open Module
 

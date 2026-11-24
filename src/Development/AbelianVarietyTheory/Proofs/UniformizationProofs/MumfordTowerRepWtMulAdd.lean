@@ -3,7 +3,9 @@ module
 public import Development.AbelianVarietyTheory.Definitions.AbelianSchemeLaws.FirstCohomologyVanishesSpecOfIsLocalRing
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.IsCPPullback
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsMemCommonChart
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.SquareOfCubical
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.LBLocalC
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.LBTransport
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.SquareOfCubical
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

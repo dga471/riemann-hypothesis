@@ -2,9 +2,10 @@ module
 
 import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ProductSupportInSubgroupTheta
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.SvalTwistOne
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsIsProdB
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsIsProdB
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.StalkMapInjectiveOfFlat
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.SvalEqZeroOfSumMulCoord
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.FirstCohomology.SectionArithmetic
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -43,7 +44,7 @@ import Mathlib.Tactic.NormNum.Parity
 import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 
-@[expose] public section
+public section
 
 open CategoryTheory CategoryTheory.Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.Semi ReciprocityTheory.ChartRestriction.G.Out ReciprocityTheory.ChartRestriction.G.Geo.Tor
@@ -70,7 +71,7 @@ theorem exists_sub_sum {X Y : Scheme.{0}} {L : LB X} {K : Type} [Fintype K] {φ 
     (S : LB.Sec (LB.LinComb L φ ε)) (p : Ix → LB.Sec (LB.LinComb L φ ε)) (s : Finset Ix) :
     ∃ d : LB.Sec (LB.LinComb L φ ε), ∀ (Z : Scheme.{0}) (r : Z ⟶ Y) (z : Z) (J), Good L z J →
       sval d r z J = sval S r z J - ∑ i ∈ s, sval (p i) r z J := by
-  apply GlobalTheory.MulSupp.exists_sub_sum
+  apply GlobalTheory.MulSupp.exists_sub_sum <;> assumption
 
 variable {R : Type} [CommRing R] [IsDomain R] {I : Ideal R} {D : DegPre R}
   {G : Over (Spec (CommRingCat.of R))} [GrpObj G] [IsCommMonObj G]

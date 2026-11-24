@@ -4,10 +4,10 @@ public import Development.AbelianVarietyTheory.Definitions.Uniformization.TXFram
 public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.PullQkSurjective
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsGrpPullbackThick
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniformizationEndomorphismOfLinear
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.GmMulEqOfResMulEq
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.GmMulEqOfResMulEq
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.IsLinearOfIsPullUniformisation
 import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.NonemptyCubicalPull
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.QkToAkBaseChange
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.QkToAkBaseChange
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -52,8 +52,13 @@ import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Tactic.ReduceModChar
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.CocycleIdentityIso
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.ChartPullbacks.GeneratorPullback.PullAlong
+public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExpansionBijectiveOverFields
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsFamFieldPull
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExpandsGTransport
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.PhiRelTransport
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.PowEqOneOfPush
 
-@[expose] public section
+public section
 
 open CategoryTheory CategoryTheory.Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry IsLocalRing
 open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.Semi ReciprocityTheory.ChartRestriction.G.Out ReciprocityTheory.ChartRestriction.G.Geo.Tor ReciprocityTheory.ChartRestriction.G.DVR

@@ -46,7 +46,7 @@ import Mathlib.Topology.Sheaves.Init
 public import Mathlib.RingTheory.Filtration
 public import Mathlib.RingTheory.Flat.EquationalCriterion
 
-@[expose] public section
+public section
 
 open CategoryTheory CategoryTheory.Limits TensorProduct
 

@@ -49,7 +49,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.SemiabelianSchemes.CubicalStructures.CubeSymmetricSwapFirst
 
-@[expose] public section
+public section
 
 open CategoryTheory Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open scoped CategoryTheory.Obj

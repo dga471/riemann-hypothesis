@@ -3,7 +3,22 @@ module
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsUnitCharts
 public import Development.AbelianVarietyTheory.Proofs.ToricGeometry.TangentBijectionOfValues
 public import Mathlib.RingTheory.Nullstellensatz
-public import Development.AbelianVarietyTheory.Proofs.ThetaFamilyOrigin.RingKrullDimOfEtaleMvPolynomial
+public import Mathlib.RingTheory.Ideal.KrullsHeightTheorem
+public import Mathlib.RingTheory.KrullDimension.Field
+public import Mathlib.RingTheory.QuasiFinite.Basic
+public import Mathlib.RingTheory.AlgebraicIndependent.Basic
+public import Mathlib.RingTheory.Ideal.Height
+public import ReciprocityTheory.CommutativeAlgebra.ChainConnInDim
+public import Mathlib.RingTheory.NoetherNormalization
+public import Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis
+public import Mathlib.RingTheory.FiniteType
+public import Mathlib.RingTheory.IntegralClosure.Algebra.Defs
+public import Mathlib.RingTheory.Ideal.GoingUp
+public import Mathlib.RingTheory.Jacobson.Ring
+public import ReciprocityTheory.CommutativeAlgebra.CohenMacaulay.LocDim
+public import Mathlib.RingTheory.Localization.Submodule
+public import Mathlib.RingTheory.KrullDimension.Basic
+import Development.AbelianVarietyTheory.Proofs.ThetaFamilyOrigin.RingKrullDimOfEtaleMvPolynomial
 import Mathlib.Algebra.AffineMonoid.UniqueSums
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
@@ -24,7 +39,7 @@ import Mathlib.NumberTheory.Height.NumberField
 import Mathlib.NumberTheory.Height.Projectivization
 import Mathlib.NumberTheory.LucasLehmer
 import Mathlib.NumberTheory.SelbergSieve
-import Mathlib.RingTheory.KrullDimension.Polynomial
+public import Mathlib.RingTheory.KrullDimension.Polynomial
 import Mathlib.RingTheory.PicardGroup
 import Mathlib.RingTheory.Radical.NatInt
 import Mathlib.RingTheory.TotallySplit

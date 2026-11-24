@@ -46,7 +46,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Topology.Sheaves.Init
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 
-@[expose] public section
+public section
 
 open Module
 

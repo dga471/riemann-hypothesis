@@ -41,12 +41,21 @@ import Mathlib.Tactic.NormNum.Parity
 import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Topology.Sheaves.Init
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.FiniteAlgebraLocalCompletion
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.FiniteAlgebraLocalCompletion
 public import Mathlib.Algebra.CharP.Algebra
 public import Mathlib.FieldTheory.Separable
 public import Mathlib.RingTheory.DedekindDomain.IntegralClosure
+public import Mathlib.RingTheory.DiscreteValuationRing.Basic
+public import Mathlib.RingTheory.Henselian
+public import Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic
+public import Mathlib.RingTheory.SimpleRing.Principal
+public import Mathlib.RingTheory.Artinian.Ring
+public import Mathlib.RingTheory.DedekindDomain.Basic
+public import Mathlib.RingTheory.DiscreteValuationRing.TFAE
+public import Mathlib.RingTheory.Idempotents
+public import Mathlib.RingTheory.AdicCompletion.Exactness
 
-@[expose] public section
+public section
 
 namespace GlobalTheory
 

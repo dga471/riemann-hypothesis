@@ -6,7 +6,7 @@ public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.TorsionEq
 public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.ExistsCommVOfLe
 public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.ExistsGenOfSection
 public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.ExistsPhiRelSmul
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsThetaActs
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsThetaActs
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.PowEqOneOfPush
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.PtEqOfProportional
 import Mathlib.Algebra.Order.Floor.Extended

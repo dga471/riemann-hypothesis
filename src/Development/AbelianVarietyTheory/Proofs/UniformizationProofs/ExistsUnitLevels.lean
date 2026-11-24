@@ -46,7 +46,7 @@ public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValua
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.LBPull
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.WCompat
 
-@[expose] public section
+public section
 
 noncomputable section
 

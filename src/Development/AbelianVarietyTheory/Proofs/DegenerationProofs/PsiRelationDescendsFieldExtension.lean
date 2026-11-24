@@ -6,7 +6,7 @@ public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeo
 public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.CoordOfHasWeight
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.LineBundleTrivialIsoDescendField
 public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExistsIsFibreIso
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.CorrOfValFieldExtension
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.CorrOfValFieldExtension
 import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.NonemptyCubicalPull
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield

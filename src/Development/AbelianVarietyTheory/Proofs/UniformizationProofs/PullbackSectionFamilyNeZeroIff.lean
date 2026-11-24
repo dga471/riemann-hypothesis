@@ -2,7 +2,10 @@ module
 
 import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.FiniteExponentBaseChangeField
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.ExistsUniqueSamePt
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.SecEqZeroOfSvalWhiskerRightEqZero
+public import Mathlib.AlgebraicGeometry.Morphisms.Flat
+public import Mathlib.AlgebraicGeometry.Morphisms.SchemeTheoreticallyDominant
+public import Mathlib.AlgebraicGeometry.IdealSheaf.Basic
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.SecEqZeroOfSvalWhiskerRightEqZero
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -43,7 +46,7 @@ import Mathlib.Tactic.NormNum.Parity
 import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 
-@[expose] public section
+public section
 
 open CategoryTheory CategoryTheory.Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.Semi ReciprocityTheory.ChartRestriction.G.Out ReciprocityTheory.ChartRestriction.G.Geo.Tor
@@ -63,7 +66,7 @@ theorem sval_eq_zero_of_local_eq_zero {X Y Z : Scheme.{0}} {L : LB X} {K : Type}
 theorem appTop_field_point_injective (R : Type) [CommRing R] [IsDomain R] (F : Type) [Field F]
     [Algebra (FractionRing R) F] :
     Function.Injective (toUnit (TF (R := R) F)).left.appTop.hom := by
-  apply GlobalTheory.UU.FEDesc.toUnit_injective
+  apply GlobalTheory.UU.FEDesc.toUnit_injective <;> assumption
 
 theorem pullB_ne_zero_iff : ∀ (R : Type) [CommRing R] [IsDomain R] (D : DegPre R) (F : Type) [Field F] [Algebra (FractionRing R) F] (k : ℕ) (f : ∀ α, SecBT D (𝟙_ _) k α) (s : Raw D F k), PullB D F (toUnit _) k f s → ∀ α, ((∃ j, (s α).f j ≠ 0) ↔ ∃ j, (f α).f j ≠ 0) := by
   intro R _ _ D F _ _ k f s h α

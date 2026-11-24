@@ -43,7 +43,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Topology.Sheaves.Init
 public import Mathlib.Algebra.MvPolynomial.CommRing
 
-@[expose] public section
+public section
 
 namespace GlobalTheory.Degen
 

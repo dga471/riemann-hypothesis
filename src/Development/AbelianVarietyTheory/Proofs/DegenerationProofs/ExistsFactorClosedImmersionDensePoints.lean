@@ -1,7 +1,7 @@
 module
 
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsUnitCharts
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.EqOfValHomEq
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.EqOfValHomEq
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsUniqueIsRatio
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
@@ -45,6 +45,7 @@ import Mathlib.Tactic.NormNum.Parity
 import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.TaylorDiscriminants.WickVanishing.JetGlue
+public import Mathlib.Tactic.ENatToNat
 
 @[expose] public section
 

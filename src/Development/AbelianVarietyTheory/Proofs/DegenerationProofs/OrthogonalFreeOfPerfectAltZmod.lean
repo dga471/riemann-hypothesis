@@ -59,7 +59,7 @@ import Mathlib.Tactic.TypeStar
 import Mathlib.Topology.Sheaves.Init
 public import Mathlib.RingTheory.LocalRing.Module
 
-@[expose] public section
+public section
 
 open Module TensorProduct
 

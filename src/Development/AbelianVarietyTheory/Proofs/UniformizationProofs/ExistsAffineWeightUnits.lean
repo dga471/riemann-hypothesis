@@ -45,7 +45,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Tactic.ReduceModChar
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

@@ -5,7 +5,7 @@ public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.GtActIffE
 public import Mathlib.RingTheory.Henselian
 public import Mathlib.RingTheory.RegularLocalRing.Defs
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.SecBaseChangeAnySt
-public import Development.AbelianVarietyTheory.Proofs.HomogeneousIdeals.ExistsRingEquivOfIsTranscendenceBasis
+import Development.AbelianVarietyTheory.Proofs.HomogeneousIdeals.ExistsRingEquivOfIsTranscendenceBasis
 public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExistsPowEqOfBaseChange
 import Mathlib.Algebra.GroupWithZero.Submonoid.CancelMulZero
 import Mathlib.Algebra.Order.Floor.Extended
@@ -13,6 +13,16 @@ import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
 import Mathlib.AlgebraicGeometry.Modules.Sheaf
 public import Mathlib.AlgebraicGeometry.ValuativeCriterion
+public import Mathlib.Basic.Complex.Basic
+public import Mathlib.RingTheory.AlgebraicIndependent.Defs
+public import Mathlib.FieldTheory.IsAlgClosed.Classification
+public import Mathlib.Analysis.Complex.Cardinality
+public import Mathlib.FieldTheory.AlgebraicClosure
+public import Mathlib.FieldTheory.Galois.Infinite
+public import Mathlib.RingTheory.Ideal.Height
+public import Mathlib.RingTheory.Valuation.ValuationRing
+public import Mathlib.RingTheory.DiscreteValuationRing.TFAE
+public import Mathlib.RingTheory.Localization.Submodule
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 import Mathlib.Analysis.Normed.Algebra.GelfandRadius
 import Mathlib.Analysis.SpecialFunctions.Bernstein
@@ -52,7 +62,7 @@ import Mathlib.Tactic.NormNum.Ordinal
 import Mathlib.Tactic.NormNum.Parity
 import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.RegVert
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.RegVert
 
 @[expose] public section
 

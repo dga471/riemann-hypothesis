@@ -2,7 +2,7 @@ module
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.LinearAlgebra.QuadraticForm.Basic
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.ExistsReducedBasisOfLinearIndependent
+import Development.AbelianVarietyTheory.Proofs.FoundationProofs.ExistsReducedBasisOfLinearIndependent
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -44,8 +44,13 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.TypeStar
 import Mathlib.Topology.Sheaves.Init
 public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.ExistsBimultiplicativeOfSecondQuotConst
+public import ReciprocityTheory.ReducedBases.ExistsBoundedBasis
+public import ReciprocityTheory.ReducedBases.LatticeReduction
+public import Mathlib.Analysis.Matrix.Order
+public import ReciprocityTheory.ReducedBases.ExistsRedOf
+public import ReciprocityTheory.ReducedBases.TBInjective
 
-@[expose] public section
+public section
 
 open Module
 

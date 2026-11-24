@@ -1,10 +1,14 @@
 module
 
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.BaseFacts
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsNeZeroOfLe
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsSectionExtendingTorsionPointsSupportStatement
-import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsUnitCharts
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ImmByOfSpans
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsUniqueIsRatio
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ThetaSystemNormWeightSumLeExpOfTest
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsSectionExtendingTorsionPointsSupport
+public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.PolarizedAbelianEmbeddingBySections
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsNeZeroOfLe
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsSectionExtendingTorsionPointsSupportStatement
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsUnitCharts
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ImmByOfSpans
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -49,7 +53,7 @@ import Mathlib.Tactic.ReduceModChar
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.ChartPullbacks.TangentLinearity.ConstPullback
 import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.SemiabelianSchemes.PrecompleteBases.PsbLb
 
-@[expose] public section
+public section
 
 open CategoryTheory Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open scoped CategoryTheory.Obj

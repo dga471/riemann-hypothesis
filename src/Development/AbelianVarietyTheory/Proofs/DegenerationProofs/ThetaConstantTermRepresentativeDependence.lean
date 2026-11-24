@@ -2,8 +2,11 @@ module
 
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.SepticCharacterInjective
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.DegenerationDataPsiQuadraticGeneratorsLinear
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.CubNSucc
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.DegenerationWeilPairingProperties
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.MulqLaws
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.NormalisingFactor
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.MulqLaws
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.NormalisingFactor
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -42,7 +45,7 @@ import Mathlib.Tactic.NormNum.Parity
 import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 
-@[expose] public section
+public section
 
 open ReciprocityTheory.ChartRestriction.G.Geo.Tor GlobalTheory.Ex
 open scoped BigOperators

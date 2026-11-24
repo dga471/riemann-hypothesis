@@ -1,7 +1,18 @@
 module
 
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.ExistsUniqueSamePt
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsCompleteDvrFiniteSubalgebra
+public import Mathlib.RingTheory.AdicCompletion.Basic
+public import Mathlib.RingTheory.RegularLocalRing.Defs
+public import Mathlib.Algebra.CharP.Algebra
+public import Mathlib.FieldTheory.IntermediateField.Adjoin.Basic
+public import Mathlib.RingTheory.DedekindDomain.IntegralClosure
+public import Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic
+public import Mathlib.RingTheory.Artinian.Ring
+public import Mathlib.RingTheory.DedekindDomain.Basic
+public import Mathlib.RingTheory.DiscreteValuationRing.TFAE
+public import Mathlib.RingTheory.Idempotents
+public import Mathlib.RingTheory.AdicCompletion.Exactness
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsCompleteDvrFiniteSubalgebra
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -22,7 +33,7 @@ import Mathlib.NumberTheory.Height.Projectivization
 import Mathlib.NumberTheory.LucasLehmer
 import Mathlib.NumberTheory.SelbergSieve
 import Mathlib.RingTheory.Coalgebra.IsFrobenius
-import Mathlib.RingTheory.Henselian
+public import Mathlib.RingTheory.Henselian
 import Mathlib.RingTheory.Radical.NatInt
 import Mathlib.RingTheory.WittVector.IsPoly
 import Mathlib.Tactic.Echelon.Zsqrtd

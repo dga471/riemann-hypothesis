@@ -12,7 +12,7 @@ public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDesc
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.LBLocalC
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.ExistsUniqueSamePt
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.BijectiveOfIso
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ValuesNatural
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ValuesNatural
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -62,7 +62,7 @@ import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.FirstCohomology.Sect
 -- ===== clump member: Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueThickTorusLevelWeightExpansionStatement =====
 -- clump-header: {"m": "Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueThickTorusLevelWeightExpansionStatement", "h": "module\n\npublic import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.ValCalc\npublic import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.DegExp\npublic import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueThickTorusLevelWeightExpansion\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\n\n"}
 section -- clump:auto
-@[expose] public section
+section
 
 open CategoryTheory CategoryTheory.Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.Semi ReciprocityTheory.ChartRestriction.G.Out ReciprocityTheory.ChartRestriction.G.Geo.Tor
@@ -205,62 +205,51 @@ section Values
 
 variable {X Y Y' Y'' : Scheme.{0}} (L : LB X) {K K' K₃ : Type} [Fintype K] [Fintype K'] [Fintype K₃]
 
-/-- A `Y`-scheme point equipped with a good trivialization index for `L`. -/
-structure EvalPt (Y : Scheme.{0}) : Type 1 where
-  Z : Scheme.{0}
-  r : Z ⟶ Y
-  z : Z
-  J : {J // Good L z J}
-
 abbrev Vals (Y : Scheme.{0}) : Type 1 :=
-  ∀ p : EvalPt L Y, p.Z.presheaf.stalk p.z
-
--- Ring homomorphisms in the abstract basis lemmas use the semiring projected from a
--- commutative ring. Match that projection here to avoid reducing pointwise instances down to stalks.
-local instance (Y : Scheme.{0}) : NonAssocSemiring (Vals L Y) :=
-  (inferInstance : CommRing (Vals L Y)).toRing.toSemiring.toNonAssocSemiring
+  ∀ (Z : Scheme.{0}) (_ : Z ⟶ Y) (z : Z) (_ : {J // Good L z J}), Z.presheaf.stalk z
 
 def pull (h : Y' ⟶ Y) : Vals L Y →+* Vals L Y' where
-  toFun w p := w ⟨p.Z, p.r ≫ h, p.z, p.J⟩
+  toFun w Z r z J := w Z (r ≫ h) z J
   map_one' := rfl
   map_mul' _ _ := rfl
   map_zero' := rfl
   map_add' _ _ := rfl
 
 def fn (Y : Scheme.{0}) : Γ(Y, ⊤) →+* Vals L Y where
-  toFun a p := gs p.r p.z ⊤ a
-  map_one' := funext fun p => by rw [gs_eq p.r p.z ⊤ trivial, map_one, map_one]; rfl
-  map_mul' _ _ := funext fun p => gs_mul p.r p.z ⊤ trivial _ _
-  map_zero' := funext fun p => by rw [gs_eq p.r p.z ⊤ trivial, map_zero, map_zero]; rfl
-  map_add' _ _ := funext fun p => gs_add p.r p.z ⊤ trivial _ _
+  toFun a Z r z _ := gs r z ⊤ a
+  map_one' := by funext Z r z J; rw [gs_eq r z ⊤ trivial, map_one, map_one]; rfl
+  map_mul' _ _ := by funext Z r z J; exact gs_mul r z ⊤ trivial _ _
+  map_zero' := by funext Z r z J; rw [gs_eq r z ⊤ trivial, map_zero, map_zero]; rfl
+  map_add' _ _ := by funext Z r z J; exact gs_add r z ⊤ trivial _ _
 
 def cst {R : Type} [CommRing R] (f : Y ⟶ Spec (CommRingCat.of R)) : R →+* Vals L Y :=
   (fn L Y).comp (f.appTop.hom.comp (Scheme.ΓSpecIso (CommRingCat.of R)).inv.hom)
 
 variable {L}
 
-theorem pull_pull (h : Y' ⟶ Y) (h' : Y'' ⟶ Y') (w : Vals L Y) : pull L h' (pull L h w) = pull L (h' ≫ h) w :=
-  funext fun ⟨Z, r, z, J⟩ => by change w ⟨Z, (r ≫ h') ≫ h, z, J⟩ = w ⟨Z, r ≫ h' ≫ h, z, J⟩; rw [Category.assoc]
+theorem pull_pull (h : Y' ⟶ Y) (h' : Y'' ⟶ Y') (w : Vals L Y) : pull L h' (pull L h w) = pull L (h' ≫ h) w := by
+  funext Z r z J
+  exact congrArg (fun q => w Z q z J) (Category.assoc _ _ _)
 
-theorem pull_id (w : Vals L Y) : pull L (𝟙 Y) w = w :=
-  funext fun ⟨Z, r, z, J⟩ => by change w ⟨Z, r ≫ 𝟙 Y, z, J⟩ = w ⟨Z, r, z, J⟩; rw [Category.comp_id]
+theorem pull_id (w : Vals L Y) : pull L (𝟙 Y) w = w := by
+  funext Z r z J
+  exact congrArg (fun q => w Z q z J) (Category.comp_id _)
 
 theorem pull_cst {R R' : Type} [CommRing R] [CommRing R'] (g : R →+* R') {π : Y' ⟶ Y}
     {f : Y ⟶ Spec (CommRingCat.of R)} {f' : Y' ⟶ Spec (CommRingCat.of R')}
     (w : π ≫ f = f' ≫ Spec.map (CommRingCat.ofHom g)) (a : R) : pull L π (cst L f a) = cst L f' (g a) := by
   have e₁ := congrArg (fun Q => Q.hom a) (Scheme.ΓSpecIso_inv_naturality (CommRingCat.ofHom g))
   have e₂ := congrArg (fun q => q.appTop.hom ((Scheme.ΓSpecIso (CommRingCat.of R)).inv.hom a)) w
-  exact funext fun p =>
-    (gs_pull p.r π p.z ⊤ trivial _).symm.trans (congrArg (gs p.r p.z ⊤) ((congrArg f'.appTop.hom e₁).trans e₂.symm).symm)
+  funext Z r z J
+  exact (gs_pull r π z ⊤ trivial _).symm.trans (congrArg (gs r z ⊤) ((congrArg f'.appTop.hom e₁).trans e₂.symm).symm)
 
-def ev {φ : K → (Y ⟶ X)} {ε : K → ℤ} (s : LB.Sec (LB.LinComb L φ ε)) : Vals L Y :=
-  fun p => sval s p.r p.z p.J.1
+def ev {φ : K → (Y ⟶ X)} {ε : K → ℤ} (s : LB.Sec (LB.LinComb L φ ε)) : Vals L Y := fun _ r z J => sval s r z J.1
 
 def evU {φ : K → (Y ⟶ X)} {ε : K → ℤ} (u : LB.Gen (LB.LinComb L φ ε)) : (Vals L Y)ˣ where
-  val p := (val u p.r p.z p.J.1).val
-  inv p := (val u p.r p.z p.J.1).inv
-  val_inv := funext fun p => (val u p.r p.z p.J.1).val_inv
-  inv_val := funext fun p => (val u p.r p.z p.J.1).inv_val
+  val _ r z J := (val u r z J.1).val
+  inv _ r z J := (val u r z J.1).inv
+  val_inv := by funext Z r z J; exact (val u r z J.1).val_inv
+  inv_val := by funext Z r z J; exact (val u r z J.1).inv_val
 
 
 variable (L) in
@@ -269,17 +258,18 @@ def secVals (φ : K → (Y ⟶ X)) (ε : K → ℤ) : Set (Vals L Y) := Set.rang
 variable {φ : K → (Y ⟶ X)} {ε : K → ℤ}
 
 theorem eq_of_val (hL : L.IsLB) {s s' : LB.Sec (LB.LinComb L φ ε)}
-    (h : ∀ y J, ev s ⟨Y, 𝟙 Y, y, J⟩ = ev s' ⟨Y, 𝟙 Y, y, J⟩) : s = s' :=
+    (h : ∀ y J, ev s Y (𝟙 Y) y J = ev s' Y (𝟙 Y) y J) : s = s' :=
   DVR.SecOps.sec_ext (sec_ext_val hL fun y J hJ => h y ⟨J, hJ⟩)
 
 theorem secVals_ext (hL : L.IsLB) {w w' : Vals L Y} (hw : w ∈ secVals L φ ε) (hw' : w' ∈ secVals L φ ε)
-    (h : ∀ y J, w ⟨Y, 𝟙 Y, y, J⟩ = w' ⟨Y, 𝟙 Y, y, J⟩) : w = w' := by
+    (h : ∀ y J, w Y (𝟙 Y) y J = w' Y (𝟙 Y) y J) : w = w' := by
   obtain ⟨s, rfl⟩ := hw
   obtain ⟨s', rfl⟩ := hw'
   rw [eq_of_val hL h]
 
-theorem ev_pullSec (s : LB.Sec (LB.LinComb L φ ε)) (h : Y' ⟶ Y) : ev (DVR.pullSec L φ ε s h) = pull L h (ev s) :=
-  funext fun p => DVR.SectionScalarValuation.sval_pullSec φ ε s h p.r p.z p.J.2
+theorem ev_pullSec (s : LB.Sec (LB.LinComb L φ ε)) (h : Y' ⟶ Y) : ev (DVR.pullSec L φ ε s h) = pull L h (ev s) := by
+  funext Z r z J
+  exact DVR.SectionScalarValuation.sval_pullSec φ ε s h r z J.2
 
 theorem pull_mem {w : Vals L Y} (hw : w ∈ secVals L φ ε) (h : Y' ⟶ Y) {ψ : K → (Y' ⟶ X)} (e : ∀ k, ψ k = h ≫ φ k) :
     pull L h w ∈ secVals L ψ ε := by
@@ -290,9 +280,9 @@ theorem pull_mem {w : Vals L Y} (hw : w ∈ secVals L φ ε) (h : Y' ⟶ Y) {ψ 
 theorem ev_comb {R : Type} [CommRing R] {m : ℕ} (g : R →+* Γ(Y, ⊤)) (a : Fin m → R)
     (b : Fin m → LB.Sec (LB.LinComb L φ ε)) {s : LB.Sec (LB.LinComb L φ ε)}
     (hs : ∀ j, s.f j = ∑ i, resTop _ (g (a i)) * (b i).f j) : ev s = comb ((fn L Y).comp g) (fun i => ev (b i)) a := by
-  funext p
+  funext Z r z J
   simp only [comb, Finset.sum_apply]
-  exact DVR.SectionScalarValuation.sval_lin (fun i => g (a i)) b hs p.r p.z p.J.2
+  exact DVR.SectionScalarValuation.sval_lin (fun i => g (a i)) b hs r z J.2
 
 theorem exists_comb {M : LB Y} {m : ℕ} (a : Fin m → Γ(Y, ⊤)) (b : Fin m → LB.Sec M) :
     ∃ s : LB.Sec M, ∀ j, s.f j = ∑ i, resTop _ (a i) * (b i).f j :=
@@ -317,7 +307,7 @@ theorem isBas_of_comb (hL : L.IsLB) {R : Type} [CommRing R] {m : ℕ} (g : R →
   refine (existsUnique_congr fun a => ⟨ev_comb g a b, fun H => ?_⟩).1 (hb s)
   obtain ⟨t, ht⟩ := exists_comb (fun i => g (a i)) b
   rw [← ev_comb g a b ht] at H
-  rw [eq_of_val hL fun y J => congrFun H ⟨Y, 𝟙 Y, y, J⟩]
+  rw [eq_of_val hL fun y J => congrFun (congrFun (congrFun (congrFun H _) _) y) J]
   exact ht
 
 theorem mul_mem_iff (hL : L.IsLB) {φ' : K' → (Y ⟶ X)} {ε' : K' → ℤ} {φ₃ : K₃ → (Y ⟶ X)} {ε₃ : K₃ → ℤ}
@@ -331,21 +321,24 @@ theorem mul_mem_iff (hL : L.IsLB) {φ' : K' → (Y ⟶ X)} {ε' : K' → ℤ} {�
       simp only [Fintype.prod_sum_type, Sum.elim_inl, Sum.elim_inr, Category.id_comp] at this ⊢
       rw [← this]
       simp only [zpow_neg, Finset.prod_inv_distrib, mul_inv_cancel_right]) (pullMulSec s (𝟙 Y) (LB.invGen L _ _ u) hu')
-    refine ⟨t, funext fun p => ?_⟩
-    refine (ht p.Z p.r p.z p.J.1 p.J.2).trans ?_
-    rw [sval_pullMulSec _ _ _ hu' _ p.z p.J.2, val_inv, Category.comp_id, Units.mul_inv_eq_iff_eq_mul]
-    exact congrFun hs p
+    refine ⟨t, ?_⟩
+    funext Z r z J
+    refine (ht Z r z J.1 J.2).trans ?_
+    rw [sval_pullMulSec _ _ _ hu' _ z J.2, val_inv, Category.comp_id, Units.mul_inv_eq_iff_eq_mul]
+    exact congrFun (congrFun (congrFun (congrFun hs Z) r) z) J
   · rintro ⟨s, rfl⟩
     obtain ⟨t, ht⟩ := exists_sec (φ' := φ') (ε' := ε') hL (fun U _ q => by
       simpa only [Category.id_comp] using h U q) (pullMulSec s (𝟙 Y) u hu)
-    refine ⟨t, funext fun p => ?_⟩
-    refine (ht p.Z p.r p.z p.J.1 p.J.2).trans ?_
-    rw [sval_pullMulSec _ _ _ hu _ p.z p.J.2, Category.comp_id]
+    refine ⟨t, ?_⟩
+    funext Z r z J
+    refine (ht Z r z J.1 J.2).trans ?_
+    rw [sval_pullMulSec _ _ _ hu _ z J.2, Category.comp_id]
     rfl
 
 theorem pull_evU (u : LB.Gen (LB.LinComb L φ ε)) (h : Y' ⟶ Y) :
-    (evU (LB.pullGen L φ ε u h)).val = pull L h (evU u).val :=
-  funext fun p => congrArg Units.val (val_pull p.J.2 u h p.r)
+    (evU (LB.pullGen L φ ε u h)).val = pull L h (evU u).val := by
+  funext Z r z J
+  exact congrArg Units.val (val_pull J.2 u h r)
 
 end Values
 
@@ -583,10 +576,10 @@ private theorem pull_ev_eq_iff {X B Y : Scheme.{0}} {L : LB X} (hL : L.IsLB)
     (s : LB.Sec (LB.LinComb L φ ε)) (t : LB.Sec (LB.LinComb L ψ ε)) :
     pull L p (ev s) = ev t ↔ ∀ z J, Good L z J → sval s p z J = sval t (𝟙 Y) z J := by
   have hid z (J : {J // Good L z J}) :
-      (pull L p (ev s)) ⟨Y, 𝟙 Y, z, J⟩ = sval s p z J.1 :=
+      (pull L p (ev s)) Y (𝟙 Y) z J = sval s p z J.1 :=
     congrArg (fun r => sval s r z J.1) (Category.id_comp p)
   refine ⟨fun h z J hJ => (hid z ⟨J, hJ⟩).symm.trans
-    (congrFun h ⟨Y, 𝟙 Y, z, ⟨J, hJ⟩⟩), fun h => ?_⟩
+    (congrArg (fun w : Vals L Y => w Y (𝟙 Y) z ⟨J, hJ⟩) h), fun h => ?_⟩
   have hs : pull L p (ev s) ∈ secVals L ψ ε :=
     pull_mem (⟨s, rfl⟩ : ev s ∈ secVals L φ ε) p hp
   exact secVals_ext hL hs ⟨t, rfl⟩ fun z J => (hid z J).trans (h z J.1 J.2)
@@ -616,7 +609,7 @@ private theorem existsUnique_sec_of_isBas_lemma {X B : Scheme.{0}} {L : LB X} (h
     (fun z => comb_mem (p.appTop.hom.comp (Scheme.ΓSpecIso (CommRingCat.of R)).inv.hom) z hb₀.1) hb₀ hb'
     (fun e => ev (f e)) hmem hc
   have hevinj : Function.Injective (ev (L := L) (φ := φ) (ε := ε)) :=
-    fun s t h => eq_of_val hL fun z J => congrFun h ⟨B, 𝟙 B, z, J⟩
+    fun s t h => eq_of_val hL fun z J => congrArg (fun w : Vals L B => w B (𝟙 B) z J) h
   refine (existsUnique_congr (fun s => ?_)).1 (existsUnique_of_range hevinj hlim)
   exact forall_congr' (fun e => pull_ev_eq_iff hL (fun i => rfl) s (f e))
 
@@ -646,7 +639,7 @@ end -- clump:auto
 -- ===== clump member: Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueTwistedSectionOfCompatibleLevelsStatement =====
 -- clump-header: {"m": "Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueTwistedSectionOfCompatibleLevelsStatement", "h": "module\n\npublic import Development.AbelianVarietyTheory.Definitions.Uniformization.WCompat\npublic import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.SecBaseChangeAnySt\npublic import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueTwistedSectionOfCompatibleLevels\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\n\n"}
 section -- clump:auto
-@[expose] public section
+section
 
 open CategoryTheory CategoryTheory.Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.Semi ReciprocityTheory.ChartRestriction.G.Out ReciprocityTheory.ChartRestriction.G.Geo.Tor

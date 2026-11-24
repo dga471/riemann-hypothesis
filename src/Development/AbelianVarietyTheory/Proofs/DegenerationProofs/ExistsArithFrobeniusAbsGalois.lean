@@ -54,7 +54,7 @@ public import Mathlib.FieldTheory.Galois.Basic
 public import Mathlib.FieldTheory.Galois.Infinite
 public import Mathlib.RingTheory.Invariant.Defs
 
-@[expose] public section
+public section
 
 namespace GlobalTheory
 

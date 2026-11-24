@@ -7,7 +7,8 @@ import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ThickenedPointTo
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.StalkMapInjectiveOfFlat
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.SvalEqZeroOfSumMulCoord
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.TorusStableAffineOpenFunctionsWeightGraded
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ValTorusPointAndTranslate
+public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExistsRatioPoints
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ValTorusPointAndTranslate
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

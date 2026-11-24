@@ -3,7 +3,10 @@ module
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.CharZeroOfIsPrimitiveRoot
 public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExistsPowEqOfBaseChange
 public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.RelationsAreFunctions
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.CardTorsionOverZero
+public import Development.AbelianVarietyTheory.Definitions.Uniformization.ExistsUniqueSamePt
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.SecBaseChangeAnySt
+public import Mathlib.RingTheory.RootsOfUnity.EnoughRootsOfUnity
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.CardTorsionOverZero
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

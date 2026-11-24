@@ -50,7 +50,7 @@ public import Mathlib.Algebra.GroupWithZero.Defs
 public import Mathlib.Algebra.Order.Field.Basic
 public import Mathlib.Analysis.SpecificLimits.Normed
 
-@[expose] public section
+public section
 
 namespace GlobalTheory.UU
 

@@ -55,7 +55,7 @@ public import Mathlib.LinearAlgebra.Dimension.Constructions
 public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 public import Mathlib.RingTheory.LocalRing.ResidueField.Defs
 
-@[expose] public section
+public section
 
 open Module
 

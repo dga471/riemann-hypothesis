@@ -48,7 +48,7 @@ import Mathlib.Topology.Connected.Separation
 import Mathlib.Topology.MetricSpace.Ultra.TotallySeparated
 import Mathlib.Topology.Sheaves.Init
 
-@[expose] public section
+public section
 
 namespace GlobalTheory.PadicVal
 

@@ -47,7 +47,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Topology.Sheaves.Init
 public import Mathlib.RingTheory.Jacobson.Ring
 
-@[expose] public section
+public section
 
 open scoped BigOperators
 open Matrix

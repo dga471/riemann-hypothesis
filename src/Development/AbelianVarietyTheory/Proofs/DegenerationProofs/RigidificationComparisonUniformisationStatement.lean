@@ -3,7 +3,9 @@ module
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.ExistsUniquePartner
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.SecCmp
 public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.ValueAtUnitSection
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.AbelianPartIsoIsMonHomAndRigidified
+public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.FlatQuotientIsoOfSameKernel
+public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.SecEqZeroAndHomEqOfThickenings
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.AbelianPartIsoIsMonHomAndRigidified
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

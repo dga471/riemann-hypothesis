@@ -45,7 +45,7 @@ import Mathlib.Tactic.ReduceModChar
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.PhiGenPf
 import Development.AbelianVarietyTheory.Definitions.Uniformization.TXFrame
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

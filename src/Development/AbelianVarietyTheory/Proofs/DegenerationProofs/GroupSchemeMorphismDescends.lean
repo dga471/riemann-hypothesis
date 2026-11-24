@@ -45,7 +45,7 @@ import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 public import Mathlib.CategoryTheory.MorphismProperty.Descent
 
-@[expose] public section
+public section
 
 noncomputable section
 

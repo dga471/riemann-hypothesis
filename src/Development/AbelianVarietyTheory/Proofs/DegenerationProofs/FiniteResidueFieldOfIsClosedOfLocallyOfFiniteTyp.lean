@@ -47,7 +47,7 @@ import Mathlib.Tactic.TypeStar
 public import ReciprocityTheory.AnalyticForms.RegularLocalRings.IntToRatA
 public import Mathlib.Algebra.Algebra.ZMod
 
-@[expose] public section
+public section
 
 open CategoryTheory AlgebraicGeometry
 open ReciprocityTheory.ChartRestriction.G.Geo.Tor

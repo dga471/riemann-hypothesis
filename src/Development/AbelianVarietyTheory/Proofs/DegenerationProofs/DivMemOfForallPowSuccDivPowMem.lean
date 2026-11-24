@@ -43,7 +43,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Topology.Sheaves.Init
 public import Mathlib.RingTheory.Filtration
 
-@[expose] public section
+public section
 
 open Module
 

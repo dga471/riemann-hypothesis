@@ -8,7 +8,7 @@ public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.ExpansionO
 public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.IntegralOfPullAl
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsFamOfIsPullDeg
 import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueSecPull
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExpandsAtIffStalks
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExpandsAtIffStalks
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

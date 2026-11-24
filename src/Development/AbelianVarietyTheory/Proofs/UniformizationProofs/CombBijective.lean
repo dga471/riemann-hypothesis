@@ -3,8 +3,8 @@ module
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.ExistsUniqueSamePt
 public import Development.AbelianVarietyTheory.Proofs.CoherentCohomologyProofs.IsAffineHomOfIsPullbackSpecMap
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ExtensionDescent.SecBaseChangeAnySt
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsExpansionSectionLineBundlePowerStatement
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsPullSecSval
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsExpansionSectionLineBundlePowerStatement
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsPullSecSval
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExpFOfExpT
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.SvalSecComb
 import Mathlib.Algebra.Order.Floor.Extended
@@ -27,6 +27,8 @@ import Mathlib.NumberTheory.LucasLehmer
 import Mathlib.NumberTheory.SelbergSieve
 import Mathlib.RingTheory.Radical.NatInt
 public import Mathlib.RingTheory.TensorProduct.IsBaseChangeFree
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsExpansionSectionLineBundlePower
+public import Development.AbelianVarietyTheory.Definitions.Uniformization.SvalTwistOne
 import Mathlib.Tactic.ENatToNat
 import Mathlib.Tactic.Echelon.Zsqrtd
 import Mathlib.Tactic.Inclusion.Extension.Core.Core

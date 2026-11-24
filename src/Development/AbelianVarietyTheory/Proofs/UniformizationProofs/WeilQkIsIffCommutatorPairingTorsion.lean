@@ -7,7 +7,7 @@ public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.The
 public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.WeilIsIffCommIsOfAndLiftSubsingleton
 public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.SpanEqTopOfCard
 public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExpansionBijectiveOverFields
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsThetaActs
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsThetaActs
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.PtEqOfProportional
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
@@ -51,7 +51,7 @@ import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.FirstCohomology.AlphaPair
 
-@[expose] public section
+public section
 
 open CategoryTheory CategoryTheory.Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry IsLocalRing
 open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.Semi ReciprocityTheory.ChartRestriction.G.Out ReciprocityTheory.ChartRestriction.G.Geo.Tor ReciprocityTheory.ChartRestriction.G.DVR

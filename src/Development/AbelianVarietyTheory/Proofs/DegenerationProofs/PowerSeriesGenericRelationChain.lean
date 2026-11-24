@@ -44,7 +44,7 @@ import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Topology.Sheaves.Init
 
-@[expose] public section
+public section
 
 namespace GlobalTheory
 

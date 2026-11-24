@@ -42,7 +42,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.BCTools
 import Development.AbelianVarietyTheory.Definitions.Uniformization.PointEqOfSubsingleton
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

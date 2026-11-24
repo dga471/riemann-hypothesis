@@ -45,7 +45,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Topology.Sheaves.Init
 
-@[expose] public section
+public section
 
 open KaehlerDifferential TensorProduct
 

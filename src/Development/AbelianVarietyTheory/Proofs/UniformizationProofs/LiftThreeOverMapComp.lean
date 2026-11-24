@@ -45,7 +45,7 @@ import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRin
 public import Development.AbelianVarietyTheory.BlockTheory.UniformisationCharts.CanonicalRigidImages
 public import Development.AbelianVarietyTheory.BlockTheory.UniformisationCharts.SeparatedSymmetricModel
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

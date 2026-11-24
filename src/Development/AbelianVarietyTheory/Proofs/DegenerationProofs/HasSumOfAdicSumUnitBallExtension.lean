@@ -44,7 +44,7 @@ import Mathlib.Tactic.NormNum.Prime
 import Mathlib.Tactic.NormNum.RealSqrt
 public import Mathlib.Analysis.Normed.Group.Ultra
 
-@[expose] public section
+public section
 
 open GlobalTheory GlobalTheory.Ex
 

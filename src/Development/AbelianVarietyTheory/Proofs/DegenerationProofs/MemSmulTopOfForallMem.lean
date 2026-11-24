@@ -4,10 +4,26 @@ public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.IsSMu
 public import Mathlib.AlgebraicGeometry.Morphisms.Smooth
 public import Mathlib.RingTheory.Henselian
 public import Mathlib.RingTheory.SimpleRing.Principal
-public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.IsRegularRingOfSmooth
+public import Mathlib.RingTheory.Etale.Basic
+public import Mathlib.CategoryTheory.Monoidal.Cartesian.Over
+public import Mathlib.RingTheory.Unramified.LocalStructure
+public import Mathlib.RingTheory.Unramified.LocalRing
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.IsCompletedStrictHens
+public import Mathlib.RingTheory.KrullDimension.Polynomial
+public import Mathlib.RingTheory.AlgebraicIndependent.Basic
+public import Mathlib.RingTheory.NoetherNormalization
+public import Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis
+public import Mathlib.RingTheory.FiniteType
+public import Mathlib.RingTheory.IntegralClosure.Algebra.Defs
+public import Mathlib.RingTheory.Ideal.GoingUp
+public import Mathlib.RingTheory.Jacobson.Ring
+public import ReciprocityTheory.CommutativeAlgebra.CohenMacaulay.LocDim
+public import Mathlib.RingTheory.Localization.Submodule
+public import Mathlib.RingTheory.KrullDimension.Basic
+import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.IsRegularRingOfSmooth
 import Development.AbelianVarietyTheory.Proofs.CoherentCohomologyProofs.ExactAndKerBaseChangeOfForallResidueField
 import Development.AbelianVarietyTheory.Proofs.CoherentCohomologyProofs.IsRegularOfSupportDimQuotientAddLengthLe
-public import Development.AbelianVarietyTheory.Proofs.ThetaFamilyOrigin.RingKrullDimOfEtaleMvPolynomial
+import Development.AbelianVarietyTheory.Proofs.ThetaFamilyOrigin.RingKrullDimOfEtaleMvPolynomial
 import Mathlib.Algebra.Module.StablyFree.Basic
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
@@ -34,7 +50,7 @@ import Mathlib.RingTheory.Depth.Rees
 import Mathlib.RingTheory.Etale.Weakly
 import Mathlib.RingTheory.HopfAlgebra.Basic
 import Mathlib.RingTheory.Ideal.KrullsHeightTheorem
-import Mathlib.RingTheory.KrullDimension.Field
+public import Mathlib.RingTheory.KrullDimension.Field
 import Mathlib.RingTheory.Radical.NatInt
 import Mathlib.RingTheory.TotallySplit
 import Mathlib.RingTheory.WittVector.IsPoly
@@ -61,7 +77,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.ReduceModChar
 import ReciprocityTheory.CommutativeAlgebra.PolynomialHeights.HeightAddRingKrullDimQuotientMvPolynomialField
 
-@[expose] public section
+public section
 
 open CategoryTheory CategoryTheory.Limits CategoryTheory.Abelian IsLocalRing TensorProduct Function
 

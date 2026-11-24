@@ -4,9 +4,11 @@ public import Mathlib.AlgebraicGeometry.Morphisms.ClosedImmersion
 public import Mathlib.AlgebraicGeometry.Morphisms.Smooth
 public import Mathlib.Combinatorics.Quiver.ReflQuiver
 public import Mathlib.RingTheory.RegularLocalRing.Defs
-public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.IsRegularRingOfSmooth
+import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.IsRegularRingOfSmooth
 public import Development.AbelianVarietyTheory.Proofs.ThetaFamilyOrigin.RingKrullDimOfEtaleMvPolynomial
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.IsPushoutQuotientMap
+public import Mathlib.RingTheory.Etale.Basic
+public import Mathlib.CategoryTheory.Monoidal.Cartesian.Over
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic
@@ -56,7 +58,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.TypeStar
 import ReciprocityTheory.CommutativeAlgebra.PolynomialHeights.HeightAddRingKrullDimQuotientMvPolynomialField
 
-@[expose] public section
+public section
 
 open CategoryTheory AlgebraicGeometry
 

@@ -3,7 +3,8 @@ module
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.NotAllMatchRankZero
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.DegenerationDataTorsionStructureAlgClosed
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.SepticCharacterInjective
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.MulqLaws
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.CubNSucc
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.MulqLaws
 import Mathlib.Algebra.Module.StablyFree.Basic
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield

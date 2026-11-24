@@ -56,7 +56,7 @@ public import Mathlib.LinearAlgebra.Dual.Basis
 public import Mathlib.LinearAlgebra.FreeModule.Finite.Quotient
 public import Mathlib.RingTheory.Localization.Integer
 
-@[expose] public section
+public section
 
 namespace GlobalTheory
 

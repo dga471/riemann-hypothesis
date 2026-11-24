@@ -5,9 +5,10 @@ public import Development.AbelianVarietyTheory.Definitions.Degenerations.IsBasis
 public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.SpanEqTopOfFunctionals
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.ExistsUnitCharts
 public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ThetaEmbeddingSectionsBaseChangeAffine
-public import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.ExistsSecKIsUnit
-public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExistsSmulMemSpanOfExpandsAt
+import Development.AbelianVarietyTheory.Proofs.RingsOfIntegers.ExistsSecKIsUnit
+import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExistsSmulMemSpanOfExpandsAt
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.HasBasisOfBasis
+public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.IsFETranslateFeTranslate
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

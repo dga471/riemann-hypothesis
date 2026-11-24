@@ -4,8 +4,9 @@ public import Development.AbelianVarietyTheory.Definitions.Uniformization.TXFram
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.PullUUnitsCompatGeneric
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.FamMod
 public import Development.AbelianVarietyTheory.Proofs.JetHarmonics.ExistsGenMul
-public import Development.AbelianVarietyTheory.Proofs.JetHarmonics.ExistsShiftedNormalisation
+import Development.AbelianVarietyTheory.Proofs.JetHarmonics.ExistsShiftedNormalisation
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsFrameRatio
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.ValPowGen
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

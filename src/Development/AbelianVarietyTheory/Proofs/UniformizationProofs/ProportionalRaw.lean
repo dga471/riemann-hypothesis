@@ -1,12 +1,19 @@
 module
 
 public import Mathlib.LinearAlgebra.FiniteDimensional.Defs
-public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.LinearIndependentOfCommSmul
+import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.LinearIndependentOfCommSmul
 public import Mathlib.GroupTheory.Coset.Card
 public import Development.AbelianVarietyTheory.Definitions.Uniformization.ExistsUniqueSamePt
 public import Mathlib.Tactic.ENatToNat
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ChainVal
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExpFLinear
+public import Mathlib.LinearAlgebra.DFinsupp
+public import Mathlib.LinearAlgebra.Dimension.Finrank
+public import Mathlib.RingTheory.Finiteness.Defs
+public import Mathlib.CategoryTheory.Monoidal.Cartesian.Over
+public import Mathlib.LinearAlgebra.Dimension.Finite
+public import Mathlib.LinearAlgebra.Dual.Lemmas
+public import Mathlib.LinearAlgebra.FreeModule.Finite.Matrix
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Floor.Semifield
 import Mathlib.Algebra.Order.Interval.Basic

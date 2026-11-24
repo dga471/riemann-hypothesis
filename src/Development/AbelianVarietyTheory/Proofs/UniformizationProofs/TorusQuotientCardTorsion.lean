@@ -47,7 +47,7 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Development.AbelianVarietyTheory.Definitions.AbelianSchemeLaws.FirstCohomologyVanishesSpecOfIsLocalRing
 public import Mathlib.RingTheory.RootsOfUnity.EnoughRootsOfUnity
 
-@[expose] public section
+public section
 
 set_option autoImplicit false
 

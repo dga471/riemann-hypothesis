@@ -2,7 +2,7 @@ module
 
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.CompanionTheory
 public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.IsDiscreteValuationRingIntegralClosurePadicInt
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.JacobsonClosedPointsToolsInt
+import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.JacobsonClosedPointsToolsInt
 public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.MemPadicAlgClValuationSubringIffNormLeOne
 public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.ExistsUniqueExtensionOfForallNormLeOne
 import Mathlib.Algebra.Order.Floor.Extended
@@ -49,9 +49,10 @@ import Mathlib.Tactic.NormNum.RealSqrt
 import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Tactic.ReduceModChar
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.BCTools
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.FiniteResidueFieldOfIsClosedOfLocallyOfFiniteTyp
 import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.RegularOfBoundedAtPadicAlgClPoints
 
-@[expose] public section
+public section
 
 open CategoryTheory Limits MonoidalCategory CartesianMonoidalCategory MonObj AlgebraicGeometry
 open scoped CategoryTheory.Obj
@@ -96,7 +97,7 @@ theorem exists_point_norm_valF_eq {X : Scheme.{0}} {p : ℕ} [Fact p.Prime]
       valF (gPt p ≫ y') U φ = (((Scheme.ΓSpecIso (.of K)).hom
         ((Spec.map (CommRingCat.ofHom (algebraMap (integralClosure ℤ_[p] K) K)) ≫ y).appLE
           U ⊤ hy φ) : K) : PadicAlgCl p) := by
-  apply _root_.GlobalTheory.BoundedRegular.exists_point_norm_valF_eq
+  apply _root_.GlobalTheory.BoundedRegular.exists_point_norm_valF_eq <;> assumption
 
 theorem existsUnique_resG_eq {X : Scheme.{0}} [IsIntegral X] (π : X ⟶ Sp ℤ) [Flat π]
     [LocallyOfFiniteType π] (hX : ReciprocityTheory.ChartRestriction.G.Geo.Tor.IsNormalScheme X) {U W : X.Opens}
@@ -136,7 +137,7 @@ theorem regular_of_bounded_at_padicAlgCl_points :
       (IsUnit φ → (∀ (p : ℕ) [Fact p.Prime] (y : Sp (OO p) ⟶ X), y (cPt p) ∈ W →
         Set.range (gPt p ≫ y) ⊆ U → ‖valF (gPt p ≫ y) U φ‖ = 1) →
           ∃ ψ : Γ(X, W), IsUnit ψ ∧ resG X h ψ = φ)) := by
-  apply _root_.GlobalTheory.regular_of_bounded_at_padicAlgCl_points
+  apply _root_.GlobalTheory.regular_of_bounded_at_padicAlgCl_points <;> assumption
 
 end RegularSupport
 

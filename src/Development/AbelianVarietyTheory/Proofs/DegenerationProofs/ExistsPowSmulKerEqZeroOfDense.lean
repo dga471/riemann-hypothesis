@@ -55,7 +55,7 @@ import Mathlib.Tactic.ReduceModChar
 import Mathlib.Tactic.TypeStar
 import Mathlib.Topology.Sheaves.Init
 
-@[expose] public section
+public section
 
 open Module
 open TensorProduct
