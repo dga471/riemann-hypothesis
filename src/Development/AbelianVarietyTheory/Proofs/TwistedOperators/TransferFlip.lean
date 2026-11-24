@@ -382,6 +382,15 @@ abbrev dOf {D : D7} {T : Type} {L : LevCh D T} {sc : Consts} (_ : GridData L sc)
 abbrev lOf {D : D7} {T : Type} {L : LevCh D T} {sc : Consts} (_ : GridData L sc) : LevCh D T := L
 
 
+local elab "exact_kern " t:term : tactic =>
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ =>
+    Lean.Elab.Tactic.elabTerm t none
+
+local elab "rfl_kern" : tactic =>
+  Lean.Elab.Tactic.closeMainGoalUsing `rfl_kern fun goalType _ => do
+    let some (_, lhs, _) := goalType.eq? | throwError "rfl_kern: expected equality"
+    Lean.Meta.mkEqRefl lhs
+
 theorem trFlip_of_same (hsame : SameD) : TrFlip := by
   intro X X' T T' L L' sc G G' W W' S S' μ₀ μ₀' ι hA Φ'
   obtain ⟨hl, hg, hw, hs⟩ := hA
@@ -403,67 +412,67 @@ theorem trFlip_of_same (hsame : SameD) : TrFlip := by
   have hff' := eq_of_heq hff
   subst f'
   let Lc : LevCh (dOf G) T' :=
-    { C := (lOf G).C, xiH := (by with_unfolding_all exact (xiH₂ :)), mu0 := (by with_unfolding_all exact (mu0₂ :)), eta := (by with_unfolding_all exact (eta₂ :)), xi := (by with_unfolding_all exact (xi₂ :)), Pg := (by with_unfolding_all exact (Pg₂ :)),
-      Q := (by with_unfolding_all exact (Q₂ :)), chi := (by with_unfolding_all exact (chi₂ :)), xiR := (by with_unfolding_all exact (xiR₂ :)), ΛY := (by with_unfolding_all exact (ΛY₂ :)), ΛX := (by with_unfolding_all exact (ΛX₂ :)), ΛV := (by with_unfolding_all exact (ΛV₂ :)), ΛW := (by with_unfolding_all exact (ΛW₂ :)),
-      βY := (by with_unfolding_all exact (βY₂ :)), βX := (by with_unfolding_all exact (βX₂ :)), βV := (by with_unfolding_all exact (βV₂ :)), βW := (by with_unfolding_all exact (βW₂ :)) }
+    { C := (lOf G).C, xiH := (by exact_kern xiH₂), mu0 := (by exact_kern mu0₂), eta := (by exact_kern eta₂), xi := (by exact_kern xi₂), Pg := (by exact_kern Pg₂),
+      Q := (by exact_kern Q₂), chi := (by exact_kern chi₂), xiR := (by exact_kern xiR₂), ΛY := (by exact_kern ΛY₂), ΛX := (by exact_kern ΛX₂), ΛV := (by exact_kern ΛV₂), ΛW := (by exact_kern ΛW₂),
+      βY := (by exact_kern βY₂), βX := (by exact_kern βX₂), βV := (by exact_kern βV₂), βW := (by exact_kern βW₂) }
   let plc : Places Lc :=
-    { v0 := (by with_unfolding_all exact (G'.pl.v0 :)), basePlace_over_qZero := (by with_unfolding_all exact (G'.pl.basePlace_over_qZero :)), w := (by with_unfolding_all exact (G'.pl.w :)), w_over := (by with_unfolding_all exact (G'.pl.w_over :)),
-      w_split := (by with_unfolding_all exact (G'.pl.w_split :)), w_g := (by with_unfolding_all exact (G'.pl.w_g :)), w_de := (by with_unfolding_all exact (G'.pl.w_de :)), w_Q := (by with_unfolding_all exact (G'.pl.w_Q :)),
-      levelPlace_ne_basePlace := (by with_unfolding_all exact (G'.pl.levelPlace_ne_basePlace :)) }
+    { v0 := (by exact_kern G'.pl.v0), basePlace_over_qZero := (by exact_kern G'.pl.basePlace_over_qZero), w := (by exact_kern G'.pl.w), w_over := (by exact_kern G'.pl.w_over),
+      w_split := (by exact_kern G'.pl.w_split), w_g := (by exact_kern G'.pl.w_g), w_de := (by exact_kern G'.pl.w_de), w_Q := (by exact_kern G'.pl.w_Q),
+      levelPlace_ne_basePlace := (by exact_kern G'.pl.levelPlace_ne_basePlace) }
   let chc : Chars plc sc.cGap :=
-    { chiH := (by with_unfolding_all exact (G'.ch.chiH :)), chi := (by with_unfolding_all exact (G'.ch.chi :)), chi_eq := (by with_unfolding_all exact (G'.ch.chi_eq :)), triv := (by with_unfolding_all exact (G'.ch.triv :)),
-      inf := (by with_unfolding_all exact (G'.ch.inf :)), unr := (by with_unfolding_all exact (G'.ch.unr :)), lev1 := (by with_unfolding_all exact (G'.ch.lev1 :)), wild := (by with_unfolding_all exact (G'.ch.wild :)), lev0 := (by with_unfolding_all exact (G'.ch.lev0 :)) }
+    { chiH := (by exact_kern G'.ch.chiH), chi := (by exact_kern G'.ch.chi), chi_eq := (by exact_kern G'.ch.chi_eq), triv := (by exact_kern G'.ch.triv),
+      inf := (by exact_kern G'.ch.inf), unr := (by exact_kern G'.ch.unr), lev1 := (by exact_kern G'.ch.lev1), wild := (by exact_kern G'.ch.wild), lev0 := (by exact_kern G'.ch.lev0) }
   let spc : Vertices Lc (plc.stA sc) (plc.stAbar sc) :=
     { Vs := fun i j => ⟨(G'.sp.Vs i j).sp, (G'.sp.Vs i j).lat⟩
       P := fun i => ⟨(G'.sp.P i).sp, (G'.sp.P i).lat⟩
       Xs := fun j => ⟨(G'.sp.Xs j).sp, (G'.sp.Xs j).lat⟩
-      V_is := fun i j h1 h2 h3 => let v := G'.sp.V_is i j h1 h2 h3; ⟨(by with_unfolding_all exact (v.rank :)), (by with_unfolding_all exact (v.sigOK :)), (by with_unfolding_all exact (v.sig :)), (by with_unfolding_all exact (v.sd :))⟩
-      P_is := fun i h1 => let v := G'.sp.P_is i h1; ⟨(by with_unfolding_all exact (v.rank :)), (by with_unfolding_all exact (v.sigOK :)), (by with_unfolding_all exact (v.sig :)), (by with_unfolding_all exact (v.sd :))⟩
-      X_is := fun j h1 h2 => let v := G'.sp.X_is j h1 h2; ⟨(by with_unfolding_all exact (v.rank :)), (by with_unfolding_all exact (v.sigOK :)), (by with_unfolding_all exact (v.sig :)), (by with_unfolding_all exact (v.sd :))⟩
-      dec0 := let d := G'.sp.dec0; ⟨d.ι, (by with_unfolding_all exact (d.isom :)), d.a, (by with_unfolding_all exact (d.gram :)), (by with_unfolding_all exact (d.perp :)), (by with_unfolding_all exact (d.rank :))⟩
-      lat0 := (by with_unfolding_all exact (G'.sp.lat0 :))
+      V_is := fun i j h1 h2 h3 => let v := G'.sp.V_is i j h1 h2 h3; ⟨(by exact_kern v.rank), (by exact_kern v.sigOK), (by exact_kern v.sig), (by exact_kern v.sd)⟩
+      P_is := fun i h1 => let v := G'.sp.P_is i h1; ⟨(by exact_kern v.rank), (by exact_kern v.sigOK), (by exact_kern v.sig), (by exact_kern v.sd)⟩
+      X_is := fun j h1 h2 => let v := G'.sp.X_is j h1 h2; ⟨(by exact_kern v.rank), (by exact_kern v.sigOK), (by exact_kern v.sig), (by exact_kern v.sd)⟩
+      dec0 := let d := G'.sp.dec0; ⟨d.ι, (by exact_kern d.isom), d.a, (by exact_kern d.gram), (by exact_kern d.perp), (by exact_kern d.rank)⟩
+      lat0 := (by exact_kern G'.sp.lat0)
       colDec := fun i h h' => match i, h, h' with
         | 0, h, _ => absurd h (by omega)
-        | i + 1, h, h' => let d := G'.sp.colDec (i + 1) h h'; ⟨d.ι, (by with_unfolding_all exact (d.isom :)), d.a, (by with_unfolding_all exact (d.gram :)), (by with_unfolding_all exact (d.perp :)), (by with_unfolding_all exact (d.rank :))⟩
+        | i + 1, h, h' => let d := G'.sp.colDec (i + 1) h h'; ⟨d.ι, (by exact_kern d.isom), d.a, (by exact_kern d.gram), (by exact_kern d.perp), (by exact_kern d.rank)⟩
       colLat := fun i h h' => match i, h, h' with
         | 0, h, _ => absurd h (by omega)
-        | i + 1, h, h' => (by with_unfolding_all exact ((G'.sp.colLat (i + 1) h h') :))
-      rowDecS := fun j h => let d := G'.sp.rowDecS j h; ⟨d.ι, (by with_unfolding_all exact (d.isom :)), d.a, (by with_unfolding_all exact (d.gram :)), (by with_unfolding_all exact (d.perp :)), (by with_unfolding_all exact (d.rank :))⟩
-      rowLat := fun j h => (by with_unfolding_all exact ((G'.sp.rowLat j h) :))
-      topDec := let d := G'.sp.topDec; ⟨d.ι, (by with_unfolding_all exact (d.isom :)), d.a, (by with_unfolding_all exact (d.gram :)), (by with_unfolding_all exact (d.perp :)), (by with_unfolding_all exact (d.rank :))⟩
-      topLat := (by with_unfolding_all exact (G'.sp.topLat :)) }
+        | i + 1, h, h' => (by exact_kern (G'.sp.colLat (i + 1) h h'))
+      rowDecS := fun j h => let d := G'.sp.rowDecS j h; ⟨d.ι, (by exact_kern d.isom), d.a, (by exact_kern d.gram), (by exact_kern d.perp), (by exact_kern d.rank)⟩
+      rowLat := fun j h => (by exact_kern (G'.sp.rowLat j h))
+      topDec := let d := G'.sp.topDec; ⟨d.ι, (by exact_kern d.isom), d.a, (by exact_kern d.gram), (by exact_kern d.perp), (by exact_kern d.rank)⟩
+      topLat := (by exact_kern G'.sp.topLat) }
   let Gc : GridData Lc sc := ⟨plc, chc, spc⟩
-  let Bc : FunObj.Frames Gc := ⟨(by with_unfolding_all exact (S'.B.βs :)), (by with_unfolding_all exact (S'.B.isFrame :))⟩
+  let Bc : FunObj.Frames Gc := ⟨(by exact_kern S'.B.βs), (by exact_kern S'.B.isFrame)⟩
   let Φc : Gc.Datum := fun i => match i with
-    | ⟨0, h⟩ => (by with_unfolding_all exact ((Φ' ⟨0, h⟩) :))
-    | ⟨i + 1, h⟩ => (by with_unfolding_all exact ((Φ' ⟨i + 1, h⟩) :))
+    | ⟨0, h⟩ => (by exact_kern (Φ' ⟨0, h⟩))
+    | ⟨i + 1, h⟩ => (by exact_kern (Φ' ⟨i + 1, h⟩))
   have hPg : Lc.Pg = (lOf G).Pg := Finset.ext fun PP =>
-    ((by with_unfolding_all exact ((hLis'.Pg PP) :)) : PP ∈ Lc.Pg ↔ ∃ k, Lc.C.P.Div k PP).trans (hLis.Pg PP).symm
-  obtain ⟨Φ, hΦ⟩ := hsame G Gc S.B Bc ι (hLis.βY 0 (Nat.succ_pos m)) ((by with_unfolding_all exact ((hLis'.βY 0 (Nat.succ_pos m)) :))) rfl hPg
-    (fun t => (by with_unfolding_all exact ((eq_of_heq (hxi t)) :))) (fun t => (by with_unfolding_all exact ((eq_of_heq (hQ t)) :))) ((by with_unfolding_all exact ((eq_of_heq hg.v0) :))) ((by with_unfolding_all exact ((eq_of_heq hg.w) :)))
-    ((by with_unfolding_all exact ((eq_of_heq hg.chiH) :))) (fun i => lsp_eq ((by with_unfolding_all exact ((eq_of_heq (hg.grid i 0).1) :))) ((by with_unfolding_all exact ((hg.grid i 0).2 :))))
-    (fun i => (by with_unfolding_all exact ((hs.β i 0) :))) Φc
+    ((by exact_kern (hLis'.Pg PP)) : PP ∈ Lc.Pg ↔ ∃ k, Lc.C.P.Div k PP).trans (hLis.Pg PP).symm
+  obtain ⟨Φ, hΦ⟩ := hsame G Gc S.B Bc ι (hLis.βY 0 (Nat.succ_pos m)) ((by exact_kern (hLis'.βY 0 (Nat.succ_pos m)))) rfl hPg
+    (fun t => (by exact_kern (eq_of_heq (hxi t)))) (fun t => (by exact_kern (eq_of_heq (hQ t)))) ((by exact_kern (eq_of_heq hg.v0))) ((by exact_kern (eq_of_heq hg.w)))
+    ((by exact_kern (eq_of_heq hg.chiH))) (fun i => lsp_eq ((by exact_kern (eq_of_heq (hg.grid i 0).1))) ((by exact_kern (hg.grid i 0).2)))
+    (fun i => (by exact_kern (hs.β i 0))) Φc
   refine ⟨Φ, fun t w w' hww hw' => ?_⟩
-  have e : w' = w := (by with_unfolding_all exact ((eq_of_heq hww) :))
+  have e : w' = w := (by exact_kern (eq_of_heq hww))
   subst e
-  obtain ⟨h1, h2, h3, h4⟩ := hΦ t w' ((by with_unfolding_all exact (hw' :)))
-  have e1 : locGrid G' t w' = locGrid G (ι t) w' := (by with_unfolding_all exact (h1 :))
-  refine ⟨heq_of_eq e1, (by with_unfolding_all exact (h2 :)), ?_⟩
-  have hd : givenDatum (G := G') t w' S'.B Φ' = (by with_unfolding_all exact ((givenDatum (G := Gc) t w' Bc Φc) :)) := by
+  obtain ⟨h1, h2, h3, h4⟩ := hΦ t w' ((by exact_kern hw'))
+  have e1 : locGrid G' t w' = locGrid G (ι t) w' := (by exact_kern h1)
+  refine ⟨heq_of_eq e1, (by exact_kern h2), ?_⟩
+  have hd : givenDatum (G := G') t w' S'.B Φ' = (by exact_kern (givenDatum (G := Gc) t w' Bc Φc)) := by
     funext b
-    rcases b with ⟨_ | i, j⟩ | ⟨_ | i, _ | j⟩ <;> rfl
+    rcases b with ⟨_ | i, j⟩ | ⟨_ | i, _ | j⟩ <;> rfl_kern
   have T3 : HEq (givenStage (G := G') t w' S'.B Φ') (givenStage (G := Gc) t w' Bc Φc) := by
     unfold givenStage
     rw [hd]
-    exact (by with_unfolding_all exact ((HEq.refl (givenStage (G := Gc) t w' Bc Φc)) :))
+    exact_kern (HEq.refl (givenStage (G := Gc) t w' Bc Φc))
   have eψ := eq_of_heq hw.ψ
   have hψ : psiAt W' w' = psiAt W w' := by
     ext x
     change W'.ψ _ = W.ψ _
     rw [eψ]
     rfl
-  have hdep : depthAt G' w' = depthAt G w' := (by with_unfolding_all exact ((congrArg (max · 1) h3) :))
-  exact (by with_unfolding_all exact ((flips_tensor_heq e1 (T3.trans h4) .one hψ (unifAt w') hdep (flipOrder (m + 1))) :))
+  have hdep : depthAt G' w' = depthAt G w' := (by exact_kern (congrArg (max · 1) h3))
+  exact_kern (flips_tensor_heq e1 (T3.trans h4) .one hψ (unifAt w') hdep (flipOrder (m + 1)))
 
 theorem flippedTensorsTransferToGrid_proof : TrFlip := trFlip_of_same (sameD_of_cosZero GlobalTheory.T.exists_coset_same_localCosetSets_other_baseLattice)
 

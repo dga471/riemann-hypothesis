@@ -62,6 +62,15 @@ import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.RowsRe
 import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.FunKilled
 import Lean.Exception
 
+local elab "exact_kern " t:term : tactic => do
+  Lean.Elab.Tactic.closeMainGoalUsing `exact_kern fun _ _ => do
+    Lean.Elab.Term.elabTerm t none
+
+local elab "rfl_kern" : tactic => do
+  Lean.Elab.Tactic.closeMainGoalUsing `rfl_kern fun target _ => do
+    let some (_, lhs, _) := target.eq? | throwError "rfl_kern: expected equality"
+    Lean.Meta.mkEqRefl lhs
+
 -- This file was produced by scripts/clump.py from the modules listed below.
 -- Members: Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.GroupTieOfLocalCoefficient, Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.GroupTieOfLocalCoefficientStatement, Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.FinitenessOfHyp, Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.ToricCharacterGridListKeptLocalizedStage, Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.ToricCharacterGridListKeptLocalizedStageStatement, Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.EigenAdjointOfReadRelation, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.EigHkDatBack, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.EigHkDatBackStatement, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.EmtThetaL, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.EmtThetaLStatement, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.GrpTieOfLCStatement, Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.HeckeRowOfLocalAll, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.HkRowL, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.HkRowLStatement, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.MtAdL, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.MtAdLStatement, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.UnivL, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.SeriesAtOfExpRelation, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.TieOfTrue, Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.RowsAtStart
 
@@ -299,12 +308,9 @@ namespace GlobalTheory.HeightCounting.Fin3
 theorem listPin_datL : ∀ {K : Ctx} {B : Base} {f : Fr B.toPre} {T : TwDat B} {w : ColW B f T} {P : Pre2 K w} (x : St P) (L : LocAll (lay0 (Dof x))) (cDep : ℝ), ListSt cDep x → ListPin (DL x L) (datL x L).R.toRealDat.toLevCh cDep K.s.b := by
   intro K B f T w P x L cDep h
   obtain ⟨G, hField, hTie⟩ := h
-  exact ⟨by
-      with_unfolding_all
-        exact (GlobalTheory.Mem.GridMove.gdC (a := x.o.Z) (oL x L).Z G :),
-    ⟨by with_unfolding_all exact (hField.values :),
-      by with_unfolding_all exact (hField.roots :)⟩,
-    by with_unfolding_all exact (hTie :)⟩
+  exact ⟨by exact_kern GlobalTheory.Mem.GridMove.gdC (a := x.o.Z) (oL x L).Z G,
+    ⟨by exact_kern hField.values, by exact_kern hField.roots⟩,
+    by exact_kern hTie⟩
 
 end GlobalTheory.HeightCounting.Fin3
 end
@@ -373,7 +379,7 @@ variable {hL : GlobalTheory.Published.LocalLanglandsGL} {K : Ctx} {B : Base} {f 
 
 theorem eigVec_loc {i k Q Rr c v} (h : EigVec x.m.z.R i k Q Rr c v) :
     EigVec (datL x L).R i k Q Rr c v := by
-  with_unfolding_all exact h
+  exact_kern h
 
 end GlobalTheory.HeightCounting.Fin3
 
@@ -451,9 +457,8 @@ theorem emtTheta_L_alt {hL : _root_.UpperTheory.Zero.LLC.RecTExists} {K : Ctx} {
     {P : Pre2 K w} {x : St P} (L : LocAll (lay0 (Dof x))) (l : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel hL x) {p0 : BaseLevelRowSide (w.D (oL x L).Z)} (Y : YT x L p0)
     (hY : YRel L Y) : EMtTheta Y (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l) (_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l) := by
   intro v i hv y hy n a f h
-  with_unfolding_all
-    have hOriginal := HEq.trans (heq_of_eq h) (hY.eW i _)
-    exact (l.c.th v i hv y hy n a f (eq_of_heq hOriginal) :)
+  with_unfolding_all have hOriginal := HEq.trans (heq_of_eq h) (hY.eW i _)
+  exact_kern l.c.th (by with_unfolding_all exact (v :)) (by with_unfolding_all exact (i :)) (by with_unfolding_all exact (hv :)) (by with_unfolding_all exact (y :)) (by with_unfolding_all exact (hy :)) n (by with_unfolding_all exact (a :)) (by with_unfolding_all exact (f :)) (by with_unfolding_all exact eq_of_heq hOriginal)
 end GlobalTheory.HeightCounting.Fin3
 end
 end
@@ -468,6 +473,20 @@ section -- clump:auto
 
 
 
+section
+open Formalism.BasicNotions Formalism.MainNotions Formalism.MainNotions.N Formalism.L2 Formalism.L2.Host Formalism.L2.NT Formalism.IndefR Formalism.IndefR.NX NumberField IsDedekindDomain GlobalTheory.Mem GlobalTheory.Mem.Col2 GlobalTheory.Mem.Top GlobalTheory.Mem.Top.GroupRetwisting GlobalTheory.Mem.Top.Bl GlobalTheory.Mem.R3 GlobalTheory.Mem.R3.Rw GlobalTheory.Mem.R3.Tr GlobalTheory.HeightCounting GlobalTheory.HeightCounting.Up GlobalTheory.HeightCounting.Fin3
+attribute [local instance] Formalism.BasicNotions.Host.cmStar
+
+theorem _root_.GlobalTheory.T.emtTheta_of_yRel
+    {hL : _root_.UpperTheory.Zero.LLC.RecTExists} {K : Ctx} {B : Base} {f : Fr B.toPre}
+    {T : TwDat B} {w : ColW B f T} {P : Pre2 K w} {x : St P}
+    (L : LocAll (lay0 (Dof x))) (l : StrictHenselianAcyclicLevel hL x)
+    {p0 : BaseLevelRowSide (w.D (oL x L).Z)} (Y : YT x L p0) :
+    YRel L Y → EMtTheta Y
+      (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l)
+      (_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l) :=
+  _root_.GlobalTheory.HeightCounting.Fin3.emtTheta_L_alt L l Y
+end
 end -- clump:auto
 end -- clump:auto
 -- ===== end clump member: Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.EmtThetaLStatement =====
@@ -504,6 +523,11 @@ theorem grpTie_of_LC_alt : ∀ {hL : _root_.UpperTheory.Zero.LLC.RecTExists} {K 
 
 end GlobalTheory.HeightCounting.Fin3
 
+theorem _root_.GlobalTheory.T.grpTie_of_levelC : ∀ {hL : _root_.UpperTheory.Zero.LLC.RecTExists} {K : Ctx} {B : Base} {f : Fr B.toPre} {T : TwDat B} {w : ColW B f T}
+    {P : Pre2 K w} {x : St P} (_ : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel hL x), Formalism.L2.DIV.GrpTie (Dof x)
+      (famR (w.st x.o.Z) w.I P.hX (usedOf w.I T P.Wt) x.m.z.Xg x.m.z.tr).A x.m.z.F.P0 x.m.z.F.ψ0 x.m.z.F.P1 x.m.z.F.ψ1
+      (x.m.z.R.eG.trans x.m.z.cG) :=
+  @GlobalTheory.HeightCounting.Fin3.grpTie_of_LC_alt
 end -- clump:auto
 end -- clump:auto
 -- ===== end clump member: Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.GrpTieOfLCStatement =====
@@ -605,9 +629,13 @@ theorem hecke_expansion_datL_of_levelC {x : St P} (L : LocAll (lay0 (Dof x)))
       (_root_.GlobalTheory.HeightCounting.Fin3.localHeckeHeightData L l) fun _ => LinearMap.id := by
   constructor
   intro i k Q hsplit hoff houtside htwo hk α R hα hR y hy
-  with_unfolding_all
-    exact (hecke_expansion_heightData_of_levelC l).tie
-      i k Q hsplit hoff houtside htwo hk α R hα hR y hy
+  exact_kern (hecke_expansion_heightData_of_levelC l).tie
+    (by with_unfolding_all exact (i :)) k (by with_unfolding_all exact (Q :))
+    (by with_unfolding_all exact (hsplit :)) (by with_unfolding_all exact (hoff :))
+    (by with_unfolding_all exact (houtside :)) (by with_unfolding_all exact (htwo :)) hk
+    (by with_unfolding_all exact (α :)) (by with_unfolding_all exact (R :))
+    (by with_unfolding_all exact (hα :)) (by with_unfolding_all exact (hR :))
+    (by with_unfolding_all exact (y :)) (by with_unfolding_all exact (hy :))
 end GlobalTheory.HeightCounting.Fin3
 end
 end
@@ -644,12 +672,12 @@ theorem exists_mtAd_psi_vector_of_yRel {hL : _root_.UpperTheory.Zero.LLC.RecTExi
     {x : St P} (L : LocAll (lay0 (Dof x))) (l : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel hL x) {p0 : BaseLevelRowSide (w.D (oL x L).Z)} (Y : YT x L p0) (hY : YRel L Y) :
     ∃ ad : MtAd Y (_root_.GlobalTheory.HeightCounting.Fin3.localMultiplicityFamily L l), ad.PV = _root_.GlobalTheory.HeightCounting.Fin3.psiVectorLocal L l := by
   refine ⟨{ PV := _root_.GlobalTheory.HeightCounting.Fin3.psiVectorLocal L l
-            std := (by with_unfolding_all exact (l.mt.ad.std :))
-            eW := (by with_unfolding_all exact (l.mt.ad.eW :))
+            std := by exact_kern l.mt.ad.std
+            eW := by exact_kern l.mt.ad.eW
             read := fun μ h i y g => ?_
-            rat := (by with_unfolding_all exact (l.mt.ad.rat :))
-            wt := (by with_unfolding_all exact (l.mt.ad.wt :))
-            id := (by with_unfolding_all exact (l.mt.ad.id :)) }, rfl⟩
+            rat := by exact_kern l.mt.ad.rat
+            wt := by exact_kern l.mt.ad.wt
+            id := by exact_kern l.mt.ad.id }, rfl⟩
   have h1 := l.mt.ad.read ((by with_unfolding_all exact (μ :))) ((by with_unfolding_all exact (h :))) ((by with_unfolding_all exact (i :))) ((by with_unfolding_all exact (y :))) ((by with_unfolding_all exact (g :)))
   have h2 := hY.jMt μ h i y
   with_unfolding_all
@@ -668,6 +696,18 @@ section -- clump:auto
 
 
 
+section
+open Formalism.BasicNotions Formalism.MainNotions Formalism.MainNotions.N Formalism.L2 Formalism.L2.Host Formalism.L2.NT Formalism.IndefR Formalism.IndefR.NX NumberField IsDedekindDomain GlobalTheory.Mem GlobalTheory.Mem.Col2 GlobalTheory.Mem.Top GlobalTheory.Mem.Top.GroupRetwisting GlobalTheory.Mem.Top.Bl GlobalTheory.Mem.R3 GlobalTheory.Mem.R3.Rw GlobalTheory.Mem.R3.Tr GlobalTheory.HeightCounting GlobalTheory.HeightCounting.Up GlobalTheory.HeightCounting.Fin3
+attribute [local instance] Formalism.BasicNotions.Host.cmStar
+
+theorem _root_.GlobalTheory.T.exists_mtAd_psiVectorLocal_of_yRel :
+    ∀ {hL : UpperTheory.Zero.LLC.RecTExists} {K : Ctx} {B : Base} {f : Fr B.toPre}
+      {T : TwDat B} {w : ColW B f T} {P : Pre2 K w} {x : St P}
+      (L : LocAll (lay0 (Dof x))) (l : StrictHenselianAcyclicLevel hL x)
+      {p0 : BaseLevelRowSide (w.D (oL x L).Z)} (Y : YT x L p0),
+      YRel L Y → ∃ ad : MtAd Y (localMultiplicityFamily L l), ad.PV = psiVectorLocal L l :=
+  @GlobalTheory.HeightCounting.Fin3.exists_mtAd_psi_vector_of_yRel
+end
 end -- clump:auto
 end -- clump:auto
 -- ===== end clump member: Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.ThirdPlaceSeries.MtAdLStatement =====
@@ -691,9 +731,9 @@ variable {hL : _root_.UpperTheory.Zero.LLC.RecTExists} {K : Ctx} {B : Base} {f :
 variable {x : St P} (L : LocAll (lay0 (Dof x)))
 theorem real_pin_setup_local (l : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel hL x) : GlobalTheory.SeriesTie.RealPin (datL x L).R (datL x L).cG (setupL L l.b.ser.ex.ρ) :=
   have p := l.b.ser.ex.pin
-  ⟨(by with_unfolding_all exact (p.psi :)), (by with_unfolding_all exact (p.inf :)), (by with_unfolding_all exact (p.cartT :)), (by with_unfolding_all exact (p.onbS :)), (by with_unfolding_all exact (p.onbT :)), (by with_unfolding_all exact (p.latS :)), (by with_unfolding_all exact (p.latT :)), (by with_unfolding_all exact (p.frS :)), (by with_unfolding_all exact (p.frT :)), (by with_unfolding_all exact (p.vac :)), (by with_unfolding_all exact (p.Pg :)),
-    (by with_unfolding_all exact (p.grp :)), (by with_unfolding_all exact (p.mu0 :)), (by with_unfolding_all exact (p.eta :)), (by with_unfolding_all exact (p.delta :)), (by with_unfolding_all exact (p.deltaPl :)), (by with_unfolding_all exact (p.ap :)), (by with_unfolding_all exact (p.am :))⟩
-theorem is_univ_char_local (l : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel hL x) : GlobalTheory.UnivChar.IsUnivChar (DL x L).nexp := (by with_unfolding_all exact (l.b.ser.ex.univ :))
+  ⟨by exact_kern p.psi, by exact_kern p.inf, by exact_kern p.cartT, by exact_kern p.onbS, by exact_kern p.onbT, by exact_kern p.latS, by exact_kern p.latT, by exact_kern p.frS, by exact_kern p.frT, by exact_kern p.vac, by exact_kern p.Pg,
+    by exact_kern p.grp, by exact_kern p.mu0, by exact_kern p.eta, by exact_kern p.delta, by exact_kern p.deltaPl, by exact_kern p.ap, by exact_kern p.am⟩
+theorem is_univ_char_local (l : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel hL x) : GlobalTheory.UnivChar.IsUnivChar (DL x L).nexp := by exact_kern l.b.ser.ex.univ
 end GlobalTheory.HeightCounting.Fin3
 end
 end
@@ -719,22 +759,13 @@ attribute [local instance] Formalism.BasicNotions.Host.cmStar
 variable {hL : _root_.UpperTheory.Zero.LLC.RecTExists} {K : Ctx} {B : Base} {f : Fr B.toPre} {T : TwDat B} {w : ColW B f T} {P : Pre2 K w}
 variable {x : St P} (L : LocAll (lay0 (Dof x)))
 
--- Use the kernel to compare fully elaborated types across the two stages.
+-- Delegate conversion checking directly to the kernel at declaration type-checking time.
 open Lean Elab Tactic in
 local elab "exact_by_kernel " term:term : tactic =>
-  closeMainGoalUsing `exact_by_kernel fun target _ => do
-    let value ← elabTerm term none
-    Term.synthesizeSyntheticMVarsNoPostponing
-    let value ← instantiateMVars value
-    let actual ← instantiateMVars (← Meta.inferType value)
-    let target ← instantiateMVars target
-    let lctx ← instantiateLCtxMVars (← getLCtx)
-    match Kernel.isDefEq (← getEnv) lctx actual target with
-    | .ok true => pure value
-    | .ok false => throwError "expected{indentExpr target}\nbut the term has type{indentExpr actual}"
-    | .error error => throwError (error.toMessageData (← getOptions))
+  closeMainGoalUsing `exact_by_kernel fun _ _ => do
+    elabTerm term none
 
-local macro "kc%" t:term:max : term => `(by first | exact_by_kernel $t | with_unfolding_all exact ($t :))
+local macro "kc%" t:term:max : term => `(by exact_by_kernel $t)
 
 section
 open GlobalTheory.ExportSeries
@@ -744,13 +775,13 @@ private theorem placeMapL_eq (F : Frame S U) : (frL L F).placeMap = F.placeMap :
   funext e
   delta Frame.placeMap
   rewrite [placeModel_eq x.o.Z (oL x L).Z]
-  with_unfolding_all rfl
+  rfl_kern
 
 private theorem vecAtL_eq (X : ExportSeries.Base S U) : (baseL L X).vecAt = X.vecAt := by
   delta ExportSeries.Base.vecAt Frame.vec
   have h : (baseL L X).F.placeMap = (kc% X.F.placeMap) := kc% (placeMapL_eq L X.F)
   rewrite [h]
-  with_unfolding_all rfl
+  exact_kern Eq.refl X.vecAt
 end
 
 open GlobalTheory.SeriesTie in
@@ -811,7 +842,7 @@ private theorem heckeTie_imp_pz {rd : Rd ρ (Dof x).nexp ((i)) ((j)) c} (h : Hec
     HeckeTie (@rdL_pz K B f T w P x L ρ i j c rd) := by
   delta HeckeTie HeckeAt
   rewrite [isHeckeDatum_eq_pz L ρ]
-  exact (by with_unfolding_all exact (h :))
+  exact_kern h
 private def cellL_pz {hρ : ρ.Good} {rd : Rd ρ (Dof x).nexp ((i)) ((j)) c} (t : CellTie hρ (Dof x).nexp rd) :
     CellTie (setupL_good L hρ) (DL x L).nexp (i := i) (j := j) (b := c) (@rdL_pz K B f T w P x L ρ i j c rd) where
   supp := by exact_by_kernel t.supp
@@ -856,7 +887,7 @@ variable (l : _root_.GlobalTheory.HeightCounting.Up.StrictHenselianAcyclicLevel 
 theorem rat_setupL_iff_rat_realRd {ρ : Setup (Dof x).ntw} (h : ρ.Good) (i : (DL x L).ntw.Tw) (j : Fin (DL x L).R.m) (c : Bool) (ν : ℂ) :
     SeriesTie.Rat (setupL_good L h) (realRd (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l) (datL x L).geo.v₀ (setupL_good L h) i j c ν) ↔
       SeriesTie.Rat h (realRd l.b.YS x.m.z.geo.v₀ h ((i)) ((j)) c ν) :=
-  (by with_unfolding_all exact ((@rat_iff_pz K B f T w P x L ρ i j c h (((realRd l.b.YS x.m.z.geo.v₀ h (kc% i) (kc% j) c ν)))) : _))
+  by exact_kern @rat_iff_pz K B f T w P x L ρ i j c h (realRd l.b.YS x.m.z.geo.v₀ h (kc% i) (kc% j) c ν)
 theorem is_scalar_local_y_structure_of_is_scalar {ρ : Setup (Dof x).ntw} {h : ρ.Good} {i : (DL x L).ntw.Tw} {j : Fin (DL x L).R.m} {c : Bool} {ν : ℂ}
     (s : IsScalar l.b.YS x.m.z.geo.v₀ h ((i)) ((j)) c ν) :
     IsScalar (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l) (datL x L).geo.v₀ (setupL_good L h) i j c ν :=
@@ -880,11 +911,11 @@ theorem is_scalar_local_y_structure_of_is_scalar {ρ : Setup (Dof x).ntw} {h : �
   univ := _root_.GlobalTheory.HeightCounting.Fin3.is_univ_char_local L l
 private def lamL_pz (Z : GlobalTheory.LamTie.LamDat (Dof x)) : GlobalTheory.LamTie.LamDat (DL x L) :=
   ⟨(by with_unfolding_all exact ((chFr (a := x.o.Z) (oL x L).Z ((Z.C))) : _)), (by exact_by_kernel Z.q0), (by exact_by_kernel Z.w0), (by exact_by_kernel Z.c), (by exact_by_kernel Z.chi)⟩
-private theorem lamL_ok_pz {Z : GlobalTheory.LamTie.LamDat (Dof x)} (h : Z.Ok) : (lamL_pz L Z).Ok := ⟨(by with_unfolding_all exact (h.places :)), (by with_unfolding_all exact (h.aux :)), (by with_unfolding_all exact (h.big :))⟩
+private theorem lamL_ok_pz {Z : GlobalTheory.LamTie.LamDat (Dof x)} (h : Z.Ok) : (lamL_pz L Z).Ok := ⟨by exact_kern h.places, by exact_kern h.aux, by exact_kern h.big⟩
 private theorem lamL_tie_pz {Z : GlobalTheory.LamTie.LamDat (Dof x)} (h : GlobalTheory.LamTie.IsLamTieFull (Dof x).ntw Z) :
-    GlobalTheory.LamTie.IsLamTieFull (DL x L).ntw (lamL_pz L Z) := (by with_unfolding_all exact (h :))
+    GlobalTheory.LamTie.IsLamTieFull (DL x L).ntw (lamL_pz L Z) := by exact_kern h
 private theorem lamL_C_pz {Z : GlobalTheory.LamTie.LamDat (Dof x)} (h : Z.C = cfOf x) : (lamL_pz L Z).C = cfD x L :=
-  (by with_unfolding_all exact ((congrArg (fun c : CharFrame (Dof x) => chFr (a := x.o.Z) (oL x L).Z ((c))) h) : _))
+  by exact_kern congrArg (fun c : CharFrame (Dof x) => chFr (a := x.o.Z) (oL x L).Z ((c))) h
 
 private theorem reads_heq_of_eq {D D' : D7} (e : D = D') (X : NExpTied D) :
     HEq (@Reads D X) (@Reads D' (e ▸ X)) := by
@@ -1031,24 +1062,24 @@ def localAtData : _root_.GlobalTheory.Mem.Top.Bl.NAtData hL (DL x L) (cfD x L) (
     Pq_eq := ?_, low := ?_, split := ?_, ratIn := ?_, ratIn_hL := ?_, ratIn_eig := ?_
     ratIn_θ := ?_, depth := ?_ }
   · refine { toNBuilt := { a.nt.toNBuilt with eq := DL_eq x L }, pack := ?_ }
-    with_unfolding_all rfl
-  · with_unfolding_all exact a.all
-  · with_unfolding_all exact a.chr_eq
-  · with_unfolding_all exact a.host
+    rfl_kern
+  · exact_kern a.all
+  · exact_kern a.chr_eq
+  · exact_kern a.host
   · intro y
-    with_unfolding_all exact a.frameN y
-  · with_unfolding_all exact a.chrN
-  · with_unfolding_all exact a.chrGal
-  · with_unfolding_all exact a.Pq
+    exact_kern a.frameN y
+  · exact_kern a.chrN
+  · exact_kern a.chrGal
+  · exact_kern a.Pq
   · intro v
-    with_unfolding_all exact a.Pq_over v
+    exact_kern a.Pq_over v
   · intro i j b k Q ψ h1 h2 hadm
-    with_unfolding_all exact a.pq i j b k Q ψ h1 h2 hadm
-  · with_unfolding_all exact a.jE_eq
-  · with_unfolding_all exact a.mt_eq
-  · with_unfolding_all exact a.Pq_eq
-  · with_unfolding_all exact a.low
-  · with_unfolding_all exact a.split
+    exact_kern a.pq i j b k Q ψ h1 h2 hadm
+  · exact_kern a.jE_eq
+  · exact_kern a.mt_eq
+  · exact_kern a.Pq_eq
+  · exact_kern a.low
+  · exact_kern a.split
   · exact a.ratIn
   · exact a.ratIn_hL
   · exact a.ratIn_eig
@@ -1058,7 +1089,7 @@ include l in
 variable (L) in
 theorem grpTie_famR : Formalism.L2.DIV.GrpTie (DL x L) (famR (w.st (oL x L).Z) w.I P.hX (usedOf w.I T P.Wt) (datL x L).Xg (datL x L).tr).A
     (datL x L).F.P0 (datL x L).F.ψ0 (datL x L).F.P1 (datL x L).F.ψ1 ((datL x L).R.eG.trans (datL x L).cG) :=
-  ⟨(by with_unfolding_all exact ((_root_.GlobalTheory.HeightCounting.Fin3.grpTie_of_LC_alt l).card :)), (by with_unfolding_all exact ((_root_.GlobalTheory.HeightCounting.Fin3.grpTie_of_LC_alt l).e0 :)), (by with_unfolding_all exact ((_root_.GlobalTheory.HeightCounting.Fin3.grpTie_of_LC_alt l).lvl0 :)), (by with_unfolding_all exact ((_root_.GlobalTheory.HeightCounting.Fin3.grpTie_of_LC_alt l).psi0 :)), (by with_unfolding_all exact ((_root_.GlobalTheory.HeightCounting.Fin3.grpTie_of_LC_alt l).idxSharp :)),
+  ⟨by exact_kern (_root_.GlobalTheory.T.grpTie_of_levelC l).card, by exact_kern (_root_.GlobalTheory.T.grpTie_of_levelC l).e0, by exact_kern (_root_.GlobalTheory.T.grpTie_of_levelC l).lvl0, by exact_kern (_root_.GlobalTheory.T.grpTie_of_levelC l).psi0, by exact_kern (_root_.GlobalTheory.T.grpTie_of_levelC l).idxSharp,
     (datL x L).pins.keep.psi.lvl⟩
 variable {p0 : BaseLevelRowSide (w.D (oL x L).Z)} (Y : YT x L p0) (hY : YRel L Y)
 def normalizedRowDatum : _root_.GlobalTheory.Mem.Top.Bl.NormRealisationData (D := DL x L) (_root_.GlobalTheory.HeightCounting.Fin3.localAtData l Sp Au ss al hLg) (datL x L).R (datL x L).F (datL x L).cG Y where
@@ -1072,15 +1103,15 @@ def normalizedRowDatum : _root_.GlobalTheory.Mem.Top.Bl.NormRealisationData (D :
       ⟨(frameY Y).rep, (frameY Y).inj⟩
     have hF : F.rep = repOf x.r.Y := by
       with_unfolding_all exact eq_of_heq hY.rep
-    exact ⟨by with_unfolding_all exact (al.loc F hF).sat⟩
-  S_eq := (by with_unfolding_all exact ((SL_heq L l.rat) :))
-  hL_eq := (by with_unfolding_all exact ((HEq.refl l.rat.In.hL) :))
-  rep_eq := (by with_unfolding_all exact (hY.rep.symm :))
+    exact ⟨by exact_kern (al.loc F hF).sat⟩
+  S_eq := by exact_kern SL_heq L l.rat
+  hL_eq := by exact_kern HEq.refl l.rat.In.hL
+  rep_eq := by exact_kern hY.rep.symm
 theorem nonempty_nMore_of_xdAll {xd : ThData (Dof x)} (hxd : XdAll xd) : Nonempty (_root_.GlobalTheory.HeightCounting.RealExpansionExtraData (_root_.GlobalTheory.HeightCounting.Fin3.normalizedRowDatum l Sp Au ss al hLg Y hY) (datL x L).geo (xdD L xd)) := by
-  have e : (_root_.GlobalTheory.HeightCounting.Fin3.localAtData l Sp Au ss al hLg).all.gal.mt = _root_.GlobalTheory.HeightCounting.Fin3.localMultiplicityFamily L l := (by with_unfolding_all exact (al.mt :))
+  have e : (_root_.GlobalTheory.HeightCounting.Fin3.localAtData l Sp Au ss al hLg).all.gal.mt = _root_.GlobalTheory.HeightCounting.Fin3.localMultiplicityFamily L l := by exact_kern al.mt
   have H : ∃ ad' : MtAd Y (_root_.GlobalTheory.HeightCounting.Fin3.localAtData l Sp Au ss al hLg).all.gal.mt, ad'.PV = _root_.GlobalTheory.HeightCounting.Fin3.psiVectorLocal L l := by
     rw [e]
-    exact _root_.GlobalTheory.HeightCounting.Fin3.exists_mtAd_psi_vector_of_yRel (x := x) L l Y hY
+    exact _root_.GlobalTheory.T.exists_mtAd_psiVectorLocal_of_yRel (x := x) L l Y hY
   obtain ⟨ad', had'⟩ := H
   have hSer : Nonempty (SerAt (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l)
       (datL x L).geo.v₀ (expD L al.a.exp) (_root_.GlobalTheory.HeightCounting.Fin3.psiVectorLocal L l)
@@ -1090,27 +1121,27 @@ theorem nonempty_nMore_of_xdAll {xd : ThData (Dof x)} (hxd : XdAll xd) : Nonempt
   have ser' : SerAt (_root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal L l) (datL x L).geo.v₀ (expD L al.a.exp) ad'.PV (cfD x L) (_root_.GlobalTheory.HeightCounting.Fin3.placeMapLocal L l) := had'.symm ▸ ser
   exact ⟨{ ad := ad'
            fi := _root_.GlobalTheory.HeightCounting.Fin3.yStructureLocal_fi_e_heq L l
-           hecke := _root_.GlobalTheory.HeightCounting.Fin3.hecke_expansion_datL_of_levelC L l
-           cHk := (by with_unfolding_all exact ((fun i b Q => (⟨l.b.Bs.cHk i b Q, pow_one _⟩ : ∃ u : ((Dof x).ntw.O i)ˣ, (_root_.GlobalTheory.HeightCounting.Fin3.heckeHeightData l).cHk i b 1 Q =
-             algebraMap ((Dof x).ntw.O i) (FractionRing ((Dof x).ntw.O i)) u)) :))
-           eig := ⟨_root_.GlobalTheory.HeightCounting.Fin3.smallPlaceSet L l, _root_.GlobalTheory.HeightCounting.Fin3.localEigenvalueDegree L l, (by with_unfolding_all exact (l.b.Sb_le :)), (by with_unfolding_all exact ((HEq.refl l.rat.In.eig) :)), _root_.GlobalTheory.HeightCounting.Fin3.eigAd_smallPlaceSet_of_yRel L l Y hY⟩
-           ser := (by with_unfolding_all exact (ser' :))
-           tau := (by with_unfolding_all exact ((al.exp.tau l.b.tau) :))
+           hecke := _root_.GlobalTheory.T.hecke_expansion_local_of_levelC L l
+           cHk := by exact_kern (fun i b Q => (⟨l.b.Bs.cHk i b Q, pow_one _⟩ : ∃ u : ((Dof x).ntw.O i)ˣ, (_root_.GlobalTheory.HeightCounting.Fin3.heckeHeightData l).cHk i b 1 Q =
+             algebraMap ((Dof x).ntw.O i) (FractionRing ((Dof x).ntw.O i)) u))
+           eig := ⟨_root_.GlobalTheory.HeightCounting.Fin3.smallPlaceSet L l, _root_.GlobalTheory.HeightCounting.Fin3.localEigenvalueDegree L l, by exact_kern l.b.Sb_le, by exact_kern HEq.refl l.rat.In.eig, _root_.GlobalTheory.T.eigAd_of_yRel_at_level_c L l Y hY⟩
+           ser := by exact_kern ser'
+           tau := by exact_kern al.exp.tau l.b.tau
            geo := _root_.GlobalTheory.HeightCounting.Fin3.thetaTie_yStructureLocal_nonempty L l
            ok := _root_.GlobalTheory.HeightCounting.Fin3.twist_ok_local L l
-           th := _root_.GlobalTheory.HeightCounting.Fin3.emtTheta_L_alt L l Y hY
+           th := _root_.GlobalTheory.T.emtTheta_of_yRel L l Y hY
            xd := xdD_all L hxd
-           large := (by with_unfolding_all exact (hLg :))
-           labc := (by with_unfolding_all exact (l.a.labc :))
-           zeta := (by with_unfolding_all exact (l.a.zeta :))
-           pht := (by with_unfolding_all exact ((⟨l.a.fr, l.a.fr_jE, l.a.pht⟩ : ∃ fr : Formalism.L2.OmFrame (Dof x), fr.jE = l.a.jE ∧ PhtOn l.a.A.wd fr fun _ _ _ _ => True) :)) }⟩
+           large := by exact_kern hLg
+           labc := by exact_kern l.a.labc
+           zeta := by exact_kern l.a.zeta
+           pht := by exact_kern (⟨l.a.fr, l.a.fr_jE, l.a.pht⟩ : ∃ fr : Formalism.L2.OmFrame (Dof x), fr.jE = l.a.jE ∧ PhtOn l.a.A.wd fr fun _ _ _ _ => True) }⟩
 def localCharacterChoiceTwist : NchT w (oL x L).Z P.Wt (_root_.GlobalTheory.HeightCounting.Fin3.characterChoiceLocal L l) where
   tp := _root_.GlobalTheory.HeightCounting.Fin3.localCharacterTupleAgreement L l
-  xi := (by with_unfolding_all exact (l.c.xi_eq :))
-  psi := (by with_unfolding_all exact (l.c.psi_eq :))
+  xi := by exact_kern l.c.xi_eq
+  psi := by exact_kern l.c.psi_eq
   tie := (_root_.GlobalTheory.HeightCounting.NchAt.tie_of_true_alt (_root_.GlobalTheory.HeightCounting.Fin3.localAtData l Sp Au ss al hLg).nt).1
-  Q := fun v hv => ⟨(by with_unfolding_all exact (((congrFun l.c.Q_eq v).trans (GlobalTheory.HeightCounting.Up.Model.qOf_on v hv)) :)),
-    (by with_unfolding_all exact ((l.c.k_eq v ((GlobalTheory.HeightCounting.Up.Model.twisted_iff x v).2 hv)) :))⟩
+  Q := fun v hv => ⟨by exact_kern (congrFun l.c.Q_eq v).trans (GlobalTheory.HeightCounting.Up.Model.qOf_on v hv),
+    by exact_kern l.c.k_eq v ((GlobalTheory.HeightCounting.Up.Model.twisted_iff x v).2 hv)⟩
   chrPsi := (_root_.GlobalTheory.HeightCounting.NchAt.tie_of_true_alt (_root_.GlobalTheory.HeightCounting.Fin3.localAtData l Sp Au ss al hLg).nt).2
 include hY in
 theorem exists_core_and_listPin {xd : ThData (Dof x)} (hxd : XdAll xd) (t : RowsT K w (oL x L).Z P.Wt p0) (hz : HEq t.r.z (datL x L))
