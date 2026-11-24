@@ -238,4 +238,57 @@ def IsSupercuspidal (ρ : Representation k G V) : Prop :=
 
 end Top2
 
+
+section SubmoduleShortcuts
+
+variable {k G V W : Type} [Field k] [Group G] [AddCommGroup V] [Module k V] [AddCommGroup W] [Module k W]
+
+instance (priority := high) fixed.instAddCommGroup (ρ : Representation k G V) (K : Subgroup G) :
+    AddCommGroup ↥(fixed ρ K) := (fixed ρ K).addCommGroup
+instance (priority := high) fixed.instAddCommMonoid (ρ : Representation k G V) (K : Subgroup G) :
+    AddCommMonoid ↥(fixed ρ K) := (fixed ρ K).addCommMonoid
+instance (priority := high) fixed.instModule (ρ : Representation k G V) (K : Subgroup G) :
+    Module k ↥(fixed ρ K) := Submodule.module (fixed ρ K)
+instance (priority := high) fixed.instSMul (ρ : Representation k G V) (K : Subgroup G) :
+    SMul k ↥(fixed ρ K) := (Submodule.module (fixed ρ K)).toSMul
+instance (priority := high) fixed.instHSMul (ρ : Representation k G V) (K : Subgroup G) :
+    HSMul k ↥(fixed ρ K) ↥(fixed ρ K) := @_root_.instHSMul _ _ (Submodule.module (fixed ρ K)).toSMul
+
+instance (priority := high) indSpace.instAddCommGroup (H : Subgroup G) (σ : Representation k H W) :
+    AddCommGroup ↥(indSpace H σ) := (indSpace H σ).addCommGroup
+instance (priority := high) indSpace.instAddCommMonoid (H : Subgroup G) (σ : Representation k H W) :
+    AddCommMonoid ↥(indSpace H σ) := (indSpace H σ).addCommMonoid
+instance (priority := high) indSpace.instModule (H : Subgroup G) (σ : Representation k H W) :
+    Module k ↥(indSpace H σ) := Submodule.module (indSpace H σ)
+instance (priority := high) indSpace.instSMul (H : Subgroup G) (σ : Representation k H W) :
+    SMul k ↥(indSpace H σ) := (Submodule.module (indSpace H σ)).toSMul
+instance (priority := high) indSpace.instHSMul (H : Subgroup G) (σ : Representation k H W) :
+    HSMul k ↥(indSpace H σ) ↥(indSpace H σ) := @_root_.instHSMul _ _ (Submodule.module (indSpace H σ)).toSMul
+
+variable [TopologicalSpace G] [IsTopologicalGroup G]
+
+instance (priority := high) smoothPart.instAddCommGroup (ρ : Representation k G V) :
+    AddCommGroup ↥(smoothPart ρ) := (smoothPart ρ).addCommGroup
+instance (priority := high) smoothPart.instAddCommMonoid (ρ : Representation k G V) :
+    AddCommMonoid ↥(smoothPart ρ) := (smoothPart ρ).addCommMonoid
+instance (priority := high) smoothPart.instModule (ρ : Representation k G V) :
+    Module k ↥(smoothPart ρ) := Submodule.module (smoothPart ρ)
+instance (priority := high) smoothPart.instSMul (ρ : Representation k G V) :
+    SMul k ↥(smoothPart ρ) := (Submodule.module (smoothPart ρ)).toSMul
+instance (priority := high) smoothPart.instHSMul (ρ : Representation k G V) :
+    HSMul k ↥(smoothPart ρ) ↥(smoothPart ρ) := @_root_.instHSMul _ _ (Submodule.module (smoothPart ρ)).toSMul
+
+instance (priority := high) cIndSpace.instAddCommGroup (H : Subgroup G) (σ : Representation k H W) :
+    AddCommGroup ↥(cIndSpace H σ) := (cIndSpace H σ).addCommGroup
+instance (priority := high) cIndSpace.instAddCommMonoid (H : Subgroup G) (σ : Representation k H W) :
+    AddCommMonoid ↥(cIndSpace H σ) := (cIndSpace H σ).addCommMonoid
+instance (priority := high) cIndSpace.instModule (H : Subgroup G) (σ : Representation k H W) :
+    Module k ↥(cIndSpace H σ) := Submodule.module (cIndSpace H σ)
+instance (priority := high) cIndSpace.instSMul (H : Subgroup G) (σ : Representation k H W) :
+    SMul k ↥(cIndSpace H σ) := (Submodule.module (cIndSpace H σ)).toSMul
+instance (priority := high) cIndSpace.instHSMul (H : Subgroup G) (σ : Representation k H W) :
+    HSMul k ↥(cIndSpace H σ) ↥(cIndSpace H σ) := @_root_.instHSMul _ _ (Submodule.module (cIndSpace H σ)).toSMul
+
+end SubmoduleShortcuts
+
 end GlobalTheory.PRep
