@@ -61,6 +61,49 @@ open scoped TensorProduct
 
 namespace Formalism.IndefR.Fin.LevelGroupLemmas
 
+private theorem rh_add {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) (x y : R) :
+    f (x + y) = f x + f y := f.map_add' x y
+
+private theorem rh_zero {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) :
+    f 0 = 0 := f.map_zero'
+
+private theorem rh_mul {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) (x y : R) :
+    f (x * y) = f x * f y := f.map_mul' x y
+
+private theorem rh_one {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) :
+    f 1 = 1 := f.map_one'
+
+private theorem rh_neg {R S : Type*} [Ring R] [Ring S] (f : R →+* S) (x : R) :
+    f (-x) = -f x := eq_neg_of_add_eq_zero_left (by rw [← rh_add f, neg_add_cancel, rh_zero f])
+
+private theorem rh_sub {R S : Type*} [Ring R] [Ring S] (f : R →+* S) (x y : R) :
+    f (x - y) = f x - f y := by rw [sub_eq_add_neg, rh_add, rh_neg, ← sub_eq_add_neg]
+
+private theorem rh_sum {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] {ι : Type*} (f : R →+* S)
+    (s : Finset ι) (g : ι → R) : f (∑ i ∈ s, g i) = ∑ i ∈ s, f (g i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp only [Finset.sum_empty, rh_zero f]
+  | insert a s ha ih => simp only [Finset.sum_insert ha, rh_add f, ih]
+
+private theorem ae_add {R A B : Type*} [CommSemiring R] [Semiring A] [Semiring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) (x y : A) : f (x + y) = f x + f y := f.map_add' x y
+
+private theorem ae_zero {R A B : Type*} [CommSemiring R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) : f 0 = 0 := by
+  have h : f 0 + f 0 = f 0 + 0 := by rw [← ae_add f, add_zero, add_zero]
+  exact add_left_cancel h
+
+private theorem ae_neg {R A B : Type*} [CommSemiring R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) (x : A) : f (-x) = -f x :=
+  eq_neg_of_add_eq_zero_left (by rw [← ae_add f, neg_add_cancel, ae_zero f])
+
+private theorem ae_mul {R A B : Type*} [CommSemiring R] [Semiring A] [Semiring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) (x y : A) : f (x * y) = f x * f y := f.map_mul' x y
+
+private theorem ah_mul {R A B : Type*} [CommSemiring R] [Semiring A] [Semiring B] [Algebra R A] [Algebra R B]
+    (f : A →ₐ[R] B) (x y : A) : f (x * y) = f x * f y := f.map_mul' x y
+
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
 section Generic
@@ -120,6 +163,7 @@ theorem resM_orth {s t : R} (hst : s * t = 0) (A B : Matrix n n R) :
     resM s A * resM t B = 1 + s • (A - 1) + t • (B - 1) := by
   have hts : t * s = 0 := by rw [mul_comm, hst]
   simp only [resM, hts, add_mul, mul_add, one_mul, mul_one, smul_mul_assoc, mul_smul_comm, smul_add, smul_smul, zero_smul, add_zero]
+  try abel
 
 theorem resM_add {s t : R} (hst : s * t = 0) (A : Matrix n n R) : resM s A * resM t A = resM (s + t) A := by
   rw [resM_orth hst]
@@ -186,7 +230,7 @@ theorem idemSum_conj_orth (hes : ∀ PP ∈ P, Formalism.L2.NTheta.IsIdemAt (es 
     rw [Finset.sum_product]
     show ∑ x ∈ P, ∑ y ∈ P, es x * cA D (es y) = 0
 
-    rw [← Finset.sum_mul_sum, ← map_sum, ← he, hc]
+    rw [← Finset.sum_mul_sum, ← rh_sum, ← he, hc]
   refine idem_sum_zero (K := D.host.F) (P ×ˢ P) (fun x => es x.1 * cA D (es x.2)) ?_ hsum (PP, PP')
     (Finset.mem_product.2 ⟨hPP, hPP'⟩)
   rintro ⟨a, b⟩ hab
@@ -258,11 +302,11 @@ theorem idemSum_eps (h : IsIdemSum e P) :
   choose! v ε hpl hε using fun PP (hPP : PP ∈ P) => (hes PP hPP).1.2.2
   have hsum : algebraMap (AF D.host.F) (AE D) (∑ PP ∈ P, ε PP) = e + cA D e := by
 
-    rw [map_sum, he, map_sum, ← Finset.sum_add_distrib]
+    rw [rh_sum, he, rh_sum, ← Finset.sum_add_distrib]
     exact Finset.sum_congr rfl (fun PP hPP => (hε PP hPP).symm)
   refine ⟨∑ PP ∈ P, ε PP, ?_, hsum⟩
   apply hinj
-  rw [map_mul, hsum]
+  rw [rh_mul, hsum]
   have h3 : cA D e * cA D e = cA D e := isIdem_cA hsq
   linear_combination hsq + 2 * hc + h3
 
@@ -302,7 +346,7 @@ theorem mtG_unitary (V : HSp D) (g : GA D V) :
 
 def mkRes (V : HSp D) (ε : AF D.host.F) (hε : IsIdempotentElem ε) (g : GA D V) : GA D V :=
     have hs : algebraMap (AF D.host.F) (AE D) ε * algebraMap (AF D.host.F) (AE D) ε =
-        algebraMap (AF D.host.F) (AE D) ε := by rw [← map_mul, hε.eq]
+        algebraMap (AF D.host.F) (AE D) ε := by rw [← rh_mul, hε.eq]
     let g' : HR (AF D.host.F) D.sp.cm.sig V.gram :=
       ⟨⟨resM (algebraMap (AF D.host.F) (AE D) ε) (mt V g), resM (algebraMap (AF D.host.F) (AE D) ε) (mt V g⁻¹),
         by rw [resM_mul hs, mtG_inv, resM_one_right], by rw [resM_mul hs, mtG_inv', resM_one_right]⟩, by
@@ -329,7 +373,7 @@ theorem mt_resG (hε : IsIdempotentElem ε) (g : GA D V) :
 
 theorem algIdem (hε : IsIdempotentElem ε) :
     algebraMap (AF D.host.F) (AE D) ε * algebraMap (AF D.host.F) (AE D) ε = algebraMap (AF D.host.F) (AE D) ε := by
-  rw [← map_mul, hε.eq]
+  rw [← rh_mul, hε.eq]
 
 theorem resG_mul (hε : IsIdempotentElem ε) (g g' : GA D V) : resG V ε (g * g') = resG V ε g * resG V ε g' := by
   apply gaExt
@@ -341,7 +385,7 @@ theorem resG_one_eps (g : GA D V) : resG V 1 g = g := by
 
 theorem resG_zero_eps (g : GA D V) : resG V 0 g = 1 := by
   apply gaExt
-  rw [mt_resG V IsIdempotentElem.zero, map_zero, resM_zero_left, mtG_one]
+  rw [mt_resG V IsIdempotentElem.zero, rh_zero, resM_zero_left, mtG_one]
 
 theorem resG_one (hε : IsIdempotentElem ε) : resG V ε 1 = 1 := by
   apply gaExt
@@ -358,8 +402,8 @@ theorem resG_orth (hε : IsIdempotentElem ε) (hε' : IsIdempotentElem ε') (h :
     resG V ε g * resG V ε' g = resG V (ε + ε') g := by
   apply gaExt
   have hst : algebraMap (AF D.host.F) (AE D) ε * algebraMap (AF D.host.F) (AE D) ε' = 0 := by
-    rw [← map_mul, h, map_zero]
-  rw [mtG_mul, mt_resG V hε, mt_resG V hε', mt_resG V (isIdem_add_orth hε hε' h), map_add (f := _), resM_add hst]
+    rw [← rh_mul, h, rh_zero]
+  rw [mtG_mul, mt_resG V hε, mt_resG V hε', mt_resG V (isIdem_add_orth hε hε' h), rh_add, resM_add hst]
 
 theorem resG_compl (hε : IsIdempotentElem ε) (g : GA D V) : resG V ε g * resG V (1 - ε) g = g := by
   have h0 : ε * (1 - ε) = 0 := by rw [mul_sub, mul_one, hε.eq, sub_self]
@@ -401,7 +445,7 @@ theorem sndA_idem_int (hε : IsIdempotentElem ε) : sndA D.host.F ε ∈ Formali
   intro v
   have h : IsIdempotentElem (evalV D.host.F v (sndA D.host.F ε)) := by
     show _ * _ = _
-    rw [← map_mul, ← map_mul, hε.eq]
+    rw [← ah_mul, ← ah_mul, hε.eq]
   rcases IsIdempotentElem.iff_eq_zero_or_one.1 h with h0 | h1
   · show evalV D.host.F v (sndA D.host.F ε) ∈ _
     rw [h0]; exact zero_mem _
@@ -425,19 +469,15 @@ theorem finE_resG_mem_St (hε : IsIdempotentElem ε) {g : GA D V} {β : GL (Fin 
     ⟨Formalism.L2.DIV.adS D.host.F D.host.E ⟨sndA D.host.F ε, sndA_idem_int hε⟩, rfl⟩
   have hα : α * α = α := Subtype.ext (by
     show (α : Lev.EAf D) * α = α
-    rw [hαv, Algebra.TensorProduct.tmul_mul_tmul, mul_one, ← map_mul, hε.eq])
-  refine ⟨⟨resM α (y : Matrix _ _ _), resM α ((y⁻¹ : GL _ _) : Matrix _ _ _),
+    rw [hαv, Algebra.TensorProduct.tmul_mul_tmul, mul_one, ← ah_mul, hε.eq])
+  refine ⟨⟨resM α y.val, resM α (y⁻¹).val,
     by rw [resM_mul hα, Units.mul_inv, resM_one_right], by rw [resM_mul hα, Units.inv_mul, resM_one_right]⟩, ?_⟩
   apply Units.ext
   rw [frGL_val']
   have hsub : (Formalism.L2.Herm.intAf D.host.F D.host.E).subtype α = (1 : D.host.E) ⊗ₜ[D.host.F] sndA D.host.F ε := hαv
-  have hy' : (β : Matrix (Fin V.rank) (Fin V.rank) (Lev.EAf D)) *
-      (y : Matrix (Fin V.rank) (Fin V.rank) (Formalism.L2.Herm.intAf D.host.F D.host.E)).map
-        (Formalism.L2.Herm.intAf D.host.F D.host.E).subtype *
-      ((β⁻¹ : GL (Fin V.rank) (Lev.EAf D)) : Matrix (Fin V.rank) (Fin V.rank) (Lev.EAf D)) = (mt V g).map (toEAf D) := by
+  have hy' : β.val * y.val.map (Formalism.L2.Herm.intAf D.host.F D.host.E).subtype * (β⁻¹).val = (mt V g).map (toEAf D) := by
     rw [← frGL_val', hy, finE_val]
-  have hββ : (β : Matrix (Fin V.rank) (Fin V.rank) (Lev.EAf D)) *
-      ((β⁻¹ : GL (Fin V.rank) (Lev.EAf D)) : Matrix (Fin V.rank) (Fin V.rank) (Lev.EAf D)) = 1 := by
+  have hββ : β.val * (β⁻¹).val = 1 := by
     rw [← Units.val_mul, mul_inv_cancel, Units.val_one]
   rw [resM_map, resM_conj _ _ _ _ hββ, hy', hsub, finE_val, mt_resG V hε, resM_map, toEAf_alg]
 
@@ -480,9 +520,9 @@ theorem comm_mem_intAf {z : Af D.host.F ⊗[D.host.F] D.host.E} (hz : z ∈ intA
     rw [hx]
     exact mul_mem (Subring.subset_closure (Or.inl ⟨⟨(x : D.host.E), ⟨x, rfl⟩⟩, rfl⟩))
       (Subring.subset_closure (Or.inr ⟨⟨a, fun v => ha v⟩, rfl⟩))
-  | zero => rw [map_zero]; exact zero_mem _
-  | add x y _ _ hx hy => rw [map_add]; exact add_mem hx hy
-  | neg x _ hx => rw [map_neg]; exact neg_mem hx
+  | zero => rw [ae_zero]; exact zero_mem _
+  | add x y _ _ hx hy => rw [ae_add]; exact add_mem hx hy
+  | neg x _ hx => rw [ae_neg]; exact neg_mem hx
 
 theorem toEAf_mem_intAf {z : AE D} (hz : finPart D z ∈ intAE D) : toEAf D z ∈ Formalism.L2.Herm.intAf D.host.F D.host.E :=
   comm_mem_intAf hz
@@ -500,20 +540,20 @@ theorem comm_mem_intAE {s : D.host.E ⊗[D.host.F] Af D.host.F} (hs : s ∈ Form
       exact AddSubgroup.subset_closure ⟨1, hone, y, rfl⟩
     · rw [Algebra.TensorProduct.comm_tmul]
       exact AddSubgroup.subset_closure ⟨a, fun v => ha v, 1, by simp⟩
-  | zero => rw [map_zero]; exact zero_mem _
+  | zero => rw [ae_zero]; exact zero_mem _
   | one =>
     rw [map_one, Algebra.TensorProduct.one_def]
     exact AddSubgroup.subset_closure ⟨1, hone, 1, by simp⟩
-  | add x y _ _ hx hy => rw [map_add]; exact add_mem hx hy
-  | neg x _ hx => rw [map_neg]; exact neg_mem hx
-  | mul x y _ _ hx hy => rw [map_mul]; exact intAE_mul hx hy
+  | add x y _ _ hx hy => rw [ae_add]; exact add_mem hx hy
+  | neg x _ hx => rw [ae_neg]; exact neg_mem hx
+  | mul x y _ _ hx hy => rw [ae_mul]; exact intAE_mul hx hy
 
 theorem comm_comm (z : Af D.host.F ⊗[D.host.F] D.host.E) :
     (Algebra.TensorProduct.comm D.host.F D.host.E (Af D.host.F))
       ((Algebra.TensorProduct.comm D.host.F (Af D.host.F) D.host.E) z) = z := by
   induction z using TensorProduct.inductionOn with
   | tmul a b => simp
-  | add x y hx hy => simp only [map_add (f := _), hx, hy]
+  | add x y hx hy => rw [ae_add, ae_add, hx, hy]
 
 
 
@@ -526,14 +566,10 @@ theorem toEAf_det {V : HSp D} {g : GA D V} {β : GL (Fin V.rank) (Lev.EAf D)}
         Formalism.L2.Herm.intAf D.host.F D.host.E) : Lev.EAf D) := by
   obtain ⟨d, hd⟩ : ∃ d : (Formalism.L2.Herm.intAf D.host.F D.host.E)ˣ, d = Matrix.GeneralLinearGroup.det y := ⟨_, rfl⟩
   rw [← hd]
-  have h1 : toEAf D (mt V g).det =
-      ((Lev.finE V g : GL (Fin V.rank) (Lev.EAf D)) : Matrix (Fin V.rank) (Fin V.rank) (Lev.EAf D)).det := by
+  have h1 : toEAf D (mt V g).det = (Lev.finE V g).val.det := by
     rw [finE_val, RingHom.map_det]; rfl
   rw [h1, ← hy]
-  show ((β : Matrix (Fin V.rank) (Fin V.rank) (Lev.EAf D)) *
-    (y : Matrix (Fin V.rank) (Fin V.rank) (Formalism.L2.Herm.intAf D.host.F D.host.E)).map
-      (Formalism.L2.Herm.intAf D.host.F D.host.E).subtype *
-    ((β⁻¹ : GL (Fin V.rank) (Lev.EAf D)) : Matrix (Fin V.rank) (Fin V.rank) (Lev.EAf D))).det = _
+  show (β.val * y.val.map (Formalism.L2.Herm.intAf D.host.F D.host.E).subtype * (β⁻¹).val).det = _
   rw [Matrix.det_mul, Matrix.det_mul, mul_comm, ← mul_assoc, ← Matrix.det_mul, ← Units.val_mul, inv_mul_cancel,
     Units.val_one, Matrix.det_one, one_mul, hd]
   exact (RingHom.map_det (Formalism.L2.Herm.intAf D.host.F D.host.E).subtype _).symm
@@ -557,13 +593,13 @@ theorem one_mem_intAE : (1 : Af D.host.F ⊗[D.host.F] D.host.E) ∈ intAE D := 
 theorem infPart_idemAt {e : AE D} {PP : Formalism.L2.DIV.Pl D.host.E} (hPP : Formalism.L2.NTheta.IsIdemAt e PP) :
     infPart D e = 0 := by
   obtain ⟨⟨h1, h2, v, ε, ⟨α, hεα, -, -⟩, h3⟩, -⟩ := hPP
-  have hx : infPart D e * infPart D (cA D e) = 0 := by rw [← map_mul, h2, map_zero]
+  have hx : infPart D e * infPart D (cA D e) = 0 := by rw [← rh_mul, h2, rh_zero]
   have hy : infPart D e + infPart D (cA D e) = 0 := by
-    rw [← map_add (f := _), h3, hεα, Algebra.TensorProduct.algebraMap_apply]
+    rw [← rh_add, h3, hεα, Algebra.TensorProduct.algebraMap_apply]
     simp only [infPart, pairA, fstA]
     first
       | (erw [Algebra.TensorProduct.map_tmul]; exact TensorProduct.zero_tmul _ _)
-  have hz : infPart D e * infPart D e = infPart D e := by rw [← map_mul, h1]
+  have hz : infPart D e * infPart D e = infPart D e := by rw [← rh_mul, h1]
   linear_combination -hz + (infPart D e) * hy - hx
 
 
@@ -582,10 +618,10 @@ theorem unrOff_detAt {e e₁ : AE D} {PP₁ : Formalism.L2.DIV.Pl D.host.E} (hPP
     rw [hx]
     linear_combination (e₁ * e₁) * hd + (2 - (mt V g).det - (mt V g⁻¹).det) * he₁
   refine hU _ ?_ ?_ ?_ ?_
-  · rw [hx, map_add (f := _), map_mul, map_sub, map_one, hinf, zero_mul, zero_add, sub_zero]
-  · rw [hx, map_add (f := _), map_mul, map_sub, map_one]
+  · rw [hx, rh_add, rh_mul, rh_sub, rh_one, hinf, zero_mul, zero_add, sub_zero]
+  · rw [hx, rh_add, rh_mul, rh_sub, rh_one]
     exact add_mem (intAE_mul hint (finPart_det_int hg)) (sub_mem one_mem_intAE hint)
-  · rw [hxi, map_add (f := _), map_mul, map_sub, map_one]
+  · rw [hxi, rh_add, rh_mul, rh_sub, rh_one]
     exact add_mem (intAE_mul hint (finPart_det_int hginv)) (sub_mem one_mem_intAE hint)
   · rw [hx]
     linear_combination ((mt V g).det - 1) * horth
@@ -599,7 +635,7 @@ variable {D : D7}
 theorem finPart_detAt_int {e : AE D} (he : e * e = e) (hint : finPart D e ∈ intAE D) (V : HSp D) {g : GA D V}
     {β : GL (Fin V.rank) (Lev.EAf D)} (hg : Lev.finE V g ∈ Formalism.L2.DIV.St β) :
     finPart D ((detAt e V g : (AE D)ˣ) : AE D) ∈ intAE D := by
-  rw [detAt_val he, map_add (f := _), map_mul, map_sub, map_one]
+  rw [detAt_val he, rh_add, rh_mul, rh_sub, rh_one]
   exact add_mem (intAE_mul hint (finPart_det_int hg)) (sub_mem one_mem_intAE hint)
 
 theorem finPart_detAt_inv_int {e : AE D} (he : e * e = e) (hint : finPart D e ∈ intAE D) (V : HSp D) {g : GA D V}
@@ -612,7 +648,7 @@ theorem finPart_detAt_inv_int {e : AE D} (he : e * e = e) (hint : finPart D e �
     have hd : (mt V g).det * (mt V g⁻¹).det = 1 := by rw [← Matrix.det_mul, mtG_inv, Matrix.det_one]
     rw [hx]
     linear_combination (e * e) * hd + (2 - (mt V g).det - (mt V g⁻¹).det) * he
-  rw [hxi, map_add (f := _), map_mul, map_sub, map_one]
+  rw [hxi, rh_add, rh_mul, rh_sub, rh_one]
   exact add_mem (intAE_mul hint (finPart_det_int hginv)) (sub_mem one_mem_intAE hint)
 
 end DetInt
@@ -660,7 +696,7 @@ theorem isIdemSum_conj {e : AE D} {P : Finset (Formalism.L2.DIV.Pl D.host.E)} (h
       rw [← Formalism.L2.DIV.conjPl_conjPl a, hab, Formalism.L2.DIV.conjPl_conjPl])]
     simp only [Formalism.L2.DIV.conjPl_conjPl]
 
-    rw [he, map_sum]
+    rw [he, rh_sum]
   · rw [cA_cA, mul_comm]; exact hc
 
 

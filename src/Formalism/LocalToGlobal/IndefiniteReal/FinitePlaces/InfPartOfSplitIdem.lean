@@ -57,6 +57,70 @@ open scoped TensorProduct
 
 namespace Formalism.IndefR.Fin.LevelGroupLemmas.Lat
 
+private theorem rh_add {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) (x y : R) :
+    f (x + y) = f x + f y := f.map_add' x y
+
+private theorem rh_zero {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) :
+    f 0 = 0 := f.map_zero'
+
+private theorem rh_mul {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) (x y : R) :
+    f (x * y) = f x * f y := f.map_mul' x y
+
+private theorem rh_one {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] (f : R →+* S) :
+    f 1 = 1 := f.map_one'
+
+private theorem rh_neg {R S : Type*} [Ring R] [Ring S] (f : R →+* S) (x : R) :
+    f (-x) = -f x := eq_neg_of_add_eq_zero_left (by rw [← rh_add f, neg_add_cancel, rh_zero f])
+
+private theorem rh_sum {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] {ι : Type*} (f : R →+* S)
+    (s : Finset ι) (g : ι → R) : f (∑ i ∈ s, g i) = ∑ i ∈ s, f (g i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp only [Finset.sum_empty, rh_zero f]
+  | insert a s ha ih => simp only [Finset.sum_insert ha, rh_add f, ih]
+
+private theorem ae_add {R A B : Type*} [CommSemiring R] [Semiring A] [Semiring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) (x y : A) : f (x + y) = f x + f y := f.map_add' x y
+
+private theorem ae_zero {R A B : Type*} [CommSemiring R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) : f 0 = 0 := by
+  have h : f 0 + f 0 = f 0 + 0 := by rw [← ae_add f, add_zero, add_zero]
+  exact add_left_cancel h
+
+private theorem ae_neg {R A B : Type*} [CommSemiring R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) (x : A) : f (-x) = -f x :=
+  eq_neg_of_add_eq_zero_left (by rw [← ae_add f, neg_add_cancel, ae_zero f])
+
+private theorem ae_sum {R A B : Type*} [CommSemiring R] [Ring A] [Ring B] [Algebra R A] [Algebra R B]
+    {ι : Type*} (f : A ≃ₐ[R] B) (s : Finset ι) (g : ι → A) : f (∑ i ∈ s, g i) = ∑ i ∈ s, f (g i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp only [Finset.sum_empty, ae_zero f]
+  | insert a s ha ih => simp only [Finset.sum_insert ha, ae_add f, ih]
+
+private theorem lm_add {R M N : Type*} [Semiring R] [AddCommMonoid M] [AddCommMonoid N] [Module R M] [Module R N]
+    (f : M →ₗ[R] N) (x y : M) : f (x + y) = f x + f y := f.map_add' x y
+
+private theorem ae_mul {R A B : Type*} [CommSemiring R] [Semiring A] [Semiring B] [Algebra R A] [Algebra R B]
+    (f : A ≃ₐ[R] B) (x y : A) : f (x * y) = f x * f y := f.map_mul' x y
+
+private theorem lm_zero {R M N : Type*} [Semiring R] [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N]
+    (f : M →ₗ[R] N) : f 0 = 0 := by
+  have h : f 0 + f 0 = f 0 + 0 := by rw [← lm_add f, add_zero, add_zero]
+  exact add_left_cancel h
+
+private theorem mat_map_add {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] {m n : Type*}
+    (f : R →+* S) (A B : Matrix m n R) : (A + B).map f = A.map f + B.map f :=
+  Matrix.map_add _ (rh_add f) A B
+
+private theorem mat_map_zero {R S : Type*} [NonAssocSemiring R] [NonAssocSemiring S] {m n : Type*}
+    (f : R →+* S) : (0 : Matrix m n R).map f = 0 :=
+  Matrix.map_zero _ (rh_zero f)
+
+private theorem mat_map_neg {R S : Type*} [Ring R] [Ring S] {m n : Type*}
+    (f : R →+* S) (A : Matrix m n R) : (-A).map f = -(A.map f) :=
+  Matrix.map_neg _ (rh_neg f) A
+
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
 section Lift
@@ -100,7 +164,7 @@ theorem finPart_lift (y : Af D.host.F ⊗[D.host.F] D.host.E) : finPart D (lift 
     rw [lift_tmul]
     erw [Algebra.TensorProduct.map_tmul]
     rfl
-  | add x y hx hy => rw [lift_add, map_add (f := _), hx, hy]
+  | add x y hx hy => rw [lift_add, rh_add, hx, hy]
 
 theorem liftI_tmul (a : Ainf D.host.F) (w : D.host.E) : liftI (D := D) (a ⊗ₜ[D.host.F] w) = pairA D.host.F a 0 ⊗ₜ w := rfl
 
@@ -111,7 +175,7 @@ theorem liftI_zero : liftI (D := D) 0 = 0 := map_zero (LinearMap.rTensor D.host.
 theorem eq_liftI_add_lift (x : AE D) : x = liftI (infPart D x) + lift (finPart D x) := by
   induction x using TensorProduct.inductionOn with
   | add x y hx hy =>
-    rw [map_add (f := _), map_add (f := _), liftI_add, lift_add]
+    rw [rh_add, rh_add, liftI_add, lift_add]
     conv_lhs => rw [hx, hy]
     abel
   | tmul p w =>
@@ -130,7 +194,7 @@ theorem lift_mul (y : Af D.host.F ⊗[D.host.F] D.host.E) (z : AE D) : lift y * 
   | add y y' hy hy' => rw [lift_add, add_mul, hy, hy', ← lift_add, add_mul]
   | tmul a w =>
     induction z using TensorProduct.inductionOn with
-    | add z z' hz hz' => rw [mul_add, hz, hz', map_add (f := _), mul_add, lift_add]
+    | add z z' hz hz' => rw [mul_add, hz, hz', rh_add, mul_add, lift_add]
     | tmul p w' =>
       rw [lift_tmul, Algebra.TensorProduct.tmul_mul_tmul]
       erw [Algebra.TensorProduct.map_tmul]
@@ -152,7 +216,7 @@ theorem toEAf_liftE (y : EAf D) : toEAf D (liftE y) = y := by
   rw [liftE, toEAf_lift]
   induction y using TensorProduct.inductionOn with
   | tmul a b => simp
-  | add x y hx hy => simp only [map_add (f := _), hx, hy]
+  | add x y hx hy => rw [ae_add, ae_add, hx, hy]
 
 theorem finE_coe (V : HSp D) (g : GA D V) :
     ((Lev.finE V g : GL (Fin V.rank) (Lev.EAf D)) : Matrix (Fin V.rank) (Fin V.rank) (EAf D)) =
@@ -314,9 +378,9 @@ theorem latAll_infPart {u : WO S T} (hu : u ∈ latAll S T ΛS ΛT) (i : Fin T.r
     obtain ⟨α, _, _, a, _, s, _, t, _, rfl⟩ := hw
     show (fstA D.host.F (pairA D.host.F 0 α)) ⊗ₜ[D.host.F] _ = 0
     exact TensorProduct.zero_tmul _ _
-  | zero => exact map_zero _
-  | add x y _ _ hx hy => rw [Matrix.add_apply, map_add (f := _), hx, hy, add_zero]
-  | neg x _ hx => rw [Matrix.neg_apply, map_neg, hx, neg_zero]
+  | zero => exact rh_zero _
+  | add x y _ _ hx hy => rw [Matrix.add_apply, rh_add, hx, hy, add_zero]
+  | neg x _ hx => rw [Matrix.neg_apply, rh_neg, hx, neg_zero]
 
 theorem lift_tmul_smul_mem {b : Af D.host.F} (hb : b ∈ intAf D.host.F) (o : 𝓞 D.host.E) {u : WO S T}
     (hu : u ∈ latAll S T ΛS ΛT) : (pairA D.host.F 0 b ⊗ₜ[D.host.F] (o : D.host.E)) • u ∈ latAll S T ΛS ΛT := by
@@ -355,8 +419,8 @@ theorem liftE_mul (y : EAf D) (z : AE D) : liftE y * z = liftE (y * toEAf D z) :
     intro x
     induction x using TensorProduct.inductionOn with
     | tmul a b => simp
-    | add x y hx hy => simp only [map_add (f := _), hx, hy]
-  rw [liftE, liftE, lift_mul, map_mul]
+    | add x y hx hy => rw [ae_add, ae_add, hx, hy]
+  rw [liftE, liftE, lift_mul, ae_mul]
   congr 2
   exact (hc (finPart D z)).symm
 
@@ -367,17 +431,17 @@ theorem liftE_mul_liftE (y y' : EAf D) : liftE y * liftE y' = liftE (y * y') := 
   rw [liftE_mul, toEAf_liftE]
 
 theorem liftE_add (y y' : EAf D) : liftE (D := D) (y + y') = liftE y + liftE y' := by
-  simp only [liftE, map_add (f := _), lift_add]
+  simp only [liftE, ae_add, lift_add]
 
 theorem liftE_zero : liftE (D := D) 0 = 0 := by
-  simp only [liftE, map_zero, lift_zero]
+  simp only [liftE, ae_zero, lift_zero]
 
 theorem liftE_neg (y : EAf D) : liftE (D := D) (-y) = -liftE y := by
-  simp only [liftE, map_neg, lift_neg]
+  simp only [liftE, ae_neg, lift_neg]
 
 theorem liftE_sum {ι : Type} (s : Finset ι) (f : ι → EAf D) : liftE (D := D) (∑ i ∈ s, f i) = ∑ i ∈ s, liftE (f i) := by
 
-  simp only [liftE, map_sum, lift_sum]
+  simp only [liftE, ae_sum, lift_sum]
 
 theorem liftE_smul_mem {z : EAf D} (hz : z ∈ Formalism.L2.Herm.intAf D.host.F D.host.E) :
     ∀ u ∈ latAll S T ΛS ΛT, liftE z • u ∈ latAll S T ΛS ΛT := by
@@ -414,7 +478,7 @@ abbrev sR (D : D7) : EAf D →+* EAf D := Formalism.UG.sigR D.sp.cm.sig (Af D.ho
 theorem toEAf_cA (x : AE D) : toEAf D (cA D x) = sR D (toEAf D x) := by
   induction x using TensorProduct.inductionOn with
   | tmul a w => rfl
-  | add x y hx hy => rw [map_add (f := _), map_add (f := _), hx, hy, map_add (f := _), map_add (f := _)]
+  | add x y hx hy => rw [rh_add, rh_add, hx, hy, rh_add, rh_add]
 
 theorem toEAf_incA (w : D.host.E) : toEAf D (incA D w) = eToEAf D w := by
   show (Algebra.TensorProduct.comm D.host.F (Af D.host.F) D.host.E)
@@ -437,11 +501,11 @@ theorem sR_mem_intAf {z : EAf D} (hz : z ∈ Formalism.L2.Herm.intAf D.host.F D.
     · apply Subring.subset_closure
       right
       exact ⟨⟨y, hy⟩, by show _ = (star (1 : D.host.E)) ⊗ₜ[D.host.F] y; rw [star_one]⟩
-  | zero => rw [map_zero]; exact zero_mem _
+  | zero => rw [rh_zero]; exact zero_mem _
   | one => rw [map_one]; exact one_mem _
-  | add x y _ _ hx hy => rw [map_add]; exact add_mem hx hy
-  | neg x _ hx => rw [map_neg]; exact neg_mem hx
-  | mul x y _ _ hx hy => rw [map_mul]; exact mul_mem hx hy
+  | add x y _ _ hx hy => rw [rh_add]; exact add_mem hx hy
+  | neg x _ hx => rw [rh_neg]; exact neg_mem hx
+  | mul x y _ _ hx hy => rw [rh_mul]; exact mul_mem hx hy
 
 def genE (c : EAf D) (τ : Fin T.rank → EAf D) (σ : Fin S.rank → EAf D) : WO S T :=
   (c • Matrix.vecMulVec τ (Matrix.vecMul (fun k => sR D (σ k)) (S.gram.map (eToEAf D)))).map liftE
@@ -462,7 +526,7 @@ theorem genL_eq_genE (α : Af D.host.F) (a : D.host.E) (s : Fin S.rank → D.hos
   congr 1
 
   rw [show ∑ k, eToEAf D (star (s k)) * eToEAf D (S.gram k j) = eToEAf D (∑ k, star (s k) * S.gram k j) by
-  rw [map_sum]; exact Finset.sum_congr rfl fun k _ => (map_mul _ _ _).symm]
+  rw [rh_sum]; exact Finset.sum_congr rfl fun k _ => (map_mul _ _ _).symm]
   rw [map_mul, map_mul]
   ring
 
@@ -529,7 +593,7 @@ theorem genE_add_right (c : EAf D) (τ : Fin T.rank → EAf D) (σ σ' : Fin S.r
     genE c τ (σ + σ') = genE (S := S) c τ σ + genE c τ σ' := by
   ext i j
   simp only [genE, Matrix.map_apply, Matrix.smul_apply, Matrix.vecMulVec_apply, Matrix.add_apply, Pi.add_apply,
-    smul_eq_mul, ← liftE_add, map_add]
+    smul_eq_mul, ← liftE_add, rh_add]
   rw [show (fun k => sR D (σ k) + sR D (σ' k)) = (fun k => sR D (σ k)) + (fun k => sR D (σ' k)) from rfl,
     Matrix.add_vecMul, Pi.add_apply]
   congr 1; ring
@@ -538,7 +602,7 @@ theorem genE_smul_right (c z : EAf D) (τ : Fin T.rank → EAf D) (σ : Fin S.ra
     genE c τ (z • σ) = liftE (sR D z) • genE (S := S) c τ σ := by
   ext i j
   simp only [genE, Matrix.map_apply, Matrix.smul_apply, Matrix.vecMulVec_apply, Pi.smul_apply, smul_eq_mul,
-    liftE_mul_liftE, map_mul]
+    liftE_mul_liftE, rh_mul]
   rw [show (fun k => sR D z * sR D (σ k)) = sR D z • (fun k => sR D (σ k)) from rfl, Matrix.smul_vecMul, Pi.smul_apply,
     smul_eq_mul]
   congr 1; ring
@@ -587,9 +651,7 @@ theorem St_mulVec_mem {n : ℕ} {β : GL (Fin n) (EAf D)} {Λ : Submodule (𝓞 
   have e : β⁻¹ * Formalism.L2.DIV.frGL β y = Formalism.L2.DIV.intGL D.host.F D.host.E n y * β⁻¹ := by
     show β⁻¹ * (β * Formalism.L2.DIV.intGL D.host.F D.host.E n y * β⁻¹) = _
     group
-  have e2 : ((β⁻¹ : GL (Fin n) (EAf D)) : Matrix (Fin n) (Fin n) (EAf D)) *ᵥ
-      (((Formalism.L2.DIV.frGL β y : GL (Fin n) (EAf D)) : Matrix (Fin n) (Fin n) (EAf D)) *ᵥ v) =
-      intM y *ᵥ (((β⁻¹ : GL (Fin n) (EAf D)) : Matrix (Fin n) (Fin n) (EAf D)) *ᵥ v) := by
+  have e2 : (β⁻¹).val *ᵥ ((Formalism.L2.DIV.frGL β y).val *ᵥ v) = intM y *ᵥ ((β⁻¹).val *ᵥ v) := by
     rw [Matrix.mulVec_mulVec, ← Units.val_mul, e, Units.val_mul, ← Matrix.mulVec_mulVec]; rfl
   intro i
   rw [e2]
@@ -651,8 +713,7 @@ theorem col_mem_hatL {n : ℕ} {β : GL (Fin n) (EAf D)} {Λ : Submodule (𝓞 D
     (fun i => (β : Matrix (Fin n) (Fin n) (EAf D)) i j) ∈ Formalism.L2.Herm.hatL (F := D.host.F) Λ := by
   rw [hf]
   intro i
-  have e : (fun i => (β : Matrix (Fin n) (Fin n) (EAf D)) i j) =
-      (β : Matrix (Fin n) (Fin n) (EAf D)) *ᵥ Pi.single j 1 := by
+  have e : (fun i => β.val i j) = β.val *ᵥ Pi.single j 1 := by
     funext i; rw [Matrix.mulVec_single_one]; rfl
   rw [e, Matrix.mulVec_mulVec, Units.inv_mul, Matrix.one_mulVec]
   by_cases hij : i = j
@@ -671,7 +732,7 @@ theorem hform_int {V : HSp D} {Λ : Submodule (𝓞 D.host.E) (Fin V.rank → D.
     have e : (fun k => sR D (eToEAf D (s k))) ⬝ᵥ (V.gram.map (eToEAf D) *ᵥ fun i => eToEAf D (s₂ i)) =
         eToEAf D (∑ i, ∑ j, star (s i) * V.gram i j * s₂ j) := by
 
-      simp only [dotProduct, Matrix.mulVec, Matrix.map_apply, sR_eTo, map_sum, map_mul, Finset.mul_sum]
+      simp only [dotProduct, Matrix.mulVec, Matrix.map_apply, sR_eTo, rh_sum, rh_mul, Finset.mul_sum]
       exact Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => by ring
     show (fun k => sR D (eToEAf D (s k))) ⬝ᵥ (V.gram.map (eToEAf D) *ᵥ fun i => eToEAf D (s₂ i)) ∈ _
     rw [e, ← hb]
@@ -699,20 +760,20 @@ theorem frMapO_mapLiftE {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (
 
 theorem frMapO_add {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (EAf D)} (t t' : WO S T) :
     frMapO S T βS βT (t + t') = frMapO S T βS βT t + frMapO S T βS βT t' := by
-  simp [frMapO, Matrix.mul_add, Matrix.add_mul, Matrix.map_add (f := _)]
+  unfold frMapO; rw [mat_map_add, Matrix.mul_add, Matrix.add_mul]
 
 theorem frMapO_zero {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (EAf D)} :
     frMapO S T βS βT 0 = 0 := by
-  simp [frMapO]
+  unfold frMapO; rw [mat_map_zero, Matrix.mul_zero, Matrix.zero_mul]
 
 theorem frMapO_neg {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (EAf D)} (t : WO S T) :
     frMapO S T βS βT (-t) = -frMapO S T βS βT t := by
-  simp [frMapO, Matrix.map_neg, Matrix.mul_neg, Matrix.neg_mul]
+  unfold frMapO; rw [mat_map_neg, Matrix.mul_neg, Matrix.neg_mul]
 
 theorem infPart_of_splitIdem {e : AE D} (he : IsSplitIdem D e) : infPart D e = 0 := by
   obtain ⟨h1, h2, v, ε, ⟨α, rfl, _, _⟩, hε⟩ := he
   have : e = e * algebraMap (AF D.host.F) (AE D) (pairA D.host.F 0 α) := by rw [← hε, mul_add, h1, h2, add_zero]
-  rw [this, map_mul]
+  rw [this, rh_mul]
   have h0 : infPart D (algebraMap (AF D.host.F) (AE D) (pairA D.host.F 0 α)) = 0 := by
     rw [Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self, RingHom.id_apply]
     show (fstA D.host.F (pairA D.host.F 0 α)) ⊗ₜ[D.host.F] (1 : D.host.E) = 0
@@ -722,14 +783,14 @@ theorem infPart_of_splitIdem {e : AE D} (he : IsSplitIdem D e) : infPart D e = 0
 theorem infPart_of_idemSum {e : AE D} {P : Finset (Formalism.L2.DIV.Pl D.host.E)} (he : IsIdemSum e P) : infPart D e = 0 := by
   obtain ⟨⟨es, hes, rfl⟩, _⟩ := he
 
-  rw [map_sum]
+  rw [rh_sum]
   exact Finset.sum_eq_zero fun PP hPP => infPart_of_splitIdem (hes PP hPP).1
 
 theorem comm_comm' (y : Af D.host.F ⊗[D.host.F] D.host.E) :
     Algebra.TensorProduct.comm D.host.F D.host.E (Af D.host.F) (Algebra.TensorProduct.comm D.host.F (Af D.host.F) D.host.E y) = y := by
   induction y using TensorProduct.inductionOn with
   | tmul a b => simp
-  | add x y hx hy => simp only [map_add (f := _), hx, hy]
+  | add x y hx hy => rw [ae_add, ae_add, hx, hy]
 
 theorem liftE_toEAf (x : AE D) (hx : infPart D x = 0) : liftE (toEAf D x) = x := by
   unfold liftE
@@ -742,29 +803,29 @@ theorem hO_add_left (x x' y : WO S T) : hO S T (x + x') y = hO S T x y + hO S T 
   unfold hO; simp only [Matrix.add_apply, mul_add, ← Finset.sum_add_distrib]
 
 theorem hO_add_right (x y y' : WO S T) : hO S T x (y + y') = hO S T x y + hO S T x y' := by
-  unfold hO; simp only [Matrix.add_apply, map_add (f := _), mul_add, add_mul, ← Finset.sum_add_distrib]
+  unfold hO; simp only [Matrix.add_apply, rh_add, mul_add, add_mul, ← Finset.sum_add_distrib]
 
 theorem symplOH_add_left (x x' y : WO S T) :
     symplOH S T (x + x') y = symplOH S T x y + symplOH S T x' y := by
-  unfold symplOH symplO; rw [hO_add_left, mul_add, map_add (f := _), mul_add]
+  unfold symplOH symplO; rw [hO_add_left, mul_add, lm_add, mul_add]
 
 theorem symplOH_add_right (x y y' : WO S T) :
     symplOH S T x (y + y') = symplOH S T x y + symplOH S T x y' := by
-  unfold symplOH symplO; rw [hO_add_right, mul_add, map_add (f := _), mul_add]
+  unfold symplOH symplO; rw [hO_add_right, mul_add, lm_add, mul_add]
 
 theorem hO_half_zero {e : AE D} (hec : e * cA D e = 0) {x y : WO S T} (hx : IsHalf e x) (hy : IsHalf e y) :
     hO S T x y = 0 := by
   unfold hO
   refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun b _ => Finset.sum_eq_zero fun c _ =>
     Finset.sum_eq_zero fun d _ => ?_
-  rw [← hx d a, ← hy c b, map_mul]
+  rw [← hx d a, ← hy c b, rh_mul]
   calc incA D (S.gram⁻¹ a b) * (cA D e * cA D (y c b)) * incA D (T.gram c d) * (e * x d a)
       = (e * cA D e) * (incA D (S.gram⁻¹ a b) * cA D (y c b) * incA D (T.gram c d) * x d a) := by ring
     _ = 0 := by rw [hec, zero_mul]
 
 theorem symplOH_half_zero {e : AE D} (hec : e * cA D e = 0) {x y : WO S T} (hx : IsHalf e x) (hy : IsHalf e y) :
     symplOH S T x y = 0 := by
-  unfold symplOH symplO; rw [hO_half_zero hec hx hy, mul_zero, map_zero, mul_zero]
+  unfold symplOH symplO; rw [hO_half_zero hec hx hy, mul_zero, lm_zero, mul_zero]
 
 theorem heisO_zero (ψ : AddChar (AF D.host.F) ℂ) (f : WO S T → ℂ) : heisO ψ S T 0 f = f := by
   funext w
@@ -821,18 +882,18 @@ theorem cA_mem_intAE {y : Af D.host.F ⊗[D.host.F] D.host.E} (hy : y ∈ intAE 
   | mem z hz =>
     obtain ⟨b, hb, o, rfl⟩ := hz
     exact AddSubgroup.subset_closure ⟨b, hb, ⟨_, isIntegral_star' o⟩, rfl⟩
-  | zero => rw [map_zero]; exact zero_mem _
-  | add x y _ _ hx hy => rw [map_add]; exact add_mem hx hy
-  | neg x _ hx => rw [map_neg]; exact neg_mem hx
+  | zero => rw [rh_zero]; exact zero_mem _
+  | add x y _ _ hx hy => rw [rh_add]; exact add_mem hx hy
+  | neg x _ hx => rw [rh_neg]; exact neg_mem hx
 
 theorem finPart_cA (x : AE D) : finPart D (cA D x) = Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.sigR (Af D.host.F) D.sp.cm.sig (finPart D x) := by
   induction x using TensorProduct.inductionOn with
   | tmul a w => rfl
-  | add x y hx hy => rw [map_add (f := _), map_add (f := _), hx, hy, map_add (f := _), map_add (f := _)]
+  | add x y hx hy => rw [rh_add, rh_add, hx, hy, rh_add, rh_add]
 
 theorem isSplitIdem_cA {e : AE D} (he : IsSplitIdem D e) : IsSplitIdem D (cA D e) := by
   obtain ⟨h1, h2, v, ε, hv, hε⟩ := he
-  refine ⟨by rw [← map_mul, h1], by rw [cA_cA, mul_comm, h2], v, ε, hv, by rw [cA_cA, add_comm, hε]⟩
+  refine ⟨by rw [← rh_mul, h1], by rw [cA_cA, mul_comm, h2], v, ε, hv, by rw [cA_cA, add_comm, hε]⟩
 
 
 
@@ -855,7 +916,7 @@ theorem heisO_fix_of_latVac (ψ : AddChar (AF D.host.F) ℂ) {f₀ : WO S T → 
   · have hec' : cA D (∑ PP ∈ P, es PP) * cA D (cA D (∑ PP ∈ P, es PP)) = 0 := by rw [cA_cA, mul_comm, hec]
     have hu' : u = ∑ PP ∈ P, cA D (es PP) • u := by
 
-      rw [← Finset.sum_smul, ← map_sum]; ext i j; simp only [Matrix.smul_apply, smul_eq_mul, hh i j]
+      rw [← Finset.sum_smul, ← rh_sum]; ext i j; simp only [Matrix.smul_apply, smul_eq_mul, hh i j]
     rw [hu']
     refine heisO_fix_sum ψ hec' P _ f₀ (fun PP _ i j => ?_) (fun PP hPP => ?_)
     · simp only [Matrix.smul_apply, smul_eq_mul]
@@ -875,7 +936,7 @@ theorem sR_sR (z : EAf D) : sR D (sR D z) = z := by
   | tmul a b =>
     rw [show sR D (a ⊗ₜ[D.host.F] b) = (star a) ⊗ₜ b from rfl,
       show sR D ((star a) ⊗ₜ[D.host.F] b) = (star (star a)) ⊗ₜ b from rfl, star_star]
-  | add x y hx hy => rw [map_add (f := _), map_add (f := _), hx, hy]
+  | add x y hx hy => rw [rh_add, rh_add, hx, hy]
 
 abbrev GE (V : HSp D) : Matrix (Fin V.rank) (Fin V.rank) (EAf D) := V.gram.map (eToEAf D)
 
@@ -907,7 +968,7 @@ theorem vecMulVec_transpose {R : Type} [CommRing R] {m n : ℕ} (c : R) (x : Fin
 
 theorem map_smul_vecMulVec {m n : ℕ} (c : EAf D) (x : Fin m → EAf D) (y : Fin n → EAf D) :
     (c • Matrix.vecMulVec x y).map (sR D) = sR D c • Matrix.vecMulVec (fun i => sR D (x i)) (fun j => sR D (y j)) := by
-  ext i j; simp only [Matrix.map_apply, Matrix.smul_apply, Matrix.vecMulVec_apply, smul_eq_mul, map_mul]
+  ext i j; simp only [Matrix.map_apply, Matrix.smul_apply, Matrix.vecMulVec_apply, smul_eq_mul, rh_mul]
 
 
 
@@ -929,15 +990,15 @@ theorem frMapAdj_genE {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (EA
 
 theorem frMapAdj_add {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (EAf D)} (x y : WO S T) :
     frMapAdj S T βS βT (x + y) = frMapAdj S T βS βT x + frMapAdj S T βS βT y := by
-  simp [frMapAdj, Matrix.mul_add, Matrix.add_mul, Matrix.map_add (f := _), Matrix.transpose_add]
+  unfold frMapAdj; rw [mat_map_add, Matrix.transpose_add, Matrix.mul_add, Matrix.add_mul, mat_map_add, Matrix.mul_add, Matrix.add_mul]
 
 theorem frMapAdj_zero {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (EAf D)} :
     frMapAdj S T βS βT 0 = 0 := by
-  simp [frMapAdj]
+  unfold frMapAdj; rw [mat_map_zero, Matrix.transpose_zero, Matrix.mul_zero, Matrix.zero_mul, mat_map_zero, Matrix.mul_zero, Matrix.zero_mul]
 
 theorem frMapAdj_neg {βS : GL (Fin S.rank) (EAf D)} {βT : GL (Fin T.rank) (EAf D)} (x : WO S T) :
     frMapAdj S T βS βT (-x) = -frMapAdj S T βS βT x := by
-  simp [frMapAdj, Matrix.map_neg, Matrix.mul_neg, Matrix.neg_mul, Matrix.transpose_neg]
+  unfold frMapAdj; rw [mat_map_neg, Matrix.transpose_neg, Matrix.mul_neg, Matrix.neg_mul, mat_map_neg, Matrix.mul_neg, Matrix.neg_mul]
 
 
 
@@ -946,7 +1007,7 @@ theorem infPart_cA_idemSum {e : AE D} {P : Finset (Formalism.L2.DIV.Pl D.host.E)
     infPart D (cA D e) = 0 := by
   obtain ⟨⟨es, hes, rfl⟩, _⟩ := he
 
-  rw [map_sum, map_sum]
+  rw [rh_sum, rh_sum]
   exact Finset.sum_eq_zero fun PP hPP => infPart_of_splitIdem (isSplitIdem_cA (hes PP hPP).1)
 
 
