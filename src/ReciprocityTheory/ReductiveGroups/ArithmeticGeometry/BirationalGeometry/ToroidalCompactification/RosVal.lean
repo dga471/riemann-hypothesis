@@ -273,7 +273,7 @@ theorem exists_ros (hG : GlobalFnsSt) (hA : IsAbelianScheme A) (hL : L.IsLB) (f 
 
 variable {Lr : RigLB A} (c : CubicalStr A Lr)
 
-theorem ros_add (hG : GlobalFnsSt) (hA : IsAbelianScheme A) (f g : A ⟶ A) [IsMonHom f] [IsMonHom g]
+theorem ros_add_of_surj (sj : Function.Surjective (A ⊗ A ⊗ A).hom.appTop.hom) (f g : A ⟶ A) [IsMonHom f] [IsMonHom g]
     (u : LB.Gen (LB.LinComb Lr.L (rosatiφ A f g) rosatiε)) (hu : u.IsGen)
     (h₀ : LB.Gen.Corr Lr.L _ _ _ _ (LB.pullGen Lr.L _ _ u (zero2 A)) (LB.oneGen Lr.L)) {T : Over S} {z : T.left} {J}
     (hJ : Good Lr.L z J) (x x' y : T ⟶ A) :
@@ -298,10 +298,7 @@ theorem ros_add (hG : GlobalFnsSt) (hA : IsAbelianScheme A) (f g : A ⟶ A) [IsM
   have e₀ : e ≫ p₀ = 1 := by simp [e, p₀, x3]
   have e₁ : e ≫ p₁ = 1 := by simp [e, p₁, x3]
   have e₂ : e ≫ p₂ = 1 := by simp [e, p₂, x3]
-  have sj : Function.Surjective ((snd A (A ⊗ A)).left ≫ (snd A A).left ≫ A.hom).appTop.hom :=
-    surj_comp (surj_snd hG hA _) (surj_comp (surj_snd hG hA _) (hG _ _ hA).2)
-  have he : e.left ≫ (snd A (A ⊗ A)).left ≫ (snd A A).left ≫ A.hom = 𝟙 _ := by
-    rw [Over.w, Over.w]; exact Over.w e
+  have he : e.left ≫ (A ⊗ A ⊗ A).hom = 𝟙 _ := Over.w e
   let ρ : T ⟶ G3 A := lift x (lift x' y)
   have r₀ : ρ ≫ p₀ = x := by simp [ρ, p₀, x3]
   have r₁ : ρ ≫ p₁ = x' := by simp [ρ, p₁, x3]
@@ -358,5 +355,19 @@ theorem ros_add (hG : GlobalFnsSt) (hA : IsAbelianScheme A) (f g : A ⟶ A) [IsM
       simp only [ofMul_mul, ofMul_inv]
       abel) e₂ o₁ e₂ e₀ e₂ e₁ e₂ (Or.inr e₀)
     rwa [s₁, ← Category.assoc ρ p₂, ← Category.assoc ρ p₀, ← Category.assoc ρ p₁, r₀, r₁, r₂] at this
+
+theorem ros_add (hG : GlobalFnsSt) (hA : IsAbelianScheme A) (f g : A ⟶ A) [IsMonHom f] [IsMonHom g]
+    (u : LB.Gen (LB.LinComb Lr.L (rosatiφ A f g) rosatiε)) (hu : u.IsGen)
+    (h₀ : LB.Gen.Corr Lr.L _ _ _ _ (LB.pullGen Lr.L _ _ u (zero2 A)) (LB.oneGen Lr.L)) {T : Over S} {z : T.left} {J}
+    (hJ : Good Lr.L z J) (x x' y : T ⟶ A) :
+    val₂ u z J (x * x') y * cubV c z J x x' (y ≫ g) =
+        cubV c z J (x ≫ f) (x' ≫ f) y * (val₂ u z J x y * val₂ u z J x' y) ∧
+      val₂ u z J y (x * x') * cubV c z J y (x ≫ g) (x' ≫ g) =
+        cubV c z J (y ≫ f) x x' * (val₂ u z J y x * val₂ u z J y x') := by
+  have sj : Function.Surjective (A ⊗ A ⊗ A).hom.appTop.hom := by
+    have h : (snd A (A ⊗ A)).left ≫ (snd A A).left ≫ A.hom = (A ⊗ A ⊗ A).hom := by rw [Over.w, Over.w]
+    rw [← h]
+    exact surj_comp (surj_snd hG hA _) (surj_comp (surj_snd hG hA _) (hG _ _ hA).2)
+  exact ros_add_of_surj c sj f g u hu h₀ hJ x x' y
 
 end ReciprocityTheory.ChartRestriction.G.Geo.Tor
