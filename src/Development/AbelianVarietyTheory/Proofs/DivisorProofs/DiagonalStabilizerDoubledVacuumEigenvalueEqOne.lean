@@ -67,15 +67,6 @@ theorem lDiag_box_ne_zero (hF : IsTotallyReal F) {κ : Type} [Fintype κ] {Ψ : 
       exact ((continuous_apply _).comp continuous_snd).congr fun y =>
         (congrFun (congrArg Prod.snd ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply y)) ⟨v, hv⟩).symm
   have hg : Continuous (DiagForm.glue : DiagForm.Vi F κ × DiagForm.Vf F κ → κ → AF F) := by
-    have hsymm : Continuous (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm := by
-      refine continuous_pi fun v => ?_
-      rcases v.isReal_or_isComplex with hv | hv
-      · rw [(InfinitePlace.Completion.isometry_extensionEmbeddingOfIsReal hv).isEmbedding.continuous_iff]
-        exact ((continuous_apply _).comp continuous_fst).congr fun y =>
-          (congrFun (congrArg Prod.fst ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply y)) ⟨v, hv⟩).symm
-      · rw [(InfinitePlace.Completion.isometry_extensionEmbedding v).isEmbedding.continuous_iff]
-        exact ((continuous_apply _).comp continuous_snd).congr fun y =>
-          (congrFun (congrArg Prod.snd ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply y)) ⟨v, hv⟩).symm
     refine continuous_pi fun i => Continuous.prodMk ?_ ((continuous_apply i).comp continuous_snd)
     exact hsymm.comp ((continuous_apply i).comp ((DiagForm.eI F κ).continuous.comp continuous_fst))
   have e : DiagForm.resD F κ (boxFun Ψ fun x => star (Ψ x)) =
@@ -199,25 +190,81 @@ theorem val_det_le_one {d : ℕ} (W : Spc F E d) (hL : W.L.IsFullLattice E) {v :
   have h0 : 0 < b ^ Fintype.card (Fin d) := (zero_lt_iff.2 hk).trans_le (by simpa using key 0)
   exact h ((mul_le_iff_le_one_left h0).1 (hn.trans (key n)))
 
-theorem chr_det_eq_one {d : ℕ} (W : Spc F E d) (hL : W.L.IsFullLattice E) {v : Pl (F := F)} {w : HeightOneSpectrum (𝓞 E)}
-    (hw : Formalism.UG.IsInertAt F E v w) {χ : Chr F E} (hχ : UnrAt χ w) (t : GL (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)))
+theorem piE_locIdele_self (P : HeightOneSpectrum (𝓞 E)) (y : (P.adicCompletion E)ˣ) :
+    piE F P (locIdele F P y : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = y := by
+  classical
+  change (finAdEquiv F E (finTens F E (locIdele F P y : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)))) P = _
+  rw [finTens_locIdele, GlobalTheory.CMVal.single_apply]
+  exact Function.update_self _ _ _
+
+theorem piE_locIdele_ne {P Q : HeightOneSpectrum (𝓞 E)} (h : Q ≠ P) (y : (P.adicCompletion E)ˣ) :
+    piE F Q (locIdele F P y : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = 1 := by
+  classical
+  change (finAdEquiv F E (finTens F E (locIdele F P y : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)))) Q = _
+  rw [finTens_locIdele, GlobalTheory.CMVal.single_apply]
+  exact Function.update_of_ne h _ _
+
+theorem eq_one_of_comp {x : (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))ˣ}
+    (h1 : infTens F E x = 1)
+    (h2 : ∀ P, piE F P (x : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = 1) :
+    x = 1 := by
+  refine Units.ext (tens_ext (h1.trans (map_one _).symm) ((finAdEquiv F E).injective ?_))
+  refine FiniteAdeleRing.ext _ fun P => ?_
+  rw [Units.val_one, map_one, map_one]
+  exact h2 P
+
+theorem chr_eq_one_of_supp (χ : Chr F E) (S : Finset (HeightOneSpectrum (𝓞 E))) (hχ : ∀ P ∈ S, UnrAt χ P)
+    (x : (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))ˣ)
+    (h1 : infTens F E x = 1)
+    (hoff : ∀ P ∉ S, piE F P (x : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = 1)
+    (hu : ∀ P ∈ S, Valued.v (piE F P (x : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) = 1) :
+    χ x = 1 := by
+  classical
+  induction S using Finset.induction_on generalizing x with
+  | empty =>
+    rw [eq_one_of_comp h1 fun P => hoff P (Finset.notMem_empty P), map_one]
+  | insert P S hPS ih =>
+    let y : (P.adicCompletion E)ˣ := Units.map (piE F P).toMonoidHom x
+    have hy : Formalism.L2.Host.IsUnitAt P y := hu P (Finset.mem_insert_self P S)
+    have hl : χ (locIdele F P y) = 1 := Circle.ext (congrArg Units.val (hχ P (Finset.mem_insert_self P S) y hy))
+    set x' := x * (locIdele F P y)⁻¹ with hx'
+    have ex : (x' : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) * (locIdele F P y : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = x := by
+      rw [hx', Units.val_mul, mul_assoc, Units.inv_mul, mul_one]
+    have hcomp : ∀ {R : Type} [CommRing R] (φ : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E) →+* R), φ (locIdele F P y : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = 1 →
+        φ (x' : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = φ x := fun φ h => by rw [← ex, map_mul, h, mul_one]
+    have hx : x = x' * locIdele F P y := by rw [hx', inv_mul_cancel_right]
+    rw [hx, map_mul, hl, mul_one]
+    refine ih (fun Q hQ => hχ Q (Finset.mem_insert_of_mem hQ)) x' ?_ (fun Q hQ => ?_) (fun Q hQ => ?_)
+    · rw [hcomp _ (infTens_locIdele P y), h1]
+    · by_cases hQP : Q = P
+      · subst hQP
+        have e := congrArg (piE F Q) ex
+        rw [map_mul, piE_locIdele_self] at e
+        have h0 : (piE F Q (x : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) ≠ 0 := (Units.map (piE F Q).toMonoidHom x).ne_zero
+        exact mul_right_cancel₀ h0 (e.trans (one_mul _).symm)
+      · rw [hcomp _ (piE_locIdele_ne hQP y)]
+        exact hoff Q (by simp [hQP, hQ])
+    · have hQP : Q ≠ P := fun h => hPS (h ▸ hQ)
+      rw [hcomp _ (piE_locIdele_ne hQP y)]
+      exact hu Q (Finset.mem_insert_of_mem hQ)
+
+theorem finite_under_eq (v : Pl (F := F)) : {P : HeightOneSpectrum (𝓞 E) | P.under (𝓞 F) = v}.Finite := by
+  have h0 : Ideal.map (algebraMap (𝓞 F) (𝓞 E)) v.asIdeal ≠ 0 := by
+    rw [Ne, Ideal.zero_eq_bot, Ideal.map_eq_bot_iff_of_injective (FaithfulSMul.algebraMap_injective _ _)]
+    exact v.ne_bot
+  refine (Ideal.finite_factors h0).subset fun P hP => ?_
+  simp only [Set.mem_setOf_eq] at hP ⊢
+  rw [Ideal.dvd_iff_le, Ideal.map_le_iff_le_comap, ← hP]
+  exact le_rfl
+
+theorem chr_det_eq_one_any {d : ℕ} (W : Spc F E d) (hL : W.L.IsFullLattice E) {v : Pl (F := F)} {χ : Chr F E}
+    (hχ : ∀ P : HeightOneSpectrum (𝓞 E), P.under (𝓞 F) = v → UnrAt χ P) (t : GL (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)))
     (h1 : At (evFin F v) ((t : Matrix (Fin d) (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) - 1))
     (ht : ∀ z ∈ GlobalTheory.InertSph.latAt W v, (t : Matrix (Fin d) (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) *ᵥ z ∈ GlobalTheory.InertSph.latAt W v ∧
       ((t⁻¹ : GL (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) : Matrix (Fin d) (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) *ᵥ z ∈ GlobalTheory.InertSph.latAt W v) :
     χ (Matrix.GeneralLinearGroup.det t) = 1 := by
   classical
-  have hu := under_eq_of_isInertAt hw
   set δ := Matrix.GeneralLinearGroup.det t with hδ
-  let y : (w.adicCompletion E)ˣ := Units.map (piE F w).toMonoidHom δ
-  have hy : Formalism.L2.Host.IsUnitAt w y := by
-    have a1 : Valued.v (y : w.adicCompletion E) ≤ 1 := val_det_le_one W hL hu _ fun z hz => (ht z hz).1
-    have a2 : Valued.v ((y⁻¹ : (w.adicCompletion E)ˣ) : w.adicCompletion E) ≤ 1 := by
-      have := val_det_le_one W hL hu _ fun z hz => (ht z hz).2
-      rw [← Matrix.GeneralLinearGroup.val_det_apply, map_inv] at this
-      exact this
-    have h0 : 0 < Valued.v (y : w.adicCompletion E) := zero_lt_iff.2 ((Valuation.ne_zero_iff _).2 y.ne_zero)
-    rw [Units.val_inv_eq_inv_val, map_inv₀, inv_le_one₀ h0] at a2
-    exact le_antisymm a1 a2
   have hN := h1 (1 - GlobalTheory.LatVac.liftV v 1) (by rw [map_sub, map_one, GlobalTheory.LatVac.evFin_liftV, sub_self])
   have hφ : ∀ {R : Type} [CommRing R] (φ : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E) →+* R),
       φ (algebraMap (AF F) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) (GlobalTheory.LatVac.liftV v 1)) = 0 → φ (δ : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) = 1 := by
@@ -229,26 +276,38 @@ theorem chr_det_eq_one {d : ℕ} (W : Spc F E d) (hL : W.L.IsFullLattice E) {v :
         Matrix.sub_apply, map_sub, Matrix.zero_apply, map_zero, sub_eq_zero] at h2
       exact h2
     rw [hδ, Matrix.GeneralLinearGroup.val_det_apply, RingHom.map_det, this, map_one, Matrix.det_one]
-  have e : δ = locIdele F w y := by
-    refine eq_locIdele (hφ _ (TensorProduct.zero_tmul _ _)) (FiniteAdeleRing.ext _ fun P => ?_)
-    change piE F P δ = _
-    rw [GlobalTheory.CMVal.single_apply]
-    by_cases hP : P = w
-    · subst hP; rw [Function.update_self]; rfl
-    · rw [Function.update_of_ne hP]
-      refine hφ _ ?_
-      have hPv : P.under (𝓞 F) ≠ v := fun h => hP (by
-        refine (HeightOneSpectrum.ext (w.isMaximal.eq_of_le P.isPrime.ne_top ?_)).symm
-        rw [← show Ideal.map _ _ = w.asIdeal from hw, Ideal.map_le_iff_le_comap, ← h]
-        exact le_rfl)
-      rw [piE_algebraMap rfl]
-      exact (congrArg _ (evalV_singleFin_ne hPv 1)).trans (map_zero _)
-  rw [e]
-  exact Circle.ext (congrArg Units.val (hχ y hy))
+  refine chr_eq_one_of_supp χ (finite_under_eq (E := E) v).toFinset
+    (fun P hP => hχ P ((finite_under_eq v).mem_toFinset.1 hP)) δ (hφ _ (TensorProduct.zero_tmul _ _))
+    (fun P hP => ?_) (fun P hP => ?_)
+  · have hPv : P.under (𝓞 F) ≠ v := fun h => hP ((finite_under_eq v).mem_toFinset.2 h)
+    refine hφ _ ?_
+    rw [piE_algebraMap rfl]
+    exact (congrArg _ (evalV_singleFin_ne hPv 1)).trans (map_zero _)
+  · have hu : P.under (𝓞 F) = v := (finite_under_eq v).mem_toFinset.1 hP
+    let y : (P.adicCompletion E)ˣ := Units.map (piE F P).toMonoidHom δ
+    have a1 : Valued.v (y : P.adicCompletion E) ≤ 1 := val_det_le_one W hL hu _ fun z hz => (ht z hz).1
+    have a2 : Valued.v ((y⁻¹ : (P.adicCompletion E)ˣ) : P.adicCompletion E) ≤ 1 := by
+      have := val_det_le_one W hL hu _ fun z hz => (ht z hz).2
+      rw [← Matrix.GeneralLinearGroup.val_det_apply, map_inv] at this
+      exact this
+    have h0 : 0 < Valued.v (y : P.adicCompletion E) := zero_lt_iff.2 ((Valuation.ne_zero_iff _).2 y.ne_zero)
+    rw [Units.val_inv_eq_inv_val, map_inv₀, inv_le_one₀ h0] at a2
+    exact le_antisymm a1 a2
 
-theorem eigen_eq_one_of_diag : ∀ (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E] (σ : E →ₐ[F] E) (B : Base F E)
+theorem chr_det_eq_one {d : ℕ} (W : Spc F E d) (hL : W.L.IsFullLattice E) {v : Pl (F := F)} {w : HeightOneSpectrum (𝓞 E)}
+    (hw : Formalism.UG.IsInertAt F E v w) {χ : Chr F E} (hχ : UnrAt χ w) (t : GL (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)))
+    (h1 : At (evFin F v) ((t : Matrix (Fin d) (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) - 1))
+    (ht : ∀ z ∈ GlobalTheory.InertSph.latAt W v, (t : Matrix (Fin d) (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) *ᵥ z ∈ GlobalTheory.InertSph.latAt W v ∧
+      ((t⁻¹ : GL (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) : Matrix (Fin d) (Fin d) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) *ᵥ z ∈ GlobalTheory.InertSph.latAt W v) :
+    χ (Matrix.GeneralLinearGroup.det t) = 1 :=
+  chr_det_eq_one_any W hL (fun P hP => by
+    have hPw : P = w := (HeightOneSpectrum.ext (w.isMaximal.eq_of_le P.isPrime.ne_top (by
+      rw [← show Ideal.map _ _ = w.asIdeal from hw, Ideal.map_le_iff_le_comap, ← hP]; exact le_rfl))).symm
+    exact hPw ▸ hχ) t h1 ht
+
+theorem eigen_eq_one_of_diag_any : ∀ (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E] (σ : E →ₐ[F] E) (B : Base F E)
     (a a' : ℕ) (G : Geo σ a a') (X : Chars F E) (om : Rep σ G.V G.W) (om' : Rep σ G.V' G.W), IsTriple B G X om om' →
-    ∀ (v : Pl (F := F)) (w : HeightOneSpectrum (𝓞 E)), Formalism.UG.IsInertAt F E v w → v ∉ X.T →
+    ∀ (v : Pl (F := F)), v ∉ X.T →
     ∀ (dd : Darboux (symp (_root_.Algebra.TensorProduct.map (_root_.AlgHom.id (AF F) (AF F)) σ) (-1 : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.V.J) (dbl ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.W.J))) ((Fin a × Fin (a + a')) ⊕ (Fin a × Fin (a + a'))))
       (omd : GlobalTheory.DblVac.UD σ G.W →* Module.End ℂ (((Fin a × Fin (a + a')) ⊕ (Fin a × Fin (a + a')) → AF F) → ℂ)),
     IsDblCoord (_root_.Algebra.TensorProduct.map (_root_.AlgHom.id (AF F) (AF F)) σ) (-1 : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.V.J) ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.W.J) G.M.co dd →
@@ -257,7 +316,7 @@ theorem eigen_eq_one_of_diag : ∀ (F E : Type) [Field F] [NumberField F] [Field
     ∀ p ∈ GlobalTheory.DblVac.KD σ G.W v, p ∈ GlobalTheory.DblVac.PDiag σ G.W → ∀ μ : ℂ,
       omd p (boxFun (tens (evFin F v) (G.M.vac v) r) (fun x => star (tens (evFin F v) (G.M.vac v) r x))) =
         μ • boxFun (tens (evFin F v) (G.M.vac v) r) (fun x => star (tens (evFin F v) (G.M.vac v) r x)) → μ = 1 := by
-  intro F E _ _ _ _ _ σ B a a' G X om om' hT v w hw hv dd omd hdd hW r hr h0 p hp hpd μ hμ
+  intro F E _ _ _ _ _ σ B a a' G X om om' hT v hv dd omd hdd hW r hr h0 p hp hpd μ hμ
   obtain ⟨t, ht₀⟩ := hpd
   have ht : GlobalTheory.DblVac.matD p * (diagCols (Fin (a + a')) : Matrix (Fin (a + a') ⊕ Fin (a + a')) (Fin (a + a')) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) =
       (diagCols (Fin (a + a')) : Matrix (Fin (a + a') ⊕ Fin (a + a')) (Fin (a + a')) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) * (t : Matrix (Fin (a + a')) (Fin (a + a')) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) := ht₀
@@ -287,8 +346,8 @@ theorem eigen_eq_one_of_diag : ∀ (F E : Type) [Field F] [NumberField F] [Field
           rw [Matrix.mul_assoc, Matrix.mul_assoc, t.mul_inv, Matrix.mul_one]
       _ = _ := by rw [← ht, ← Matrix.mul_assoc, e1, Matrix.one_mul]
   have hβ : X.β (Matrix.GeneralLinearGroup.det t) = 1 := by
-    refine chr_det_eq_one G.W hT.geo.hW.lat hw (hT.chars.unrβ w fun h => hv ?_) t (fun u hu => ?_) fun z hz => ?_
-    · rw [← under_eq_of_isInertAt hw]; exact h
+    refine chr_det_eq_one_any (v := v) G.W hT.geo.hW.lat (fun P hP => hT.chars.unrβ P fun h => hv (hP ▸ (h : P.under (𝓞 F) ∈ (X.T : Set (Pl (F := F)))))) t
+      (fun u hu => ?_) fun z hz => ?_
     · have e1 : (GlobalTheory.DblVac.matD p - 1) * (diagCols (Fin (a + a')) : Matrix (Fin (a + a') ⊕ Fin (a + a')) (Fin (a + a')) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) =
           (diagCols (Fin (a + a')) : Matrix (Fin (a + a') ⊕ Fin (a + a')) (Fin (a + a')) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) * ((t : Matrix (Fin (a + a')) (Fin (a + a')) (_root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E))) - 1) := by
         rw [Matrix.sub_mul, Matrix.mul_sub, ht, Matrix.one_mul, Matrix.mul_one]
@@ -299,11 +358,24 @@ theorem eigen_eq_one_of_diag : ∀ (F E : Type) [Field F] [NumberField F] [Field
       exact congrFun (congrFun e2 (Sum.inl i)) j
     · have hz' := hp.2 (Sum.elim z z) ⟨hz, hz⟩
       exact ⟨hvec p _ ht z ▸ hz'.1.1, hvec p⁻¹ _ ht' z ▸ hz'.2.1⟩
-  have hm := congrArg (DiagForm.lDiag F (Fin a × Fin (a + a'))) hμ
-  rw [map_smul, smul_eq_mul] at hm
-  rw [hβ, Circle.coe_one, one_mul] at hrule
-  have hμ' := mul_right_cancel₀ hl (hm.symm.trans hrule)
+  have hrule' := (congrArg (DiagForm.lDiag F (Fin a × Fin (a + a'))) hμ).symm.trans hrule
+  simp only [map_smul, smul_eq_mul, hβ, Circle.coe_one, one_mul] at hrule'
+  have hμ' := mul_right_cancel₀ hl hrule'
   rw [hμ', Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (NNReal.coe_nonneg _) _)] at hn
   rw [hμ', hn, Complex.ofReal_one]
+
+theorem eigen_eq_one_of_diag : ∀ (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E] (σ : E →ₐ[F] E) (B : Base F E)
+    (a a' : ℕ) (G : Geo σ a a') (X : Chars F E) (om : Rep σ G.V G.W) (om' : Rep σ G.V' G.W), IsTriple B G X om om' →
+    ∀ (v : Pl (F := F)) (w : HeightOneSpectrum (𝓞 E)), Formalism.UG.IsInertAt F E v w → v ∉ X.T →
+    ∀ (dd : Darboux (symp (_root_.Algebra.TensorProduct.map (_root_.AlgHom.id (AF F) (AF F)) σ) (-1 : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.V.J) (dbl ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.W.J))) ((Fin a × Fin (a + a')) ⊕ (Fin a × Fin (a + a'))))
+      (omd : GlobalTheory.DblVac.UD σ G.W →* Module.End ℂ (((Fin a × Fin (a + a')) ⊕ (Fin a × Fin (a + a')) → AF F) → ℂ)),
+    IsDblCoord (_root_.Algebra.TensorProduct.map (_root_.AlgHom.id (AF F) (AF F)) σ) (-1 : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.V.J) ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.W.J) G.M.co dd →
+    IsUWeilSplit (_root_.Algebra.TensorProduct.map (_root_.AlgHom.id (AF F) (AF F)) σ) (adeleClass F) B.ψ (-1 : _root_.GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.AE (F := F) (E := E)) ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.V.J) (dbl ((_root_.Matrix.map · (_root_.Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (F := F) (AF F))) G.W.J)) dd X.β (diagCols (Fin (a + a'))) omd →
+    ∀ r : (Fin a × Fin (a + a') → AF F) → ℂ, Rest (evFin F v) (G.M.vac v) r → tens (evFin F v) (G.M.vac v) r ≠ 0 →
+    ∀ p ∈ GlobalTheory.DblVac.KD σ G.W v, p ∈ GlobalTheory.DblVac.PDiag σ G.W → ∀ μ : ℂ,
+      omd p (boxFun (tens (evFin F v) (G.M.vac v) r) (fun x => star (tens (evFin F v) (G.M.vac v) r x))) =
+        μ • boxFun (tens (evFin F v) (G.M.vac v) r) (fun x => star (tens (evFin F v) (G.M.vac v) r x)) → μ = 1 :=
+  fun F E _ _ _ _ _ σ B a a' G X om om' hT v _ _ hv =>
+    eigen_eq_one_of_diag_any F E σ B a a' G X om om' hT v hv
 
 end GlobalTheory.DblVacSiegel
