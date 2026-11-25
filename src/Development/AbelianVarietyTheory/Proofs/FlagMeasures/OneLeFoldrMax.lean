@@ -159,12 +159,12 @@ theorem absBd_le (r k : ℕ) (b v Q A De Dd C M m : ℝ) (hr : 1 ≤ r) (hm : m 
         rw [Real.mul_rpow (by positivity) (by linarith)]
         gcongr
 
-theorem abs_range : ∀ Cg cb Cu cT CT C0 C1 CMo : ℝ, ∃ C₀ : ℝ, ∀ C ≥ C₀, ∃ m₀ : ℝ, ∀ Cn : ℝ,
-    ∀ (D : D7) (large₂ : SizeData₂ D) (C' Cl : ℝ), Big D large₂ Cl m₀ → MomIn D large₂ C' Cl Cg cb Cu cT CT C0 Cn C1 25 CMo →
+theorem abs_range_constants_first : ∀ Cg cb Cu cT CT C1 CMo : ℝ, ∃ C₀ : ℝ, ∀ C ≥ C₀, ∃ m₀ : ℝ, ∀ Cn : ℝ,
+    ∀ (D : D7) (large₂ : SizeData₂ D) (C' Cl C0 : ℝ), Big D large₂ Cl m₀ → MomIn D large₂ C' Cl Cg cb Cu cT CT C0 Cn C1 25 CMo →
       ABSr D large₂ C' Cl Cg cb Cu cT CT C0 Cn C1 C := by
-  intro Cg cb Cu cT CT C0 C1 CMo
+  intro Cg cb Cu cT CT C1 CMo
   refine ⟨8 * |C1| + 2 * |Cg| + 46 + 24 * max CMo 0 + 8 * Real.pi * Real.exp 1, fun C hC => ⟨4, ?_⟩⟩
-  intro Cn D large₂ C' Cl hBig hMom hZ τ w w' hTT θ hθ W hW lam' hlam S hS γ p hp θ' hθ' νR hνR hDr
+  intro Cn D large₂ C' Cl C0 hBig hMom hZ τ w w' hTT θ hθ W hW lam' hlam S hS γ p hp θ' hθ' νR hνR hDr
   obtain ⟨hrd, -, hm4⟩ := hBig
   have hm4' : 4 ≤ D.R.m := by exact_mod_cast hm4
   obtain ⟨-, -, hb, hm, -, -, -, hk, hv, -, hka, hvb, hg, hgb, -⟩ :=
@@ -233,5 +233,14 @@ theorem abs_range : ∀ Cg cb Cu cT CT C0 C1 CMo : ℝ, ∃ C₀ : ℝ, ∀ C �
   have c2 : Cg * (D.R.rS : ℝ) ^ 2 ≤ |Cg| * (D.R.m * (D.R.rS : ℝ) ^ 3) :=
     mul_le_mul (le_abs_self _) b2 (by positivity) a2
   nlinarith
+
+theorem abs_range : ∀ Cg cb Cu cT CT C0 C1 CMo : ℝ, ∃ C₀ : ℝ, ∀ C ≥ C₀, ∃ m₀ : ℝ, ∀ Cn : ℝ,
+    ∀ (D : D7) (large₂ : SizeData₂ D) (C' Cl : ℝ), Big D large₂ Cl m₀ → MomIn D large₂ C' Cl Cg cb Cu cT CT C0 Cn C1 25 CMo →
+      ABSr D large₂ C' Cl Cg cb Cu cT CT C0 Cn C1 C := by
+  intro Cg cb Cu cT CT C0 C1 CMo
+  obtain ⟨C₀, hC₀⟩ := abs_range_constants_first Cg cb Cu cT CT C1 CMo
+  refine ⟨C₀, fun C hC => ?_⟩
+  obtain ⟨m₀, hm₀⟩ := hC₀ C hC
+  exact ⟨m₀, fun Cn D large₂ C' Cl => hm₀ Cn D large₂ C' Cl C0⟩
 
 end GlobalTheory.Amp.AbsRange
