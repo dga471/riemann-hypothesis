@@ -143,11 +143,13 @@ def pushEquiv (hF : ArcPull.Compat φ F) : (TF (R := R') F ⟶ D'.P.A) ≃* (TF 
   MulEquiv.ofBijective (MonoidHom.mk' (pushF (pull_grp hD) hF.base) (pushF_mul _ _))
     ⟨pushF_injective (pull_grp hD) hF.base, pushF_surjective (pull_grp hD) hF.base⟩
 
-theorem exists_iso_of_th (hG : GlobalFnsSt) (hF : ArcPull.Compat φ F) {N N' : NumD F} (ν : NumOf D F N)
+theorem exists_iso_of_th_om (hG : GlobalFnsSt) (hF : ArcPull.Compat φ F) {N N' : NumD F} (ν : NumOf D F N)
     (ν' : NumOf D' F N') (z : Sp F) (lam : ((Sp F).presheaf.stalk z)ˣ)
     (hth : ∀ x : TF (R := R') F ⟶ D'.P.A, sval (Z := Sp F) ν.th (x.left ≫ proj hD) z ν.J =
       (lam * om hD.w z ν.J ν'.J x.left).val * sval (Z := Sp F) ν'.th x.left z ν'.J) :
     ∃ I : NumD.Iso N' N, (∀ y, ν.eX (I.e y) = hD.xe (ν'.eX y)) ∧
+      (∀ x, (ν.eA (I.φ x)).left = (ν'.eA x).left ≫ proj hD) ∧
+      (∀ x, stalkUnits z (I.h x) = om hD.w z ν.J ν'.J (ν'.eA x).left * (om hD.w z ν.J ν'.J (ν'.eA 1).left)⁻¹) ∧
       ∀ (g : GtPtF D F) (g' : GtPtF D' F) (c : N.Gt) (c' : N'.Gt), ν.Pt g c → ν'.Pt g' c' →
         IsPullGtF φ hD F g g' → I.Rel c' c := by
   have hJ := good ν z
@@ -169,7 +171,8 @@ theorem exists_iso_of_th (hG : GlobalFnsSt) (hF : ArcPull.Compat φ F) {N N' : N
   refine ⟨{
     φ := Φ, h := h, lam := (stalkUnits z).symm lam, e := e
     h_one := ?_, θ_eq := fun x y u => ?_, σ_eq := fun x => ?_, th_eq := fun x => ?_
-    c_eq := fun χ => ?_, ψ_eq := fun χ => ?_ }, he, fun g g' c c' hg hg' H => ⟨?_, fun χ => ?_⟩⟩
+    c_eq := fun χ => ?_, ψ_eq := fun χ => ?_ }, he, fun x => congrArg (·.left) (hΦ x),
+    fun x => by rw [map_one ν'.eA]; exact hh x, fun g g' c c' hg hg' H => ⟨?_, fun χ => ?_⟩⟩
   · apply (stalkUnits z).injective
     rw [hh, map_one, map_one, mul_inv_cancel]
   · apply (stalkUnits z).injective
@@ -230,6 +233,16 @@ theorem exists_iso_of_th (hG : GlobalFnsSt) (hF : ArcPull.Compat φ F) {N N' : N
     apply Additive.ofMul.injective
     simp only [ofMul_mul, ofMul_inv]
     abel
+
+theorem exists_iso_of_th (hG : GlobalFnsSt) (hF : ArcPull.Compat φ F) {N N' : NumD F} (ν : NumOf D F N)
+    (ν' : NumOf D' F N') (z : Sp F) (lam : ((Sp F).presheaf.stalk z)ˣ)
+    (hth : ∀ x : TF (R := R') F ⟶ D'.P.A, sval (Z := Sp F) ν.th (x.left ≫ proj hD) z ν.J =
+      (lam * om hD.w z ν.J ν'.J x.left).val * sval (Z := Sp F) ν'.th x.left z ν'.J) :
+    ∃ I : NumD.Iso N' N, (∀ y, ν.eX (I.e y) = hD.xe (ν'.eX y)) ∧
+      ∀ (g : GtPtF D F) (g' : GtPtF D' F) (c : N.Gt) (c' : N'.Gt), ν.Pt g c → ν'.Pt g' c' →
+        IsPullGtF φ hD F g g' → I.Rel c' c :=
+  let ⟨I, he, _, _, hrel⟩ := exists_iso_of_th_om hD hG hF ν ν' z lam hth
+  ⟨I, he, hrel⟩
 
 theorem exists_values_iso : GlobalFnsSt → ∀ (R K : Type) [CommRing R] [IsDomain R] [Field K] (φ : R →+* K) (D : DegPre R) (D' : DegPre K) (hD : IsPullDeg φ D D') (F : Type) [Field F] [Algebra (FractionRing R) F] [Algebra (FractionRing K) F], ArcPull.Compat φ F → ∀ (N N' : NumD F) (ν : NumOf D F N) (ν' : NumOf D' F N'), ∃ I : NumD.Iso N' N, (∀ y, ν.eX (I.e y) = hD.xe (ν'.eX y)) ∧ ∀ (g : GtPtF D F) (g' : GtPtF D' F) (c : N.Gt) (c' : N'.Gt), ν.Pt g c → ν'.Pt g' c' → IsPullGtF φ hD F g g' → I.Rel c' c := by
   intro hG R K _ _ _ φ D D' hD F _ _ _ hF N N' ν ν'
