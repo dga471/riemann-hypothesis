@@ -263,7 +263,7 @@ theorem exists_unit_dvr {V K : Type} [CommRing V] [IsDomain V] [IsDiscreteValuat
     [Field K] [Algebra V K] [IsFractionRing V K] {X P Q H Z : Scheme.{0}}
     {f : H ⟶ Spec (.of V)} [Smooth f] [GeometricallyIntegral f] {k : Z ⟶ H} {fK : Z ⟶ Spec (.of K)}
     (hK : IsPullback k fK f (Spec.map (CommRingCat.ofHom (algebraMap V K))))
-    {N : LB P} (hN : N.IsLB) {J : Q ⟶ P} {φ : H ⟶ P} {ψ : Z ⟶ Q} (hψ : ψ ≫ J = k ≫ φ)
+    {N : LB P} {J : Q ⟶ P} {φ : H ⟶ P} (hN : ∀ x : H, ∃ a, φ x ∈ N.U a) {ψ : Z ⟶ Q} (hψ : ψ ≫ J = k ≫ φ)
     (hW : ∀ A : P.Opens, k ⁻¹ᵁ φ ⁻¹ᵁ A ≤ ψ ⁻¹ᵁ J ⁻¹ᵁ A)
     {e : X ⟶ P} {l : Spec (.of V) ⟶ X} {eV : Spec (.of V) ⟶ H} (heV : eV ≫ φ = l ≫ e)
     (heV' : eV ≫ f = 𝟙 _) {eK : Spec (.of K) ⟶ Z}
@@ -278,7 +278,9 @@ theorem exists_unit_dvr {V K : Type} [CommRing V] [IsDomain V] [IsDiscreteValuat
   have := DvrModel.isIntegral_of_geometricallyIntegral hK
   have := DvrModel.isIntegral_of_geometricallyIntegral hs
   set n := Spec.map (CommRingCat.ofHom (algebraMap V K)) with hn
-  obtain ⟨a₀, h₀⟩ := exists_chart hN (e (l (IsLocalRing.closedPoint V)))
+  obtain ⟨a₀, h₀⟩ : ∃ a, e (l (IsLocalRing.closedPoint V)) ∈ N.U a := by
+    have := hN (eV (IsLocalRing.closedPoint V))
+    rwa [← Scheme.Hom.comp_apply, heV, Scheme.Hom.comp_apply] at this
   have hA : l ⁻¹ᵁ e ⁻¹ᵁ N.U a₀ ≤ eV ⁻¹ᵁ φ ⁻¹ᵁ N.U a₀ := by
     rw [← Scheme.Hom.comp_preimage, ← Scheme.Hom.comp_preimage, heV]
   have hA' : n ⁻¹ᵁ l ⁻¹ᵁ e ⁻¹ᵁ N.U a₀ ≤ eK ⁻¹ᵁ k ⁻¹ᵁ φ ⁻¹ᵁ N.U a₀ := by
@@ -291,7 +293,7 @@ theorem exists_unit_dvr {V K : Type} [CommRing V] [IsDomain V] [IsDiscreteValuat
       Category.id_comp, gm_pull n l z _ hz, gm_res_pullU eK ψ z (hW _) (hA' hz), hρ z a₀ hz]
   obtain ⟨s, ⟨hsu, -, hsr⟩, -⟩ := DvrModel.existsUnique_isUnit_appLE_eq hK hs
     (U := fun a ↦ φ ⁻¹ᵁ N.U a) (g := fun a b ↦ (pullU φ _ (N.g a b)).val)
-    (W := fun a ↦ k ⁻¹ᵁ φ ⁻¹ᵁ N.U a) (fun _ ↦ rfl) (fun x ↦ exists_chart hN (φ x))
+    (W := fun a ↦ k ⁻¹ᵁ φ ⁻¹ᵁ N.U a) (fun _ ↦ rfl) hN
     (fun a b ↦ Units.isUnit _) (r := fun a ↦ (res (hW _) (pullU ψ _ (τ a))).val)
     (fun a b ↦ congrArg Units.val (hτ.res_pullU hψ hW a b))
     (fun a ↦ Units.isUnit _) heV' heK (a₀ := a₀) (A := l ⁻¹ᵁ e ⁻¹ᵁ N.U a₀) h₀ hA rfl hA'
@@ -307,17 +309,17 @@ theorem appLE_inv_eq {P Q H Z : Scheme.{0}} {J : Q ⟶ P} {φ : H ⟶ P} {k : Z 
     rw [map_inv (pullU k _), map_inv (pullU ψ _), map_inv (res le_rfl), map_inv (res hW), hu]
   exact ⟨congrArg Units.val hu, congrArg Units.val hu'⟩
 
-theorem extAt_of_coheight_eq_one {X U P : Scheme.{0}} [IsLocallyNoetherian X]
+theorem extAt_of_cover {X U P : Scheme.{0}} [IsLocallyNoetherian X]
     [GlobalTheory.IsNormalScheme X] (j : U ⟶ X) [IsPreimmersion j] [Flat j] [IsDominant j] [QuasiCompact j]
     (p : P ⟶ X) [Smooth p] [GeometricallyIntegral p] {e : X ⟶ P} (he : e ≫ p = 𝟙 X) {N : LB P}
-    (hN : N.IsLB) {eU : U ⟶ pullback p j} (w : eU ≫ pullback.fst p j = j ≫ e)
+    {eU : U ⟶ pullback p j} (w : eU ≫ pullback.fst p j = j ≫ e)
     (hπ : eU ≫ pullback.snd p j = 𝟙 U)
     {τ : ∀ a, Γ(pullback p j, pullback.fst p j ⁻¹ᵁ N.U a)ˣ} (hτ : Compat N _ τ)
     {ρ : ∀ a, Γ(X, e ⁻¹ᵁ N.U a)ˣ}
     (hρ : ∀ (Z : Scheme.{0}) (κ : Z ⟶ U) (z : Z) (a : N.ι),
       e (j (κ z)) ∈ N.U a → gm (κ ≫ eU) z (pullback.fst p j ⁻¹ᵁ N.U a) (τ a) =
         gm (κ ≫ j) z (e ⁻¹ᵁ N.U a) (ρ a))
-    (y : P) (hx : Order.coheight (p y) = 1) (a : N.ι) (ha : y ∈ N.U a) :
+    (y : P) (hN : ∀ x, p x ⤳ p y → ∃ a, x ∈ N.U a) (hx : Order.coheight (p y) = 1) (a : N.ι) (ha : y ∈ N.U a) :
     ExtAt (pullback.fst p j) (N.U a) (τ a).val y ∧
       ExtAt (pullback.fst p j) (N.U a) ((τ a)⁻¹).val y := by
   have := isNormalScheme_of_smooth p
@@ -368,7 +370,9 @@ theorem extAt_of_coheight_eq_one {X U P : Scheme.{0}} [IsLocallyNoetherian X]
     · rw [Category.assoc, hψ', reassoc_of% heK', Category.assoc, hπ, Category.comp_id]
   have hW : ∀ A : P.Opens, k ⁻¹ᵁ φ ⁻¹ᵁ A ≤ ψ ⁻¹ᵁ pullback.fst p j ⁻¹ᵁ A := fun A ↦ by
     rw [← Scheme.Hom.comp_preimage, ← Scheme.Hom.comp_preimage, hψ]
-  obtain ⟨s, hu⟩ := exists_unit_dvr hK hN hψ hW heV heV' heK hτ (ρ := ρ) (fun z a hz ↦ by
+  obtain ⟨s, hu⟩ := exists_unit_dvr hK (fun x ↦ hN _ (by
+    have : φ x ∈ Set.range φ := ⟨x, rfl⟩
+    rwa [Scheme.Pullback.range_fst, Set.mem_preimage, hl] at this)) hψ hW heV heV' heK hτ (ρ := ρ) (fun z a hz ↦ by
     rw [hek, hρ, hκ]
     rw [← Scheme.Hom.comp_apply κ, hκ]
     exact hz) a
@@ -390,6 +394,21 @@ theorem extAt_of_coheight_eq_one {X U P : Scheme.{0}} [IsLocallyNoetherian X]
       ExtAt (pullback.fst p j) (N.U a) ((τ a)⁻¹).val (φ h) by rwa [hh] at H
   exact ⟨extAt_of_generic _ φ k ψ hψ _ _ _ le_rfl (hW _) (appLE_inv_eq _ hu).1 z hza h ha' hg,
     extAt_of_generic _ φ k ψ hψ _ _ _ le_rfl (hW _) (appLE_inv_eq _ hu).2 z hza h ha' hg⟩
+
+theorem extAt_of_coheight_eq_one {X U P : Scheme.{0}} [IsLocallyNoetherian X]
+    [GlobalTheory.IsNormalScheme X] (j : U ⟶ X) [IsPreimmersion j] [Flat j] [IsDominant j] [QuasiCompact j]
+    (p : P ⟶ X) [Smooth p] [GeometricallyIntegral p] {e : X ⟶ P} (he : e ≫ p = 𝟙 X) {N : LB P}
+    (hN : N.IsLB) {eU : U ⟶ pullback p j} (w : eU ≫ pullback.fst p j = j ≫ e)
+    (hπ : eU ≫ pullback.snd p j = 𝟙 U)
+    {τ : ∀ a, Γ(pullback p j, pullback.fst p j ⁻¹ᵁ N.U a)ˣ} (hτ : Compat N _ τ)
+    {ρ : ∀ a, Γ(X, e ⁻¹ᵁ N.U a)ˣ}
+    (hρ : ∀ (Z : Scheme.{0}) (κ : Z ⟶ U) (z : Z) (a : N.ι),
+      e (j (κ z)) ∈ N.U a → gm (κ ≫ eU) z (pullback.fst p j ⁻¹ᵁ N.U a) (τ a) =
+        gm (κ ≫ j) z (e ⁻¹ᵁ N.U a) (ρ a))
+    (y : P) (hx : Order.coheight (p y) = 1) (a : N.ι) (ha : y ∈ N.U a) :
+    ExtAt (pullback.fst p j) (N.U a) (τ a).val y ∧
+      ExtAt (pullback.fst p j) (N.U a) ((τ a)⁻¹).val y :=
+  extAt_of_cover j p he w hπ hτ hρ y (fun x _ ↦ exists_chart hN x) hx a ha
 
 theorem exists_isGen_of_densePart : ∀ (X U : Scheme.{0}) [IsLocallyNoetherian X] (j : U ⟶ X), ReciprocityTheory.ChartRestriction.G.Geo.Tor.IsNormalScheme X → IsPreimmersion j → Flat j → IsDominant j → QuasiCompact j → ∀ (P : Over X) (e : X ⟶ P.left) (N : LB P.left), e ≫ P.hom = 𝟙 X → Smooth P.hom → GeometricallyIntegral P.hom → N.IsLB → (∃ r : (N.pull e).Gen, r.IsGen) → (∃ t : (N.pull (pullback.fst P.hom j)).Gen, t.IsGen) → ∃ t : N.Gen, t.IsGen := by
   intro X U _ j hX _ _ _ _ P e N he _ _ hN ⟨r, hr⟩ ⟨t, ht⟩
