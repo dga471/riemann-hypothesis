@@ -32,6 +32,36 @@ theorem pullDeg_sub (a b : K → ℤ) :
   funext k
   cases k <;> simp [pullDeg]
 
+theorem joinVert {O Ω : Type} [CommRing O] [IsDomain O] [IsDiscreteValuationRing O]
+    [Field Ω] [Algebra O Ω] {K : Type} [Fintype K] {ι : K → Type} [∀ k, Fintype (ι k)]
+    {x : (Σ k, ι k) → Ω} {d N : ℕ} {V : Type} [AddCommGroup V] [Module Ω V]
+    {E E' : ReciprocityTheory.ChartRestriction.G.Geo.ChartBundle O
+      (IndefiniteRowSideFullHecke.NumbersDVR.Bundles.mseg x) N V}
+    (F : FlagModel O x d N E E') (hVert : JoinVerticalDivisor.Statement)
+    {r : ℕ} {y y' : Fin r → K → ℤ} {f g : Fin r → ReciprocityTheory.ChartRestriction.G.Geo.MRingOver O ι}
+    (hv : ∀ j, IndefiniteRowSideFullHecke.NumbersDVR.Bundles.IsVertDiv O
+      (IndefiniteRowSideFullHecke.NumbersDVR.Bundles.mcIdeal O x) (y j - y' j) (f j) (g j)) :
+    ∀ i, IndefiniteRowSideFullHecke.NumbersDVR.Bundles.IsVertDiv O
+      (IndefiniteRowSideFullHecke.NumbersDVR.Bundles.mcIdeal O (joinCoord x F.z))
+      (Fin.append F.flag.deg (fun l => pullDeg (K' := F.K') (y l)) i -
+        Fin.append F.flag.deg' (fun l => pullDeg (K' := F.K') (y' l)) i)
+      (Fin.append F.flag.f (fun l => rename (liftVar F.ι') (f l)) i)
+      (Fin.append F.flag.g (fun l => rename (liftVar F.ι') (g l)) i) := by
+  intro i
+  refine Fin.addCases (fun j => ?_) (fun j => ?_) i
+  · simp only [Fin.append_left]
+    exact F.flag.vert j
+  · simp only [Fin.append_right, pullDeg_sub]
+    exact hVert O Ω K ι x F.K' F.ι' F.z _ _ _ (hv j)
+
+theorem homog_mul {O : Type} [CommRing O] {N r c d : ℕ} {G : MvPolynomial (Fin N) O}
+    {Q : MvPolynomial (Fin r) O} (hc : c ≤ d + 1) (hG : G.IsHomogeneous c)
+    (hQ : Q.IsHomogeneous (d + 1 - c)) :
+    (rename (Fin.castAdd r) G * rename (Fin.natAdd N) Q).IsHomogeneous (d + 1) := by
+  have h : (rename (Fin.castAdd r) G * rename (Fin.natAdd N) Q).IsHomogeneous (c + (d + 1 - c)) :=
+    hG.rename_isHomogeneous.mul hQ.rename_isHomogeneous
+  rwa [show c + (d + 1 - c) = d + 1 by omega] at h
+
 end FlagModelJoinLeftAlt
 
 
@@ -43,25 +73,10 @@ theorem FlagModelJoinLeftAlt.proof (hVert : JoinVerticalDivisor.Statement)
   obtain ⟨ψ, -, -, -, hdeg, hdeg', hf, hg⟩ :=
     hFlag O Ω K ι x F.K' F.ι' F.z K₂ ι₂ w N V E E' F.EB F.E'B F.pull F.pull' F.flag EB E'B hp hp'
   refine ⟨ψ, fun I I₁ hI hI₁ G r y y' f g hv c Q hc hG hQ => ?_⟩
-  have hvert : ∀ i, IndefiniteRowSideFullHecke.NumbersDVR.Bundles.IsVertDiv O
-      (IndefiniteRowSideFullHecke.NumbersDVR.Bundles.mcIdeal O (joinCoord x F.z))
-      (Fin.append F.flag.deg (fun l => pullDeg (K' := F.K') (y l)) i -
-        Fin.append F.flag.deg' (fun l => pullDeg (K' := F.K') (y' l)) i)
-      (Fin.append F.flag.f (fun l => rename (liftVar F.ι') (f l)) i)
-      (Fin.append F.flag.g (fun l => rename (liftVar F.ι') (g l)) i) := by
-    intro i
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) i
-    · simp only [Fin.append_left]
-      exact F.flag.vert j
-    · simp only [Fin.append_right, pullDeg_sub]
-      exact hVert O Ω K ι x F.K' F.ι' F.z _ _ _ (hv j)
-  have hH : (rename (Fin.castAdd r) G * rename (Fin.natAdd N) Q).IsHomogeneous (d + 1) := by
-    have h : (rename (Fin.castAdd r) G * rename (Fin.natAdd N) Q).IsHomogeneous (c + (d + 1 - c)) :=
-      hG.rename_isHomogeneous.mul hQ.rename_isHomogeneous
-    rwa [show c + (d + 1 - c) = d + 1 by omega] at h
   unfold FlagModel.value
   refine (hNum O Ω K ι x F.K' F.ι' F.z K₂ ι₂ w d F.model hZ
-    (hfn.trans F.birat.symm) I I₁ hI hI₁ (N + r) _ _ _ _ hvert _ hH).trans ?_
+    (hfn.trans F.birat.symm) I I₁ hI hI₁ (N + r) _ _ _ _ (joinVert F hVert hv) _
+    (homog_mul hc hG hQ)).trans ?_
   congr 1 <;> funext i <;> refine Fin.addCases (fun j => ?_) (fun j => ?_) i <;>
     simp [hdeg, hdeg', hf, hg, assocDeg_pullDeg, assocVar_comp_liftVar]
 
