@@ -45,9 +45,11 @@ import Formalism.SharpRestriction.CuspSpanNormBounds.NonemptyParameterModels.Num
 import Development.WeilBound.CoreStatements.BranchingTraces.BranchingComatrices.RootOfNe
 import Development.WeilBound.CoreStatements.BranchingTraces.FormTSingle
 
-section -- clump:auto
 @[expose] public section
 
+noncomputable section
+
+section -- clump:auto
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHeFrame
@@ -102,11 +104,8 @@ theorem commutant_cyclic_eq_zero : ∀ {m : ℕ} (g : Matrix (Fin m) (Fin m) ℂ
 
 end GlobalTheory.CompanionTheory.RgHeFrame
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHeFrame
@@ -157,11 +156,8 @@ theorem hs_le_commutator {m : ℕ} (X : Matrix (Fin m) (Fin m) ℂ) (v : Fin m �
 
 end GlobalTheory.CompanionTheory.RgHeFrame
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHeFrame
@@ -191,11 +187,8 @@ theorem pfOrth : ∀ {m : ℕ} (d : Fin (m + 1) → ℝ) (d' : Fin m → ℝ),
 
 end GlobalTheory.CompanionTheory.RgHeFrame
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHeFrame
@@ -328,14 +321,9 @@ theorem pfDer : ∀ {m : ℕ} (d : Fin (m + 1) → ℝ) (d' : Fin m → ℝ),
 
 end GlobalTheory.CompanionTheory.RgHeFrame
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
-
-noncomputable section
 
 namespace GlobalTheory.CompanionTheory.RgHeFrame
 
@@ -512,12 +500,8 @@ theorem build : ∀ (n : ℕ) (ε : Fin (n + 1) → Bool) (d : Fin (n + 1) → �
 
 end GlobalTheory.CompanionTheory.RgHeFrame
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHe
@@ -541,11 +525,8 @@ theorem hs_mul_le_mul {m : ℕ} (P Q : Matrix (Fin m) (Fin m) ℂ) :
 
 end GlobalTheory.CompanionTheory.RgHe
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHeFrame.SignWord
@@ -729,11 +710,8 @@ theorem heSign (n : ℕ) (ε : Fin (n + 1) → Bool) (d : Fin (n + 1) → ℝ) (
 
 end GlobalTheory.CompanionTheory.RgHeFrame.SignWord
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHeSign
@@ -832,11 +810,8 @@ theorem pfSign {m : ℕ} (d : Fin (m + 1) → ℝ) (d' : Fin m → ℝ)
 
 end GlobalTheory.CompanionTheory.RgHeSign
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Finset Matrix PositivityTheory.RgHe.Frame
 
 namespace GlobalTheory.CompanionTheory.RgHeFrame
@@ -876,13 +851,8 @@ theorem trace_diagonal_block_conjugate (n : ℕ) (e : Fin n ⊕ Unit ≃ Fin (n 
 
 end GlobalTheory.CompanionTheory.RgHeFrame
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix Formalism.REAL
 
 namespace PositivityTheory.RgHe.FrameA
@@ -1000,25 +970,16 @@ theorem frame : PositivityTheory.RgHe.Frame := by
 
 end PositivityTheory.RgHe.FrameA
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 namespace PositivityTheory.RgHe.FrameF
 
 end PositivityTheory.RgHe.FrameF
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open Matrix Finset
 open scoped InnerProductSpace Classical
-
-noncomputable section
 
 namespace PositivityTheory.RgHe.Dec.DL
 
@@ -1202,14 +1163,8 @@ theorem decomposition_le_holds : DecLe := by
 
 end PositivityTheory.RgHe.Dec
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Matrix Finset
 open scoped InnerProductSpace
 
@@ -1305,14 +1260,8 @@ theorem flip_decomposition_holds : FlipDec := by
 
 end PositivityTheory.RgHe.Dec
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 
 namespace PositivityTheory.RgHe.Dec
@@ -1563,14 +1512,8 @@ theorem occurrence_of_walk (hL : StepL) (hM : StepM) (hB : Base) : Occ := by
 
 end PositivityTheory.RgHe.Dec
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 
 namespace PositivityTheory.RgHe.Dec
@@ -1605,14 +1548,8 @@ theorem decomposition_existence_holds : DecEx2 := decEx2_of decomposition_le_hol
 
 end PositivityTheory.RgHe.Dec
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -1788,21 +1725,14 @@ theorem stepL_of (hMo : Models) (hOI : OfInt) (hSe : Seed) (hD : DecEx2) : StepL
 
 end PositivityTheory.RgHe.Sl
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 namespace PositivityTheory.RgHe.Sl
 
 end PositivityTheory.RgHe.Sl
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 namespace PositivityTheory.RgHe
 
 theorem occ : Occ :=
@@ -1811,5 +1741,4 @@ theorem occ : Occ :=
     (PositivityTheory.RgHe3.base _root_.PositivityTheory.RgHe.LowestKTypeUnitIntegral.models_holds _root_.PositivityTheory.RgHe.FrameA.frame)
 
 end PositivityTheory.RgHe
-end -- clump:auto
 end -- clump:auto

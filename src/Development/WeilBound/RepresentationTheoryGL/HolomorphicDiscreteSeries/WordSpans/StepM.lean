@@ -15,11 +15,11 @@ import Development.WeilBound.CoreStatements.BranchingTraces.BranchingComatrices.
 import Development.WeilBound.CoreStatements.BranchingTraces.FormTSingle
 import Formalism.SharpRestriction.CuspSpanNormBounds.BridgeCSchur
 
-section -- clump:auto
 @[expose] public section
 
 noncomputable section
 
+section -- clump:auto
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -352,14 +352,8 @@ end ZeroSec
 
 end PositivityTheory.RgHe.SM
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -558,14 +552,8 @@ theorem phiEq : PhiEq := by
 
 end PositivityTheory.RgHe.SM
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -699,14 +687,8 @@ theorem nonvan (hKey : KeyId) {N : ℕ} {ε : Fin (N + 2) → Bool} {ε' : Fin (
 
 end PositivityTheory.RgHe.SM.WordSpanNonVanishing
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -845,14 +827,8 @@ theorem pj_words {N : ℕ} {ε : Fin (N + 2) → Bool} {ε' : Fin (N + 1) → Bo
 
 end PositivityTheory.RgHe.SM.WordSpaces
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -971,14 +947,9 @@ theorem model_walk_of_inputs : Models → OfInt → Seed → DecEx2 → StepM :=
 
 end PositivityTheory.RgHe.SM
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 namespace PositivityTheory.RgHe.SM
 
 end PositivityTheory.RgHe.SM
-end -- clump:auto
 end -- clump:auto

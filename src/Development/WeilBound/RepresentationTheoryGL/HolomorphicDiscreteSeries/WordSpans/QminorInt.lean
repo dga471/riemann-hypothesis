@@ -7,11 +7,11 @@ import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.ExponentialFirstColumn.
 import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.RowExpansionMinor.FirstColumnSplitBijective
 import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutGCoreKLExistsOfAlg
 
-section -- clump:auto
 @[expose] public section
 
 noncomputable section
 
+section -- clump:auto
 open Matrix Finset
 
 namespace PositivityTheory.RgHe.SM
@@ -135,14 +135,8 @@ theorem algId : AlgId := by
 
 end PositivityTheory.RgHe.SM
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Matrix Finset
 
 namespace PositivityTheory.RgHe.SM
@@ -176,6 +170,4 @@ theorem keyId : KeyId := by
   exact (hT _ c).1
 
 end PositivityTheory.RgHe.SM
-end -- clump:auto
-end -- clump:auto
 end -- clump:auto

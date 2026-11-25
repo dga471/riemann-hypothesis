@@ -11,11 +11,11 @@ public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.CasimirCoefficien
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.ExceptionalGroupG2.HarishChandraMultiplicityBound
 import Development.WeilBound.CoreStatements.BranchingTraces.FormTSingle
 
-section -- clump:auto
 @[expose] public section
 
 noncomputable section
 
+section -- clump:auto
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -64,14 +64,8 @@ theorem isom_of {ε' : Fin n → Bool} {H H' : Type} [NormedAddCommGroup H] [Inn
 
 end PositivityTheory.RgHe.LowestKTypeUnitIntegral
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -220,14 +214,8 @@ theorem lowestKTypeModel : Seed := by
 
 end PositivityTheory.RgHe.LowestKTypeUnitIntegral
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -284,14 +272,9 @@ theorem models_holds : Models := by
 
 end PositivityTheory.RgHe.LowestKTypeUnitIntegral
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 namespace PositivityTheory.RgHe.LowestKTypeModel
 
 end PositivityTheory.RgHe.LowestKTypeModel
-end -- clump:auto
 end -- clump:auto

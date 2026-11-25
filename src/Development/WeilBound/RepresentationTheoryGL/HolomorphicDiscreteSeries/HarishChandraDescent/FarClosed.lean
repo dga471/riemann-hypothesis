@@ -38,11 +38,11 @@ import ReciprocityTheory.ReductiveGroups.DiscreteSeries.RigidityTheorems.ClosGen
 import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.NumRho
 import ReciprocityTheory.ReductiveGroups.DiscreteSeries.LaplaceOperators.LaplaceFoundations.InvMulSelfOfMemIndefiniteUnitary
 
-section -- clump:auto
 @[expose] public section
 
 noncomputable section
 
+section -- clump:auto
 open Finset
 open scoped InnerProductSpace
 
@@ -146,14 +146,8 @@ theorem square_identity_holds : SqId := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -218,14 +212,8 @@ theorem approximation_of_square_identity : SqId → Approx := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix
 
 namespace PositivityTheory.RgHe3
@@ -277,14 +265,8 @@ theorem casimir_adjoint_holds : CasAd := by
     one_smul, zero_smul, Finset.sum_ite_eq, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
 end PositivityTheory.RgHe3 -- clump:auto
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix
 open scoped InnerProductSpace
 
@@ -351,14 +333,8 @@ theorem commutant_holds : Commutant := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -462,14 +438,8 @@ theorem discrete_series_data_holds : DSData := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix
 open scoped InnerProductSpace
 
@@ -579,14 +549,8 @@ theorem far_of_trial_bound : Trial → Core → Far := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -677,14 +641,8 @@ theorem mem_span_of_frobenius_mem_span : SqId → KIrrEx → Drop → Descent :=
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 
 namespace PositivityTheory.RgHe3.HarishChandraParameter
@@ -780,14 +738,8 @@ theorem harish_chandra_parameter_holds : HCOf := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix
 open scoped InnerProductSpace
 
@@ -862,14 +814,8 @@ theorem identity_holds : Ident := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix
 open scoped InnerProductSpace
 
@@ -926,14 +872,8 @@ theorem integral_weight_holds : IntWt := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -1001,14 +941,8 @@ theorem k_irreducible_existence_holds : KIrrEx := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open scoped InnerProductSpace
 
 namespace PositivityTheory.RgHe3
@@ -1046,14 +980,8 @@ theorem markov_inequality_holds : Markov := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -1088,14 +1016,8 @@ theorem matrix_bound_holds : MatBd := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open scoped InnerProductSpace
 
 namespace PositivityTheory.RgHe3
@@ -1124,14 +1046,8 @@ theorem positive_negative_holds : PosNeg := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -1211,14 +1127,8 @@ theorem parts_of_square_identity : SqId → Parts := by
   · nlinarith
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 
 namespace PositivityTheory.RgHe3.DropRoots
@@ -1251,14 +1161,8 @@ theorem drop_holds : Drop := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -1414,14 +1318,8 @@ theorem ascent_of_square_identity : SqId → Ascent := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset
 open scoped InnerProductSpace
 
@@ -1486,14 +1384,8 @@ theorem root_bound_of_square_identity : SqId → RootBd := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix
 open scoped InnerProductSpace
 
@@ -1602,14 +1494,8 @@ theorem adjoint_equation_holds : AdEq := by
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open Finset Matrix
 open scoped InnerProductSpace
 
@@ -1689,12 +1575,8 @@ theorem discrete_series_bound_of_inputs : Comp → Parts → Cut → Ascent → 
 
 end PositivityTheory.RgHe3
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 namespace PositivityTheory.RgHe3
 
 theorem far_closed : Far := by
@@ -1713,5 +1595,4 @@ theorem far_closed : Far := by
 theorem base : PositivityTheory.RgHe.Models → PositivityTheory.RgHe.Frame → PositivityTheory.RgHe.Base := base_of_far_models_frame far_closed
 
 end PositivityTheory.RgHe3
-end -- clump:auto
 end -- clump:auto

@@ -12,11 +12,11 @@ public import Development.WeilBound.CoreStatements.BranchingTraces.HilbertSchmid
 import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.EqZeroOfInnerSmooth
 import Formalism.LocalToGlobal.BesselHermitianTheta.NoncompactGapAtLeastRange
 
-section -- clump:auto
 @[expose] public section
 
 noncomputable section
 
+section -- clump:auto
 open MeasureTheory Matrix Formalism.MainNotions.S Formalism.REAL Formalism.QuantumDeterminants Formalism.L2.Theta GlobalTheory.SmVec GlobalTheory.CompanionTheory.UnitaryFramesMetricPeriods GlobalTheory.CompanionTheory.PairingAnalysis
 open scoped InnerProductSpace
 
@@ -79,14 +79,8 @@ theorem num_V {N : ℕ} {B x : ℝ} (hN : 3 ≤ N) (hB : 2 ≤ B) (hx : x = 8 * 
 
 end PositivityTheory.UnitaryDecomposition.X4
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Formalism.MainNotions.S Formalism.REAL Formalism.QuantumDeterminants Formalism.L2.Theta GlobalTheory.SmVec GlobalTheory.CompanionTheory.UnitaryFramesMetricPeriods
 open scoped InnerProductSpace
 
@@ -177,14 +171,8 @@ theorem stab : ∀ {n r : ℕ} {ε : Fin n → Bool} {ε' : Fin r → Bool} (ι 
 
 end PositivityTheory.UnitaryDecomposition.X4
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Formalism.MainNotions.S Formalism.REAL Formalism.QuantumDeterminants Formalism.L2.Theta GlobalTheory.SmVec GlobalTheory.CompanionTheory.UnitaryFramesMetricPeriods
 open scoped InnerProductSpace
 
@@ -331,12 +319,8 @@ theorem boost : ∀ {n : ℕ} (ε : Fin n → Bool) (z y : Fin n → ℂ), star 
 
 end PositivityTheory.UnitaryDecomposition.X4
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
 open MeasureTheory Matrix Formalism.MainNotions.S Formalism.REAL Formalism.QuantumDeterminants Formalism.L2.Theta GlobalTheory.SmVec GlobalTheory.CompanionTheory.UnitaryFramesMetricPeriods
 open scoped InnerProductSpace
 
@@ -346,13 +330,8 @@ theorem g0 : ∀ {n r : ℕ} {ε : Fin n → Bool} {ε' : Fin r → Bool} (ι : 
 
 end PositivityTheory.UnitaryDecomposition.X4
 end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Formalism.MainNotions.S Formalism.REAL Formalism.QuantumDeterminants Formalism.L2.Theta GlobalTheory.SmVec GlobalTheory.CompanionTheory.UnitaryFramesMetricPeriods GlobalTheory.CompanionTheory.PairingAnalysis
 open scoped InnerProductSpace ComplexConjugate
 
@@ -622,6 +601,4 @@ theorem bigProjP_of (hg0 : PositivityTheory.UnitaryDecomposition.X4.IntegralGerm
 theorem bigProjP : MomentP → Analysis → BigProjP := bigProjP_of PositivityTheory.UnitaryDecomposition.X4.g0 PositivityTheory.UnitaryDecomposition.X4.emb
 
 end PositivityTheory.RgHe.A.Pf
-end -- clump:auto
-end -- clump:auto
 end -- clump:auto

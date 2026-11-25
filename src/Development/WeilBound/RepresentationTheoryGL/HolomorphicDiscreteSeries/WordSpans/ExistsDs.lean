@@ -9,11 +9,11 @@ public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.ExceptionalGroupG
 import ReciprocityTheory.ReductiveGroups.DiscreteSeries.DiscreteSeriesExistence.SigZeroDecay
 import Formalism.HermitianCurvature.HermitianCurvatureProofs.CapelliAbstractCharacter
 
-section -- clump:auto
 @[expose] public section
 
 noncomputable section
 
+section -- clump:auto
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -221,14 +221,8 @@ theorem decay_low {n : ℕ} {ε' : Fin n → Bool} {mu : Fin n → ℝ} {K : Typ
 
 end PositivityTheory.RgHe.SM.LowWeightDensity
 end -- clump:auto
-end -- clump:auto
-end -- clump:auto
 
 section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
 open MeasureTheory Matrix Finset
 open scoped InnerProductSpace ComplexConjugate
 
@@ -241,6 +235,4 @@ alias signs := _root_.PositivityTheory.RgHe.SM.LowWeightDensity.signs
 alias dense_sm := _root_.PositivityTheory.RgHe.SM.LowWeightDensity.dense_sm
 
 end PositivityTheory.RgHe.SM
-end -- clump:auto
-end -- clump:auto
 end -- clump:auto
