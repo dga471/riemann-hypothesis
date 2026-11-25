@@ -183,8 +183,13 @@ theorem evR_frChg_mul_triangular (E : Type) [Field E] [NumberField E] [IsCMField
   simp only [wchar, Fintype.prod_option, Fintype.prod_sigma, t, Formalism.L2.Pj.ex, Units.val_one, one_pow, _root_.one_mul,
     Units.val_mk0]
 
-theorem exists_poly_div_det_field : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (Dw : Datum H) (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] (y : FrPt Xo c K) (a : (E →+* ℂ) × ℕ → ℕ) (n : ℕ), ∀ F ∈ sec Xo c a n, ∃ (P : MvPolynomial (FrVar Dw.mult) K) (N : ℕ), ∀ (S : Type) [CommRing S] [Algebra c.F S] (φ : K →ₐ[c.F] S) (z z' : FrPt Xo c S) (Y : (∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) S)), (∀ b, IsUnit (Y b).det) → FrMap φ y z → FrChg (fun b => (Y b).transpose) 1 z z' → (∏ b, (Y b).det) ^ N * evR Xo c F z' = evalFr (MvPolynomial.map φ.toRingHom P) Y := by
-  intro E _ _ _ H Dw l Xo c K _ _ y a n F hF
+theorem exists_poly_div_det_of_natural (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (Dw : Datum H)
+    (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] (y : FrPt Xo c K)
+    (F : Rul Xo c) (hF : IsNatural (K := c.F) (fun S _ _ => FrPt Xo c S) (fun φ y z => FrMap φ y z) F) :
+    ∃ (P : MvPolynomial (FrVar Dw.mult) K) (N : ℕ), ∀ (S : Type) [CommRing S] [Algebra c.F S] (φ : K →ₐ[c.F] S)
+      (z z' : FrPt Xo c S) (Y : (∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) S)),
+      (∀ b, IsUnit (Y b).det) → FrMap φ y z → FrChg (fun b => (Y b).transpose) 1 z z' →
+      (∏ b, (Y b).det) ^ N * evR Xo c F z' = evalFr (MvPolynomial.map φ.toRingHom P) Y := by
   have hB : Out.SecBaseChangeSt := GlobalTheory.lawsFieldsSeparately.2.1
   obtain ⟨A, _, _, π, X, hred, hX, hA⟩ := exists_genericRing c.F K (E →+* ℂ) Dw.mult
   obtain ⟨u₀, hu₀⟩ := GlobalTheory.Frames.FramedBaseChange.exists_frMap hB E H Dw l Xo c K A π y
@@ -204,8 +209,58 @@ theorem exists_poly_div_det_field : ∀ (E : Type) [Field E] [NumberField E] [Is
       funext fun b => by rw [Matrix.transpose_map, hkX]
     rw [e, Units.val_one, map_one]
     exact hz'
-  rw [GlobalTheory.FrameEval.evR_frMap_of_isReduced E H Dw l Xo c F hF.1 k u z' hm]
+  rw [GlobalTheory.FrameEval.evR_frMap_of_isReduced E H Dw l Xo c F hF k u z' hm]
   exact hk
+
+theorem exists_poly_div_det_field : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (Dw : Datum H) (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] (y : FrPt Xo c K) (a : (E →+* ℂ) × ℕ → ℕ) (n : ℕ), ∀ F ∈ sec Xo c a n, ∃ (P : MvPolynomial (FrVar Dw.mult) K) (N : ℕ), ∀ (S : Type) [CommRing S] [Algebra c.F S] (φ : K →ₐ[c.F] S) (z z' : FrPt Xo c S) (Y : (∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) S)), (∀ b, IsUnit (Y b).det) → FrMap φ y z → FrChg (fun b => (Y b).transpose) 1 z z' → (∏ b, (Y b).det) ^ N * evR Xo c F z' = evalFr (MvPolynomial.map φ.toRingHom P) Y :=
+  fun E _ _ _ H Dw l Xo c K _ _ y _ _ F hF => exists_poly_div_det_of_natural E H Dw l Xo c K y F hF.1
+
+theorem exists_frChg_update_triangular (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (Dw : Datum H)
+    (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] (y₀ : FrPt Xo c K)
+    (X : ∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) K) (b : E →+* ℂ)
+    (t : Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) K) (hX : ∀ b', (X b').det ≠ 0) (ht : t.det ≠ 0)
+    (htri : t.BlockTriangular id) :
+    let T : ∀ b' : E →+* ℂ, Matrix (Fin (Dw.mult b')) (Fin (Dw.mult b')) K := Function.update (fun _ => 1) b t
+    (∀ b', (T b').BlockTriangular id) ∧ (∀ b', (T b').det ≠ 0) ∧
+    Function.update X b (X b * t) = (fun b' => X b' * T b') ∧
+    (∀ (f : ∀ b', Fin (Dw.mult b') → ℕ), (∏ b', ∏ i, T b' i i ^ f b' i) = ∏ i, t i i ^ f b i) ∧
+    (∏ b', (X b' * T b').det) = (∏ b', (X b').det) * ∏ i, t i i ∧
+    ∃ z₁ z₂ : FrPt Xo c K, FrChg (fun b' => (X b').transpose) 1 y₀ z₁ ∧
+      FrChg (fun b' => (T b').transpose) 1 z₁ z₂ ∧
+      FrChg (fun b' => (X b' * T b').transpose) 1 y₀ z₂ := by
+  classical
+  dsimp only
+  set T : ∀ b' : E →+* ℂ, Matrix (Fin (Dw.mult b')) (Fin (Dw.mult b')) K := Function.update (fun _ => 1) b t
+  have hTb : T b = t := Function.update_self ..
+  have hTo : ∀ b', b' ≠ b → T b' = 1 := fun b' h => Function.update_of_ne h ..
+  have hTtri : ∀ b', (T b').BlockTriangular id := fun b' => by
+    by_cases h : b' = b
+    · subst h; rw [hTb]; exact htri
+    · rw [hTo b' h]; exact Matrix.blockTriangular_one
+  have hTd : ∀ b', (T b').det ≠ 0 := fun b' => by
+    by_cases h : b' = b
+    · subst h; rw [hTb]; exact ht
+    · rw [hTo b' h]; simp
+  refine ⟨hTtri, hTd, funext fun b' => ?_, fun f => ?_, ?_, ?_⟩
+  · by_cases h : b' = b
+    · subst h; rw [hTb, Function.update_self]
+    · rw [hTo b' h, Function.update_of_ne h, _root_.mul_one]
+  · rw [Finset.prod_eq_single b, hTb]
+    · intro b' _ h; rw [hTo b' h]; simp
+    · intro h; exact absurd (Finset.mem_univ b) h
+  · simp only [Matrix.det_mul, Finset.prod_mul_distrib]
+    congr 1
+    rw [Finset.prod_eq_single b, hTb, Matrix.det_of_isUpperTriangular htri]
+    · intro b' _ h; rw [hTo b' h]; simp
+    · intro h; exact absurd (Finset.mem_univ b) h
+  · obtain ⟨z₁, h₁, -⟩ := GlobalTheory.Frames.existsUnique_frChg E H Dw l Xo c K y₀ (fun b' => (X b').transpose) 1
+      (fun b' => by rw [Matrix.det_transpose]; exact (hX b').isUnit)
+    obtain ⟨z₂, h₂, -⟩ := GlobalTheory.Frames.existsUnique_frChg E H Dw l Xo c K z₁ (fun b' => (T b').transpose) 1
+      (fun b' => by rw [Matrix.det_transpose]; exact (hTd b').isUnit)
+    rw [Units.val_one] at h₁ h₂
+    have h₃ := (GlobalTheory.Frames.frChg_refl_and_comp E H Dw l Xo c K y₀ z₁ z₂).2 _ _ _ _ h₁ h₂
+    simp only [← Matrix.transpose_mul, _root_.mul_one] at h₃
+    exact ⟨z₁, z₂, h₁, h₂, h₃⟩
 
 theorem exists_isFrPoly_field : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (Dw : Datum H) (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] (y : FrPt Xo c K) (a : (E →+* ℂ) × ℕ → ℕ) (n : ℕ), ∀ F ∈ sec Xo c a n, ∃ G : MvPolynomial (FrVar Dw.mult) K, IsFrPoly F y G := by
   classical
@@ -222,48 +277,12 @@ theorem exists_isFrPoly_field : ∀ (E : Type) [Field E] [NumberField E] [IsCMFi
     rwa [h2] at h1
   obtain ⟨G, hG⟩ := evalFr_eq_prod_det_pow_mul K (E →+* ℂ) Dw.mult P (fun b i => a (b, i)) N (by
     intro X b t hX ht htri
-    let T : ∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) K := Function.update (fun _ => 1) b t
-    have hTb : T b = t := Function.update_self ..
-    have hTo : ∀ b', b' ≠ b → T b' = 1 := fun b' h => Function.update_of_ne h ..
-    have hTtri : ∀ b', (T b').BlockTriangular id := by
-      intro b'
-      by_cases h : b' = b
-      · subst h; rw [hTb]; exact htri
-      · rw [hTo b' h]; exact Matrix.blockTriangular_one
-    have hTd : ∀ b', (T b').det ≠ 0 := by
-      intro b'
-      by_cases h : b' = b
-      · subst h; rw [hTb]; exact ht
-      · rw [hTo b' h]; simp
-    have hup : Function.update X b (X b * t) = fun b' => X b' * T b' := by
-      funext b'
-      by_cases h : b' = b
-      · subst h; rw [hTb, Function.update_self]
-      · rw [hTo b' h, Function.update_of_ne h, _root_.mul_one]
-    obtain ⟨z₁, h₁, -⟩ := GlobalTheory.Frames.existsUnique_frChg E H Dw l Xo c K y (fun b => (X b).transpose) 1
-      (fun b' => by rw [Matrix.det_transpose]; exact (hX b').isUnit)
-    obtain ⟨z₂, h₂, -⟩ := GlobalTheory.Frames.existsUnique_frChg E H Dw l Xo c K z₁ (fun b => (T b).transpose) 1
-      (fun b' => by rw [Matrix.det_transpose]; exact (hTd b').isUnit)
-    rw [Units.val_one] at h₁ h₂
-    have h₃ := (GlobalTheory.Frames.frChg_refl_and_comp E H Dw l Xo c K y z₁ z₂).2 _ _ _ _ h₁ h₂
-    simp only [← Matrix.transpose_mul, _root_.mul_one] at h₃
+    obtain ⟨hTtri, hTd, hup, hp₁, p₂, z₁, z₂, h₁, h₂, h₃⟩ :=
+      exists_frChg_update_triangular E H Dw l Xo c K y X b t hX ht htri
     have e₁ := hPK z₁ X hX h₁
-    have e₂ := hPK z₂ (fun b' => X b' * T b')
-      (fun b' => by rw [Matrix.det_mul]; exact mul_ne_zero (hX b') (hTd b')) h₃
-    have e₃ := evR_frChg_mul_triangular E H Dw l Xo c K a n F hF z₁ z₂ T hTtri hTd h₂
-    have p₁ : (∏ b', ∏ i, T b' i i ^ a (b', i)) = ∏ i, t i i ^ a (b, i) := by
-      rw [Finset.prod_eq_single b, hTb]
-      · intro b' _ h
-        rw [hTo b' h]; simp
-      · intro h; exact absurd (Finset.mem_univ b) h
-    have p₂ : (∏ b', (X b' * T b').det) = (∏ b', (X b').det) * ∏ i, t i i := by
-      simp only [Matrix.det_mul, Finset.prod_mul_distrib]
-      congr 1
-      rw [Finset.prod_eq_single b, hTb, Matrix.det_of_isUpperTriangular htri]
-      · intro b' _ h
-        rw [hTo b' h]; simp
-      · intro h; exact absurd (Finset.mem_univ b) h
-    rw [hup, ← e₂, ← e₁, e₃, p₁, p₂]
+    have e₂ := hPK z₂ _ (fun b' => by rw [Matrix.det_mul]; exact mul_ne_zero (hX b') (hTd b')) h₃
+    have e₃ := evR_frChg_mul_triangular E H Dw l Xo c K a n F hF z₁ z₂ _ hTtri hTd h₂
+    rw [hup, ← e₂, ← e₁, e₃, hp₁ (fun b' i => a (b', i)), p₂]
     simp only [pow_add, Finset.prod_mul_distrib, mul_pow, Finset.prod_pow]
     ring)
   refine ⟨G, fun S _ _ φ z z' Y hY hz hz' => ?_⟩
@@ -318,19 +337,18 @@ theorem isHomogeneous_of_scaling {K σ : Type} [Field K] [CharZero K] (G D : MvP
   rw [← Nat.pow_right_injective (le_refl 2) h5, Finsupp.degree_eq_weight_one]
   rfl
 
-theorem exists_isFrPoly_isHomogeneous : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : ReciprocityTheory.ChartRestriction.G.Geo.Tor.Host E) (Dw : Datum H) (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] (y : FrPt Xo c K) (a : (E →+* ℂ) × ℕ → ℕ) (n : ℕ), ∀ F ∈ sec Xo c a n, ∃ G : MvPolynomial (FrVar Dw.mult) K, GlobalTheory.LamT.IsFrPoly F y G ∧ G.IsHomogeneous (∑ τ, ∑ i : Fin (Dw.mult τ), a (τ, (i : ℕ))) := by
+theorem isHomogeneous_of_evalFr_det_pow (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (Dw : Datum H)
+    (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] [CharZero K]
+    (y₀ : FrPt Xo c K) (k : (E →+* ℂ) → ℕ) (a : ∀ b : E →+* ℂ, Fin (Dw.mult b) → ℕ) (F : Rul Xo c)
+    (G : MvPolynomial (FrVar Dw.mult) K)
+    (hGY : ∀ (z' : FrPt Xo c K) (Y : ∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) K),
+      (∀ b, (Y b).det ≠ 0) → FrChg (fun b => (Y b).transpose) 1 y₀ z' →
+      (∏ b, (Y b).det ^ k b) * evR Xo c F z' = evalFr G Y)
+    (hB : ∀ (z₁ z₂ : FrPt Xo c K) (T : ∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) K),
+      (∀ b, (T b).BlockTriangular id) → (∀ b, (T b).det ≠ 0) → FrChg (fun b => (T b).transpose) 1 z₁ z₂ →
+      (∏ b, ∏ i, T b i i ^ k b) * evR Xo c F z₂ = (∏ b, ∏ i, T b i i ^ a b i) * evR Xo c F z₁) :
+    G.IsHomogeneous (∑ b, ∑ i, a b i) := by
   classical
-  intro E _ _ _ H Dw l Xo c K _ _ y a n F hF
-  have : CharZero K := charZero_of_injective_algebraMap (algebraMap c.F K).injective
-  obtain ⟨G, hG⟩ := exists_isFrPoly_field E H Dw l Xo c K y a n F hF
-  refine ⟨G, hG, ?_⟩
-  have hrefl : FrMap (AlgHom.id c.F K) y y := GlobalTheory.Frames.frMapUniq_refl y
-  have hGK : ∀ (z' : FrPt Xo c K) (Y : ∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) K),
-      (∀ b, (Y b).det ≠ 0) → FrChg (fun b => (Y b).transpose) 1 y z' → evR Xo c F z' = evalFr G Y := by
-    intro z' Y hY h
-    have h1 := hG K (AlgHom.id c.F K) y z' Y (fun b => (hY b).isUnit) hrefl h
-    have h2 : MvPolynomial.map (AlgHom.id c.F K).toRingHom G = G := MvPolynomial.map_id G
-    rwa [h2] at h1
   have hev : ∀ Y : ∀ b : E →+* ℂ, Matrix (Fin (Dw.mult b)) (Fin (Dw.mult b)) K,
       evalFr (∏ b, blockDetPoly K Dw.mult b) Y = ∏ b, (Y b).det := fun Y => by
     simp only [← evalFr_blockDetPoly Dw.mult _ Y]
@@ -346,25 +364,44 @@ theorem exists_isFrPoly_isHomogeneous : ∀ (E : Type) [Field E] [NumberField E]
       exact (Finset.prod_ne_zero_iff.1 h1) b (Finset.mem_univ b)
     have hTtri : ∀ b, (T b).BlockTriangular id := fun b => Matrix.blockTriangular_diagonal _
     have hTd : ∀ b, (T b).det ≠ 0 := fun b => by simp [T]
-    obtain ⟨z₁, h₁, -⟩ := GlobalTheory.Frames.existsUnique_frChg E H Dw l Xo c K y (fun b => (X b).transpose) 1
+    obtain ⟨z₁, h₁, -⟩ := GlobalTheory.Frames.existsUnique_frChg E H Dw l Xo c K y₀ (fun b => (X b).transpose) 1
       (fun b' => by rw [Matrix.det_transpose]; exact (hX b').isUnit)
     obtain ⟨z₂, h₂, -⟩ := GlobalTheory.Frames.existsUnique_frChg E H Dw l Xo c K z₁ (fun b => (T b).transpose) 1
       (fun b' => by rw [Matrix.det_transpose]; exact (hTd b').isUnit)
     rw [Units.val_one] at h₁ h₂
-    have h₃ := (GlobalTheory.Frames.frChg_refl_and_comp E H Dw l Xo c K y z₁ z₂).2 _ _ _ _ h₁ h₂
+    have h₃ := (GlobalTheory.Frames.frChg_refl_and_comp E H Dw l Xo c K y₀ z₁ z₂).2 _ _ _ _ h₁ h₂
     simp only [← Matrix.transpose_mul, _root_.mul_one] at h₃
-    have e₁ := hGK z₁ X hX h₁
-    have e₂ := hGK z₂ (fun b' => X b' * T b')
+    have e₁ := hGY z₁ X hX h₁
+    have e₂ := hGY z₂ (fun b' => X b' * T b')
       (fun b' => by rw [Matrix.det_mul]; exact mul_ne_zero (hX b') (hTd b')) h₃
-    have e₃ := evR_frChg_mul_triangular E H Dw l Xo c K a n F hF z₁ z₂ T hTtri hTd h₂
-    have p₁ : (∏ b, ∏ i, T b i i ^ a (b, i)) = 2 ^ (∑ τ, ∑ i : Fin (Dw.mult τ), a (τ, (i : ℕ))) := by
+    have e₃ := hB z₁ z₂ T hTtri hTd h₂
+    have p₁ : (∏ b, ∏ i, T b i i ^ a b i) = 2 ^ (∑ b, ∑ i, a b i) := by
       simp only [T, Matrix.diagonal_apply_eq, Finset.prod_pow_eq_pow_sum]
     have p₂ : evalFr G (fun b' => X b' * T b') = MvPolynomial.eval (fun v => 2 * x v) G := by
       unfold evalFr
       congr 2
       funext v
       simp [X, T, Matrix.mul_diagonal, mul_comm]
-    rw [← p₂, ← e₂, e₃, p₁, e₁]
-    rfl
+    have p₃ : (∏ b, (X b * T b).det ^ k b) = (∏ b, (X b).det ^ k b) * ∏ b, ∏ i, T b i i ^ k b := by
+      rw [← Finset.prod_mul_distrib]
+      refine Finset.prod_congr rfl fun b _ => ?_
+      rw [Matrix.det_mul, mul_pow, Matrix.det_of_isUpperTriangular (hTtri b), Finset.prod_pow]
+    have e₁' : MvPolynomial.eval x G = (∏ b, (X b).det ^ k b) * evR Xo c F z₁ := by
+      rw [e₁]; rfl
+    rw [← p₂, ← e₂, p₃, _root_.mul_assoc, e₃, p₁, e₁']
+    ring
+
+theorem exists_isFrPoly_isHomogeneous : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : ReciprocityTheory.ChartRestriction.G.Geo.Tor.Host E) (Dw : Datum H) (l : Level H) (Xo : Moduli Dw l) (c : Coeff l) (K : Type) [Field K] [Algebra c.F K] (y : FrPt Xo c K) (a : (E →+* ℂ) × ℕ → ℕ) (n : ℕ), ∀ F ∈ sec Xo c a n, ∃ G : MvPolynomial (FrVar Dw.mult) K, GlobalTheory.LamT.IsFrPoly F y G ∧ G.IsHomogeneous (∑ τ, ∑ i : Fin (Dw.mult τ), a (τ, (i : ℕ))) := by
+  classical
+  intro E _ _ _ H Dw l Xo c K _ _ y a n F hF
+  have : CharZero K := charZero_of_injective_algebraMap (algebraMap c.F K).injective
+  obtain ⟨G, hG⟩ := exists_isFrPoly_field E H Dw l Xo c K y a n F hF
+  refine ⟨G, hG, isHomogeneous_of_evalFr_det_pow E H Dw l Xo c K y (fun _ => 0) (fun b i => a (b, i)) F G ?_ ?_⟩
+  · intro z' Y hY h
+    have h1 := hG K (AlgHom.id c.F K) y z' Y (fun b => (hY b).isUnit) (GlobalTheory.Frames.frMapUniq_refl y) h
+    have h2 : MvPolynomial.map (AlgHom.id c.F K).toRingHom G = G := MvPolynomial.map_id G
+    simpa [h2] using h1
+  · intro z₁ z₂ T hTtri hTd h₂
+    simpa using evR_frChg_mul_triangular E H Dw l Xo c K a n F hF z₁ z₂ T hTtri hTd h₂
 
 end GlobalTheory.LamT.FieldPoly
