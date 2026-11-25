@@ -1,6 +1,7 @@
 module
 
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing
+public import Mathlib.Data.Int.Log
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.Locfin
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.ReNonnegPsd
 public import Mathlib.Analysis.LocallyConvex.HahnBanach
@@ -17,29 +18,442 @@ public import Mathlib.Algebra.Order.Chebyshev
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.SBridgeAlt
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GProdScale
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GRDual
-public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GSmMin
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GThick
-public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfGRLip
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.RhoNonnegBis
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.TransZ
 import Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.LowbdSmul
-import Mathlib.Tactic.Linter.HaveILetI
-import Mathlib.Tactic.Linter.Style
-import Std.Tactic.BVDecide.Normalize.Prop
 import Mathlib.RingTheory.Etale.Weakly
 
--- This file was produced by scripts/clump.py from the modules listed below.
--- Members: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.BQRSingle, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GCount, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GProper, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GRSmooth, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GTrans, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GbGSmooth, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QuadBd, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfDerB, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfGFin, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QRNonneg, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.RhoNonneg, Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.SPUOf
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.BQRSingle =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.BQRSingle", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.Locfin\nimport Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.LowbdSmul\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.ReNonnegPsd\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.LocallyConvex.AbsConvexOpen\npublic import Mathlib.Analysis.LocallyConvex.HahnBanach\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Henselian\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.RegularLocalRing.Defs\nimport Mathlib.RingTheory.SimpleRing.Principal\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.HaveILetI\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
 @[expose] public section
-
 noncomputable section
 
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL PositivityTheory.KB PositivityTheory.KB.SmoothPartitionUnityBasic.BasicAux
 open scoped ComplexOrder
+open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
+
+section
+open Matrix UpperTheory.V.KT Filter Topology
+
+namespace PositivityTheory.KB.SmoothPartitionUnityBasic
+
+private theorem rho_one {x : ℝ} (hx : x ≤ 1) : rho x = 1 := Real.smoothTransition.one_of_one_le (by linarith)
+private theorem rho_zero {x : ℝ} (hx : 4 ≤ x) : rho x = 0 := Real.smoothTransition.zero_of_nonpos (by linarith)
+
+private theorem chi_rho_lip : ∃ K : ℝ, 0 ≤ K ∧
+    (∀ x y : ℝ, |Real.smoothTransition x - Real.smoothTransition y| ≤ K * |x - y|) ∧
+    ∀ a b : ℝ, |rho a - rho b| ≤ K * |a - b| := by
+  obtain ⟨K, hK⟩ := (Real.smoothTransition.contDiff (n := 1)).contDiffOn.exists_lipschitzOnWith
+    (s := Set.Icc (0 : ℝ) 1) one_ne_zero (convex_Icc 0 1) isCompact_Icc
+  have hc (x y : ℝ) : |Real.smoothTransition x - Real.smoothTransition y| ≤ K * |x - y| := by
+    rw [← Real.smoothTransition.projIcc (x := x), ← Real.smoothTransition.projIcc (x := y)]
+    have hq := hK.dist_le_mul _ (Set.projIcc 0 1 zero_le_one x).2 _ (Set.projIcc 0 1 zero_le_one y).2
+    have hp := (LipschitzWith.projIcc (zero_le_one (α := ℝ))).dist_le_mul x y
+    simp only [Real.dist_eq, Subtype.dist_eq, NNReal.coe_one, one_mul] at hq hp
+    exact hq.trans (mul_le_mul_of_nonneg_left hp K.2)
+  refine ⟨K, K.2, hc, fun a b => (hc _ _).trans (mul_le_mul_of_nonneg_left ?_ K.2)⟩
+  rw [show (4 - a) / 3 - (4 - b) / 3 = (b - a) / 3 by ring, abs_div, abs_sub_comm]
+  linarith [abs_nonneg (a - b), show |(3 : ℝ)| = 3 by norm_num]
+
+section
+variable {L : Type} [Field L] [NumberField L] {N : ℕ}
+
+private theorem q_zero' (h : HS L N) : q h 0 = 0 := by
+  simp [q, qR, show toR (0 : Lat L N) = 0 from funext fun _ => funext fun _ => map_zero _]
+
+private theorem near {y0 : HS L N} (h0 : y0 ∈ Pos L N) : ∀ᶠ y in 𝓝 y0, Cl (1 / 2) y0 y := by
+  have hq {f : HS L N × VR L N → HS L N} (hf : Continuous f) : Continuous fun p => qR (f p) p.2 := by
+    have hv (w) (i j : Fin N) : Continuous fun p : HS L N × VR L N => (f p).1 w i j :=
+      (continuous_apply j).comp ((continuous_apply i).comp ((continuous_apply w).comp (continuous_subtypeVal.comp hf)))
+    have hz (w) (i : Fin N) : Continuous fun p : HS L N × VR L N => p.2 w i :=
+      (continuous_apply i).comp ((continuous_apply w).comp continuous_snd)
+    simp only [qR, mat, dotProduct, mulVec, Matrix.of_apply, Pi.star_apply]
+    exact continuous_finsetSum _ fun w _ => Complex.continuous_re.comp (continuous_finsetSum _ fun i _ =>
+      ((hz w i).star).mul (continuous_finsetSum _ fun j _ => (hv w i j).mul (hz w j)))
+  have hc : Continuous fun p : HS L N × VR L N => |qR p.1 p.2 - qR y0 p.2| - 1 / 2 * qR y0 p.2 :=
+    ((hq continuous_fst).sub (hq continuous_const)).abs.sub (continuous_const.mul (hq continuous_const))
+  have hev : ∀ᶠ y in 𝓝 y0, ∀ u ∈ Metric.sphere (0 : VR L N) 1, |qR y u - qR y0 u| < 1 / 2 * qR y0 u := by
+    refine (isCompact_sphere _ _).eventually_forall_of_forall_eventually fun u hu => ?_
+    obtain ⟨w0, hw0⟩ : ∃ w, u w ≠ 0 := by
+      by_contra hc'; push Not at hc'; exact absurd (funext hc') (by rintro rfl; simp at hu)
+    have hpos : 0 < qR y0 u := lt_of_lt_of_le ((Complex.pos_iff.1 ((h0 w0).dotProduct_mulVec_pos hw0)).1)
+      (Finset.single_le_sum (fun w _ => (Complex.nonneg_iff.1 ((h0 w).posSemidef.dotProduct_mulVec_nonneg (u w))).1) (Finset.mem_univ w0))
+    have hneg : |qR y0 u - qR y0 u| - 1 / 2 * qR y0 u < 0 := by simp; linarith
+    filter_upwards [hc.continuousAt.eventually (gt_mem_nhds hneg)] with p hp using by linarith
+  filter_upwards [hev] with y hy z
+  rcases eq_or_ne z 0 with rfl | hz
+  · simp [qR]
+  · have hn : 0 < ‖z‖ := norm_pos_iff.2 hz
+    obtain ⟨u, hu, t, ht, rfl⟩ : ∃ u ∈ Metric.sphere (0 : VR L N) 1, ∃ t : ℝ, 0 < t ∧ z = t • u :=
+      ⟨‖z‖⁻¹ • z, by rw [mem_sphere_zero_iff_norm, norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ hn.ne'],
+        ‖z‖, hn, by rw [smul_smul, mul_inv_cancel₀ hn.ne', one_smul]⟩
+    have hsm (x : HS L N) : qR x (t • u) = t ^ 2 * qR x u := by
+      simp only [qR, Finset.mul_sum]; refine Finset.sum_congr rfl fun w _ => ?_
+      rw [show (t • u) w = (t : ℂ) • u w from funext fun _ => Complex.real_smul, mulVec_smul, star_smul, dotProduct_smul, smul_dotProduct]
+      simp only [smul_eq_mul, Complex.star_def, Complex.conj_ofReal, Complex.re_ofReal_mul]; ring
+    rw [hsm y, hsm y0, ← mul_sub, abs_mul, abs_of_pos (sq_pos_of_pos ht)]
+    linarith [mul_lt_mul_of_pos_left (hy u hu) (sq_pos_of_pos ht)]
+
+private theorem zed_supp {y : HS L N} {s : ℝ} (hs : 0 < s) {F : Finset (Lat L N)}
+    (hF : ∀ v, q y v < 4 * s → v ∈ F) : zed s y = ∑ v ∈ F, rho (q y v / s) :=
+  finsum_eq_sum_of_support_subset _ fun v hv =>
+    Finset.mem_coe.2 (by_contra fun hc => hv (rho_zero ((le_div_iff₀ hs).2 (le_of_not_gt (hc ∘ hF v)))))
+
+private def Xk (k : ℤ) (y : HS L N) : ℝ := Real.smoothTransition (zed ((4 : ℝ) ^ k) y - 1)
+private def Tk (k : ℤ) (y : HS L N) : ℝ := (4 : ℝ) ^ k * (Xk k y - Xk (k - 1) y)
+private def nu (y : HS L N) : ℝ := ∑ᶠ k : ℤ, Tk k y
+
+private theorem Xk_one (hB : Basic) (hN : 1 ≤ N) {y : HS L N} (hy : y ∈ Pos L N) {k : ℤ}
+    (hl : lam y ≤ (4 : ℝ) ^ k) : Xk k y = 1 := by
+  classical
+  obtain ⟨-, -, ⟨v0, hv0, hq0⟩, -, hfin⟩ := (hB L N hN).1 y hy
+  have hs : (0 : ℝ) < (4 : ℝ) ^ k := by positivity
+  have h2 : (2 : ℝ) ≤ zed ((4 : ℝ) ^ k) y := by
+    rw [zed_supp hs (F := (hfin (4 * (4 : ℝ) ^ k)).toFinset ∪ {0, v0}) fun v hv => Finset.mem_union_left _ ((hfin _).mem_toFinset.2 hv.le)]
+    refine le_trans ?_ (Finset.sum_le_sum_of_subset_of_nonneg Finset.subset_union_right fun _ _ _ => Real.smoothTransition.nonneg _)
+    rw [Finset.sum_pair hv0.symm, q_zero', zero_div, rho_one (by norm_num), rho_one ((div_le_one hs).2 (hq0.trans_le hl))]; norm_num
+  exact Real.smoothTransition.one_of_one_le (by linarith)
+
+private theorem Xk_zero (hB : Basic) (hN : 1 ≤ N) {y : HS L N} (hy : y ∈ Pos L N) {k : ℤ}
+    (hl : (4 : ℝ) ^ (k + 1) ≤ lam y) : Xk k y = 0 := by
+  obtain ⟨-, h2, -⟩ := (hB L N hN).1 y hy
+  rw [zpow_add_one₀ (by norm_num : (4 : ℝ) ≠ 0)] at hl
+  rw [Xk, zed, finsum_eq_single _ (0 : Lat L N) fun v hv =>
+    rho_zero ((le_div_iff₀ (by positivity)).2 (by linarith [h2 v hv])),
+    q_zero', zero_div, rho_one (by norm_num), sub_self, Real.smoothTransition.zero]
+
+private theorem nu_eq (hB : Basic) (hN : 1 ≤ N) {y : HS L N} (hy : y ∈ Pos L N) {a b : ℤ}
+    (ha : (4 : ℝ) ^ a ≤ lam y) (hb : lam y ≤ (4 : ℝ) ^ b) : nu y = ∑ k ∈ Finset.Icc a b, Tk k y :=
+  finsum_eq_sum_of_support_subset _ fun k hk => by
+    change (4 : ℝ) ^ k * (Xk k y - Xk (k - 1) y) ≠ 0 at hk
+    have h1 : (4 : ℝ) ^ (k - 1) < lam y := lt_of_not_ge fun hc => hk (by
+      rw [Xk_one hB hN hy hc, Xk_one hB hN hy (hc.trans (zpow_le_zpow_right₀ (by norm_num) (by omega))), sub_self, mul_zero])
+    have h2 : lam y < (4 : ℝ) ^ (k + 1) := lt_of_not_ge fun hc => hk (by
+      rw [Xk_zero hB hN hy hc, Xk_zero hB hN hy ((zpow_le_zpow_right₀ (by norm_num) (by omega)).trans hc), sub_self, mul_zero])
+    have e1 := (zpow_lt_zpow_iff_right₀ (by norm_num : (1 : ℝ) < 4)).1 (ha.trans_lt h2)
+    have e2 := (zpow_lt_zpow_iff_right₀ (by norm_num : (1 : ℝ) < 4)).1 (h1.trans_le hb)
+    rw [Finset.mem_coe, Finset.mem_Icc]; omega
+
+private theorem nu_cmp (hB : Basic) (hN : 1 ≤ N) {y : HS L N} (hy : y ∈ Pos L N) :
+    lam y / 4 ≤ nu y ∧ nu y ≤ 4 * lam y := by
+  obtain ⟨hl, -⟩ := (hB L N hN).1 y hy
+  set m := Int.log 4 (lam y)
+  have hm1 : (4 : ℝ) ^ m ≤ lam y := by simpa using Int.zpow_log_le_self (b := 4) (by norm_num) hl
+  have hm2 : lam y < (4 : ℝ) ^ (m + 1) := by simpa using Int.lt_zpow_succ_log_self (b := 4) (by norm_num) (lam y)
+  have e : nu y = (4 : ℝ) ^ m * Xk m y + (4 : ℝ) ^ (m + 1) * (1 - Xk m y) := by
+    rw [nu_eq hB hN hy hm1 hm2.le, show Finset.Icc m (m + 1) = {m, m + 1} by ext k; simp; omega, Finset.sum_pair (by omega)]
+    unfold Tk; rw [Xk_zero hB hN hy (k := m - 1) (by rw [sub_add_cancel]; exact hm1),
+      add_sub_cancel_right, Xk_one hB hN hy (k := m + 1) hm2.le]; ring
+  rw [zpow_add_one₀ (by norm_num : (4 : ℝ) ≠ 0)] at e hm2
+  have hP : (0 : ℝ) < (4 : ℝ) ^ m := by positivity
+  have xb1 := mul_nonneg hP.le (Real.smoothTransition.nonneg (zed ((4 : ℝ) ^ m) y - 1))
+  have xb2 := mul_le_of_le_one_right hP.le (Real.smoothTransition.le_one (zed ((4 : ℝ) ^ m) y - 1))
+  dsimp [Xk] at e; exact ⟨by linarith, by linarith⟩
+
+private theorem win_of_cl (hB : Basic) (hN : 1 ≤ N) {y0 y : HS L N} (h0 : y0 ∈ Pos L N) {δ : ℝ}
+    (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) (hcl : Cl δ y0 y) :
+    y ∈ Pos L N ∧ (4 : ℝ) ^ (Int.log 4 (lam y0) - 1) ≤ lam y ∧ lam y ≤ (4 : ℝ) ^ (Int.log 4 (lam y0) + 2) := by
+  have hyP := ((hB L N hN).2.2.2.1 δ hδ0 hδ y0 h0 y hcl).1
+  obtain ⟨hl, h2, ⟨v0, hv0, hq0⟩, -⟩ := (hB L N hN).1 y0 h0
+  obtain ⟨-, h2', ⟨v1, hv1, hq1⟩, -⟩ := (hB L N hN).1 y hyP
+  have c1 := abs_le.1 (hcl (toR v1)); have c0 := abs_le.1 (hcl (toR v0))
+  dsimp [q] at hq0 hq1 h2 h2'; rw [hq0] at c0; rw [hq1] at c1
+  have lo : (1 - δ) * lam y0 ≤ lam y := by linarith [h2 v1 hv1, mul_le_mul_of_nonneg_left (h2 v1 hv1) (by linarith : 0 ≤ 1 - δ), c1.1]
+  have hi : lam y ≤ (1 + δ) * lam y0 := by linarith [h2' v0 hv0, c0.2]
+  set m := Int.log 4 (lam y0)
+  have hm1 : (4 : ℝ) ^ m ≤ lam y0 := by simpa using Int.zpow_log_le_self (b := 4) (by norm_num) hl
+  have hm2 : lam y0 < (4 : ℝ) ^ (m + 1) := by simpa using Int.lt_zpow_succ_log_self (b := 4) (by norm_num) (lam y0)
+  rw [zpow_sub_one₀ (by norm_num), zpow_add₀ (by norm_num)]; rw [zpow_add_one₀ (by norm_num)] at hm2; norm_num
+  have hdl := mul_le_mul_of_nonneg_right hδ hl.le
+  exact ⟨hyP, by linarith [zpow_pos (by norm_num : (0 : ℝ) < 4) m], by linarith [zpow_pos (by norm_num : (0 : ℝ) < 4) m]⟩
+end
+
+theorem gSmMin : GSmMin := by
+  intro hB hC L _ _ N hN
+  refine ⟨fun h => nu (dualH h), ?_, ?_, ?_, ?_⟩
+  · refine ContDiffOn.comp (g := nu) (f := dualH) (t := Pos L N) (fun y0 h0 => ?_)
+      (hB L N hN).2.2.2.2.2 fun h hh => ((hB L N hN).1 h hh).2.2.2.1
+    obtain ⟨-, -, -, -, hfin0⟩ := (hB L N hN).1 y0 h0
+    let F (j : ℤ) := (hfin0 (8 * (4 : ℝ) ^ j)).toFinset
+    let Z (j : ℤ) (y : HS L N) : ℝ := ∑ v ∈ F j, rho ((UpperTheory.V.KT.ev v).toContinuousLinearMap y / (4 : ℝ) ^ j)
+    have hZ (j : ℤ) : ContDiff ℝ (⊤ : ℕ∞) (Z j) := ContDiff.sum fun v _ => Real.smoothTransition.contDiff.comp
+      ((contDiff_const.sub ((UpperTheory.V.KT.ev v).toContinuousLinearMap.contDiff.div_const _)).div_const _)
+    let m := Int.log 4 (lam y0)
+    let G (y : HS L N) : ℝ := ∑ k ∈ Finset.Icc (m - 1) (m + 2),
+      (4 : ℝ) ^ k * (Real.smoothTransition (Z k y - 1) - Real.smoothTransition (Z (k - 1) y - 1))
+    have hG : ContDiff ℝ (⊤ : ℕ∞) G := ContDiff.sum fun k _ => contDiff_const.mul
+      ((Real.smoothTransition.contDiff.comp ((hZ k).sub contDiff_const)).sub
+        (Real.smoothTransition.contDiff.comp ((hZ (k - 1)).sub contDiff_const)))
+    refine hG.contDiffAt.congr_of_eventuallyEq ?_ |>.contDiffWithinAt
+    filter_upwards [near h0] with y hy
+    obtain ⟨hyP, w1, w2⟩ := win_of_cl hB hN h0 (by norm_num) le_rfl hy
+    rw [nu_eq hB hN hyP w1 w2]; refine Finset.sum_congr rfl fun k _ => ?_
+    have hz (j : ℤ) : zed ((4 : ℝ) ^ j) y = Z j y := by
+      rw [zed_supp (by positivity) (F := F j) fun v hv => (hfin0 _).mem_toFinset.2
+        (by show q y0 v ≤ 8 * (4 : ℝ) ^ j; dsimp [q] at hv ⊢; linarith [(abs_le.1 (hy (toR v))).1])]; rfl
+    simp only [Tk, Xk, hz]
+  · intro γ h hh; obtain ⟨γ', hγ'⟩ := (hB L N hN).2.2.1 γ
+    have hz (s : ℝ) (y : HS L N) : zed s (ac γ' y) = zed s y := by
+      unfold zed; simp_rw [(hB L N hN).2.1 γ' y]; exact finsum_comp_equiv (MulAction.toPerm γ'⁻¹) (f := fun v => rho (q y v / s))
+    simp only [hγ' h hh, nu, Tk, Xk, hz]
+  · refine ⟨1 / 4, 4, by norm_num, fun h hh => ?_⟩
+    obtain ⟨a, b⟩ := nu_cmp hB hN ((hB L N hN).1 h hh).2.2.2.1
+    exact ⟨by unfold lamD; linarith, by unfold lamD; linarith⟩
+  · obtain ⟨K, hK0, hKc, hKr⟩ := chi_rho_lip; obtain ⟨Cc, _, hCc⟩ := hC L N 256
+    set A := K * (Cc * (8 * K))
+    refine ⟨1024 * A, fun δ0 hδ00 hδ0 h hh k hk => ?_⟩
+    set y := dualH h; set y' := dualH k; set δ := 2 * δ0
+    have hy : y ∈ Pos L N := ((hB L N hN).1 h hh).2.2.2.1
+    have hcl : Cl δ y y' := ((hB L N hN).2.2.2.1 δ0 hδ00 (by linarith) h hh k hk).2
+    have hδ0' : 0 ≤ δ := by linarith
+    have hδ : δ ≤ 1 / 2 := by linarith
+    obtain ⟨hl, h2, -, -, hfin⟩ := (hB L N hN).1 y hy
+    have hnn (v : Lat L N) : 0 ≤ q y v := by
+      rcases eq_or_ne v 0 with rfl | hv; · simp [q_zero']
+      exact hl.le.trans (h2 v hv)
+    set m := Int.log 4 (lam y)
+    have hm1 : (4 : ℝ) ^ m ≤ lam y := by simpa using Int.zpow_log_le_self (b := 4) (by norm_num) hl
+    obtain ⟨-, w1, w2⟩ := win_of_cl hB hN hy (y := y) le_rfl (by norm_num) fun _ => by simp
+    obtain ⟨hy', w1', w2'⟩ := win_of_cl hB hN hy hδ0' hδ hcl
+    have e16 : (4 : ℝ) ^ (m + 2) = 16 * (4 : ℝ) ^ m := by rw [zpow_add₀ (by norm_num : (4 : ℝ) ≠ 0), mul_comm]; norm_num
+    have hq (v : Lat L N) : |q y' v - q y v| ≤ δ * q y v := hcl (toR v)
+    have hbig : (({v : Lat L N | q y v ≤ 128 * lam y}.ncard : ℕ) : ℝ) ≤ Cc := by
+      have hset : {v : Lat L N | q y v ≤ lam y / 2} = {0} :=
+        Set.ext fun v => ⟨fun hv => by_contra fun hne => by linarith [h2 v hne, show q y v ≤ lam y / 2 from hv],
+          fun hv => by rw [Set.mem_singleton_iff.1 hv]; change q y 0 ≤ _; rw [q_zero']; positivity⟩
+      have := hCc y hy (lam y / 2) (by positivity)
+      rw [hset, Set.ncard_singleton, show 256 * (lam y / 2) = 128 * lam y by ring] at this; simpa using this
+    have hX (j : ℤ) (hj : j ≤ m + 2) : |Xk j y' - Xk j y| ≤ A * δ := by
+      unfold Xk; have hs : (0 : ℝ) < (4 : ℝ) ^ j := by positivity
+      have hs16 : (4 : ℝ) ^ j ≤ 16 * lam y := by linarith [zpow_le_zpow_right₀ (by norm_num : (1 : ℝ) ≤ 4) hj]
+      let Fj := (hfin (8 * (4 : ℝ) ^ j)).toFinset
+      rw [zed_supp hs (F := Fj) (fun v hv => (hfin _).mem_toFinset.2
+        (by show q y v ≤ 8 * (4 : ℝ) ^ j; linarith [(abs_le.1 (hq v)).1, mul_le_mul_of_nonneg_right hδ (hnn v)])),
+        zed_supp hs (F := Fj) (fun v hv => (hfin _).mem_toFinset.2 (by show q y v ≤ 8 * (4 : ℝ) ^ j; linarith))]
+      refine (hKc _ _).trans ?_; rw [sub_sub_sub_cancel_right, ← Finset.sum_sub_distrib]
+      have hterm (v) (hvF : v ∈ Fj) : |rho (q y' v / (4 : ℝ) ^ j) - rho (q y v / (4 : ℝ) ^ j)| ≤ 8 * K * δ := by
+        have hvq : q y v ≤ 8 * (4 : ℝ) ^ j := (hfin _).mem_toFinset.1 hvF
+        refine (hKr _ _).trans ?_; rw [← sub_div, abs_div, abs_of_pos hs]
+        have h3 : |q y' v - q y v| / (4 : ℝ) ^ j ≤ 8 * δ := by rw [div_le_iff₀ hs]; linarith [hq v, mul_le_mul_of_nonneg_left hvq hδ0']
+        linarith [mul_le_mul_of_nonneg_left h3 hK0]
+      have hc : ((Fj.card : ℕ) : ℝ) ≤ Cc := by
+        rw [← Set.ncard_eq_toFinset_card _ (hfin _)]; refine le_trans ?_ hbig
+        exact_mod_cast Set.ncard_le_ncard (t := {v | q y v ≤ 128 * lam y})
+          (fun v hv => by change q y v ≤ _ at hv ⊢; linarith) (hfin _)
+      calc K * |∑ v ∈ Fj, (rho (q y' v / (4 : ℝ) ^ j) - rho (q y v / (4 : ℝ) ^ j))|
+          ≤ K * ∑ v ∈ Fj, (8 * K * δ) := mul_le_mul_of_nonneg_left ((Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum hterm)) hK0
+        _ ≤ A * δ := by
+            rw [Finset.sum_const, nsmul_eq_mul]
+            linarith [mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hc (by positivity : 0 ≤ 8 * K * δ)) hK0,
+              show K * (Cc * (8 * K * δ)) = A * δ by ring]
+    have hdiff : nu y' - nu y = ∑ k ∈ Finset.Icc (m - 1) (m + 2), (Tk k y' - Tk k y) := by
+      rw [nu_eq hB hN hy' w1' w2', nu_eq hB hN hy w1 w2, ← Finset.sum_sub_distrib]
+    rw [hdiff]; have hnu := (nu_cmp hB hN hy).1
+    calc |∑ k ∈ Finset.Icc (m - 1) (m + 2), (Tk k y' - Tk k y)|
+        ≤ ∑ k ∈ Finset.Icc (m - 1) (m + 2), (4 : ℝ) ^ (m + 2) * (2 * (A * δ)) := by
+          refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun k hk' => ?_); rw [Finset.mem_Icc] at hk'
+          rw [show Tk k y' - Tk k y = (4 : ℝ) ^ k * ((Xk k y' - Xk k y) - (Xk (k - 1) y' - Xk (k - 1) y))
+            by unfold Tk; ring, abs_mul, abs_of_pos (by positivity)]
+          have b1 := abs_le.1 (hX k hk'.2); have b2 := abs_le.1 (hX (k - 1) (by omega))
+          exact mul_le_mul (zpow_le_zpow_right₀ (by norm_num) hk'.2) (abs_le.2 ⟨by linarith, by linarith⟩) (abs_nonneg _) (by positivity)
+      _ = 128 * ((4 : ℝ) ^ m * (A * δ)) := by
+          rw [Finset.sum_const, Int.card_Icc, nsmul_eq_mul, show (m + 2 + 1 - (m - 1)).toNat = 4 by omega, e16]; ring
+      _ ≤ 1024 * A * δ0 * nu y := by
+          have hAd : 0 ≤ A * δ := by positivity
+          linarith [mul_le_mul_of_nonneg_right hm1 hAd, mul_le_mul_of_nonneg_right hnu hAd, show 512 * A * δ * nu y = 1024 * A * δ0 * nu y by ring]
+
+end PositivityTheory.KB.SmoothPartitionUnityBasic
+end
+
+section
+open UpperTheory.V.KT
+
+namespace PositivityTheory.KB.SmoothPartitionUnityBasic
+
+private theorem sum_four_zpow_le (T : Finset ℤ) :
+    ∀ m : ℤ, (∀ j ∈ T, j ≤ m) → ∑ j ∈ T, (4 : ℝ) ^ j ≤ 4 / 3 * (4 : ℝ) ^ m := by
+  induction T using Finset.induction_on_max with
+  | empty => intro _ _; simp only [Finset.sum_empty]; positivity
+  | insert a s ha ih =>
+    intro m hm; rw [Finset.sum_insert fun h => lt_irrefl a (ha a h)]
+    have h1 := ih (a - 1) fun j hj => by have := ha j hj; omega
+    rw [zpow_sub_one₀ (by norm_num : (4 : ℝ) ≠ 0)] at h1
+    linarith [zpow_le_zpow_right₀ (by norm_num : (1 : ℝ) ≤ 4) (hm a (Finset.mem_insert_self a s))]
+
+theorem pf_GRLip : GRLip := by
+  intro hB hR hT L _ _ N hN μ hμ
+  obtain ⟨CT, hCT⟩ := hT L N hN
+  have hB1 := hB L N hN; have hR1 := hR L N hN μ hμ
+  obtain ⟨-, -, ⟨c, _, hc, hcC⟩, ⟨Cμ, hCμ⟩⟩ := hμ
+  obtain ⟨K, hK⟩ := (Real.smoothTransition.contDiff (n := 1)).contDiffOn.exists_lipschitzOnWith
+    (s := Set.Icc (0 : ℝ) 1) one_ne_zero (convex_Icc 0 1) isCompact_Icc
+  have hrho_lip (x y : ℝ) : |rho x - rho y| ≤ K * |x - y| := by
+    rw [rho, rho, ← Real.smoothTransition.projIcc (x := (4 - x) / 3),
+      ← Real.smoothTransition.projIcc (x := (4 - y) / 3)]
+    have hq := hK.dist_le_mul _ (Set.projIcc 0 1 zero_le_one ((4 - x) / 3)).2
+      _ (Set.projIcc 0 1 zero_le_one ((4 - y) / 3)).2
+    have hp := (LipschitzWith.projIcc (zero_le_one (α := ℝ))).dist_le_mul ((4 - x) / 3) ((4 - y) / 3)
+    simp only [Real.dist_eq, Subtype.dist_eq, NNReal.coe_one, one_mul] at hq hp
+    refine hq.trans (mul_le_mul_of_nonneg_left (hp.trans ?_) K.2)
+    rw [show (4 - x) / 3 - (4 - y) / 3 = (y - x) / 3 by ring, abs_div, abs_sub_comm]
+    linarith [abs_nonneg (x - y), show |(3 : ℝ)| = 3 by norm_num]
+  set Cm := |Cμ|; set Ct := |CT|
+  set C1 := 1 + 6 * Cm + 2 * Cm ^ 2 + 80 * (K : ℝ) * Cm
+  set C2 := Ct * 256 / (9 * c) + 2 * Cm * 256 / c
+  refine ⟨C1 + C2, by positivity, fun δ hδ0 hδ4 h hh k hk z => ?_⟩
+  have hkP : k ∈ Pos L N := (hB1.2.2.2.1 δ hδ0 (by linarith) h hh k hk).1
+  have hμP (g) (hg : g ∈ Pos L N) : 0 < μ g :=
+    lt_of_lt_of_le (mul_pos hc (hB1.1 _ (hB1.1 g hg).2.2.2.1).1) (hcC g hg).1
+  have hlamh : 0 < lam h := (hB1.1 h hh).1
+  have hlamDh : 0 < lamD h := (hB1.1 _ (hB1.1 h hh).2.2.2.1).1
+  set a := μ h; set b := μ k
+  have ha0 : 0 < a := hμP h hh; have hb0 : 0 < b := hμP k hkP
+  have hlamk : 3 / 4 * lam h ≤ lam k := by
+    obtain ⟨v, hv, hqv⟩ := (hB1.1 k hkP).2.2.1
+    have h1 := (hB1.1 h hh).2.1 v hv; have h2 := abs_le.mp (hk (toR v))
+    dsimp [q] at hqv h1; nlinarith
+  set lo : ℤ := Int.log 4 (3 * lam h / 16)
+  set hi : ℤ := max (Int.log 4 (4 / a)) (Int.log 4 (4 / b))
+  set S : Finset ℤ := Finset.Icc lo hi
+  have hlo' : 3 * lam h / 64 < (4 : ℝ) ^ lo := by
+    have e := Int.lt_zpow_succ_log_self (R := ℝ) (b := 4) (by norm_num) (3 * lam h / 16)
+    rw [Nat.cast_ofNat, zpow_add_one₀ (by norm_num)] at e; linarith
+  have hlo2 : (4 : ℝ) ^ lo ≤ 3 * lam h / 16 := by
+    simpa using Int.zpow_log_le_self (R := ℝ) (b := 4) (by norm_num) (by positivity : 0 < 3 * lam h / 16)
+  have hret (g) (hg : g ∈ Pos L N) (hlg : 3 / 4 * lam h ≤ lam g) (hgi : Int.log 4 (4 / μ g) ≤ hi) :
+      qR (ret μ g) z = μ g * qR g z + ∑ j ∈ S, rho ((4 : ℝ) ^ j * μ g) * qR (term ((4 : ℝ) ^ j) g) z := by
+    rw [ret, finsum_eq_sum_of_support_subset _ (s := S) fun j hj => ?_]
+    · rw [← evR_apply, map_add, map_smul, map_sum]; simp
+    · rw [Finset.mem_coe, Finset.mem_Icc]; by_contra hjs; apply hj
+      rcases not_and_or.mp hjs with hjl | hjr
+      · have e1 : (4 : ℝ) ^ (j + 1) ≤ (4 : ℝ) ^ lo := zpow_le_zpow_right₀ (by norm_num) (by omega)
+        rw [zpow_add_one₀ (by norm_num)] at e1
+        rw [(hCT ((4 : ℝ) ^ j) (by positivity) g hg 0).2.1 (by linarith), smul_zero]
+      · have e1 := Int.lt_zpow_succ_log_self (R := ℝ) (b := 4) (by norm_num) (4 / μ g)
+        rw [Nat.cast_ofNat] at e1
+        have e2 : 4 / μ g < (4 : ℝ) ^ j := e1.trans_le (zpow_le_zpow_right₀ (by norm_num) (by omega))
+        rw [div_lt_iff₀ (hμP g hg)] at e2
+        rw [rho, Real.smoothTransition.zero_of_nonpos (by linarith), zero_smul]
+  have hhi' : (4 : ℝ) ^ hi * min a b ≤ 4 := by
+    have eA (x : ℝ) (hx : 0 < x) : (4 : ℝ) ^ Int.log 4 (4 / x) * x ≤ 4 := by
+      have e := Int.zpow_log_le_self (R := ℝ) (b := 4) (by norm_num) (div_pos (by norm_num : (0 : ℝ) < 4) hx)
+      rwa [Nat.cast_ofNat, le_div_iff₀ hx] at e
+    dsimp only [hi]
+    rcases max_choice (Int.log 4 (4 / a)) (Int.log 4 (4 / b)) with hle | hle <;> rw [hle]
+    · exact (mul_le_mul_of_nonneg_left (min_le_left _ _) (by positivity)).trans (eA a ha0)
+    · exact (mul_le_mul_of_nonneg_left (min_le_right _ _) (by positivity)).trans (eA b hb0)
+  set Q := qR h z; set Q' := qR k z
+  set r : ℤ → ℝ := fun j => rho ((4 : ℝ) ^ j * a); set r' : ℤ → ℝ := fun j => rho ((4 : ℝ) ^ j * b)
+  set t : ℤ → ℝ := fun j => qR (term ((4 : ℝ) ^ j) h) z; set t' : ℤ → ℝ := fun j => qR (term ((4 : ℝ) ^ j) k) z
+  refine le_trans ?_ (mul_le_mul_of_nonneg_left ((hR1 h hh).2.2 z) (by positivity))
+  rw [hret k hkP hlamk (le_max_right _ _), hret h hh (by linarith) (le_max_left _ _)]
+  have hQ : 0 ≤ Q := by have e := (hCT 1 one_pos h hh z).1; linarith
+  have hQQ : |Q' - Q| ≤ δ * Q := hk z
+  have hQ'0 : 0 ≤ Q' := by linarith [(abs_le.mp hQQ).1, mul_le_mul_of_nonneg_right hδ4 hQ]
+  have hQ'5 : Q' ≤ 5 / 4 * Q := by linarith [(abs_le.mp hQQ).2, mul_le_mul_of_nonneg_right hδ4 hQ]
+  have hab : |b - a| ≤ Cm * δ * a := (hCμ δ hδ0 hδ4 h hh k hk).trans
+    (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_abs_self _) hδ0) ha0.le)
+  have hr (j : ℤ) : 0 ≤ r j ∧ r j ≤ 1 := ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
+  have hr' (j : ℤ) : 0 ≤ r' j ∧ r' j ≤ 1 := ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
+  have ht (j : ℤ) := (hCT ((4 : ℝ) ^ j) (by positivity) h hh z).1
+  have ht' (j : ℤ) := (hCT ((4 : ℝ) ^ j) (by positivity) k hkP z).1
+  have hGS : ∑ j ∈ S, ((4 : ℝ) ^ j)⁻¹ ≤ 256 / (9 * c) * (a * (lam h * lamD h)⁻¹) := by
+    have hl1 : (lam h)⁻¹ ≤ a * (lam h * lamD h)⁻¹ / c := by
+      rw [inv_eq_one_div, div_le_div_iff₀ hlamh hc]
+      calc 1 * c = c * lamD h * ((lam h * lamD h)⁻¹ * lam h) := by field_simp
+        _ ≤ a * ((lam h * lamD h)⁻¹ * lam h) := mul_le_mul_of_nonneg_right (hcC h hh).1 (by positivity)
+        _ = a * (lam h * lamD h)⁻¹ * lam h := by ring
+    calc ∑ j ∈ S, ((4 : ℝ) ^ j)⁻¹ = ∑ j ∈ S.map ⟨_, neg_injective⟩, (4 : ℝ) ^ j := by simp [_root_.zpow_neg]
+      _ ≤ 4 / 3 * (4 : ℝ) ^ (-lo) := sum_four_zpow_le _ (-lo) (by simp [S, Finset.mem_Icc]; omega)
+      _ ≤ 4 / 3 * (64 / (3 * lam h)) := by
+          rw [_root_.zpow_neg]; gcongr; rw [← inv_div]; exact inv_anti₀ (by positivity) hlo'.le
+      _ ≤ 256 / (9 * c) * (a * (lam h * lamD h)⁻¹) := by
+          rw [show 4 / 3 * (64 / (3 * lam h)) = 256 / 9 * (lam h)⁻¹ by ring,
+            show 256 / (9 * c) * (a * (lam h * lamD h)⁻¹) = 256 / 9 * (a * (lam h * lamD h)⁻¹ / c) by ring]; gcongr
+  refine le_trans ?_ (show C1 * (δ * (a * Q)) + C2 * (δ * (a * Q * (lam h * lamD h)⁻¹)) ≤
+      (C1 + C2) * (1 + (lam h * lamD h)⁻¹) * δ * (a * Q) by
+    have : (C1 + C2) * (1 + (lam h * lamD h)⁻¹) * δ * (a * Q) =
+      (C1 + C2) * (δ * (a * Q)) + (C1 + C2) * (δ * (a * Q * (lam h * lamD h)⁻¹)) := by ring
+    linarith [show 0 ≤ C2 * (δ * (a * Q)) by positivity, show 0 ≤ C1 * (δ * (a * Q * (lam h * lamD h)⁻¹)) by positivity])
+  rcases le_or_gt (Cm * δ) (1 / 2) with hs | hl
+  · have hba : |b - a| ≤ a / 2 := by linarith [mul_le_mul_of_nonneg_right hs ha0.le]
+    have hhia : (4 : ℝ) ^ hi * a ≤ 8 := by
+      linarith [mul_le_mul_of_nonneg_left (le_min (by linarith : a / 2 ≤ a) (by linarith [(abs_le.mp hba).1] : a / 2 ≤ b))
+        (by positivity : 0 ≤ (4 : ℝ) ^ hi)]
+    have hSA : ∑ j ∈ S, |r' j - r j| * t' j ≤ 80 * K * Cm * (δ * (a * Q)) := by
+      have hA (j : ℤ) : |r' j - r j| * t' j ≤ 6 * K * |b - a| * Q' * a * (4 : ℝ) ^ j := by
+        have h4 : 0 < (4 : ℝ) ^ j := by positivity
+        by_cases hj : (4 : ℝ) ^ j * (3 / 2 * a) ≤ 1
+        · rw [show r j = 1 from Real.smoothTransition.one_of_one_le (by linarith [mul_le_mul_of_nonneg_left (by linarith : a ≤ 3 / 2 * a) h4.le]),
+            show r' j = 1 from Real.smoothTransition.one_of_one_le (by linarith [mul_le_mul_of_nonneg_left (by linarith [(abs_le.mp hba).2] : b ≤ 3 / 2 * a) h4.le]),
+            sub_self, abs_zero, zero_mul]; positivity
+        · have k1 : |r' j - r j| ≤ K * ((4 : ℝ) ^ j * |b - a|) := by
+            simpa [r, r', ← mul_sub, abs_mul, abs_of_pos h4] using hrho_lip ((4 : ℝ) ^ j * b) ((4 : ℝ) ^ j * a)
+          calc |r' j - r j| * t' j ≤ K * ((4 : ℝ) ^ j * |b - a|) * (4 / (4 : ℝ) ^ j * Q') :=
+                mul_le_mul k1 (ht' j).2 (ht' j).1 (by positivity)
+            _ = 4 * K * |b - a| * Q' := by field_simp
+            _ ≤ 4 * K * |b - a| * Q' * ((4 : ℝ) ^ j * (3 / 2 * a)) := le_mul_of_one_le_right (by positivity) (le_of_not_ge hj)
+            _ = 6 * K * |b - a| * Q' * a * (4 : ℝ) ^ j := by ring
+      calc ∑ j ∈ S, |r' j - r j| * t' j ≤ 6 * K * |b - a| * Q' * a * ∑ j ∈ S, (4 : ℝ) ^ j := by
+            rw [Finset.mul_sum]; exact Finset.sum_le_sum fun j _ => hA j
+        _ ≤ 6 * K * |b - a| * Q' * a * (4 / 3 * (4 : ℝ) ^ hi) := by
+            gcongr; exact sum_four_zpow_le S hi fun j hj => (Finset.mem_Icc.mp hj).2
+        _ = 8 * K * |b - a| * Q' * ((4 : ℝ) ^ hi * a) := by ring
+        _ ≤ 8 * K * (Cm * δ * a) * (5 / 4 * Q) * 8 := by gcongr
+        _ = 80 * K * Cm * (δ * (a * Q)) := by ring
+    have hSB : ∑ j ∈ S, r j * |t' j - t j| ≤ Ct * 256 / (9 * c) * (δ * (a * Q * (lam h * lamD h)⁻¹)) := by
+      calc ∑ j ∈ S, r j * |t' j - t j| ≤ Ct * δ * Q * ∑ j ∈ S, ((4 : ℝ) ^ j)⁻¹ := by
+            rw [Finset.mul_sum]; refine Finset.sum_le_sum fun j _ => ?_
+            refine (mul_le_of_le_one_left (abs_nonneg _) (hr j).2).trans
+              (((hCT _ (by positivity) h hh z).2.2 δ hδ0 hδ4 k hk).trans ?_)
+            rw [div_eq_mul_inv, show Ct * δ * Q * ((4 : ℝ) ^ j)⁻¹ = |CT| * (δ * ((4 : ℝ) ^ j)⁻¹ * Q) by ring]
+            linarith [mul_le_mul_of_nonneg_right (le_abs_self CT) (by positivity : 0 ≤ δ * ((4 : ℝ) ^ j)⁻¹ * Q)]
+        _ ≤ Ct * δ * Q * (256 / (9 * c) * (a * (lam h * lamD h)⁻¹)) := by gcongr
+        _ = Ct * 256 / (9 * c) * (δ * (a * Q * (lam h * lamD h)⁻¹)) := by ring
+    calc |(b * Q' + ∑ j ∈ S, r' j * t' j) - (a * Q + ∑ j ∈ S, r j * t j)|
+        ≤ |(b - a) * Q' + a * (Q' - Q)| + ∑ j ∈ S, (|r' j - r j| * t' j + r j * |t' j - t j|) := by
+          rw [← sub_add_sub_comm, ← Finset.sum_sub_distrib, show b * Q' - a * Q = (b - a) * Q' + a * (Q' - Q) by ring]
+          refine (abs_add_le _ _).trans (add_le_add le_rfl ((Finset.abs_sum_le_sum_abs _ _).trans
+            (Finset.sum_le_sum fun j _ => ?_)))
+          rw [show r' j * t' j - r j * t j = (r' j - r j) * t' j + r j * (t' j - t j) by ring]
+          exact (abs_add_le _ _).trans_eq (by rw [abs_mul, abs_mul, abs_of_nonneg (ht' j).1, abs_of_nonneg (hr j).1])
+      _ ≤ (Cm * δ * a * (5 / 4 * Q) + a * (δ * Q)) +
+            (80 * K * Cm * (δ * (a * Q)) + Ct * 256 / (9 * c) * (δ * (a * Q * (lam h * lamD h)⁻¹))) := by
+          rw [Finset.sum_add_distrib]; refine add_le_add ((abs_add_le _ _).trans ?_) (add_le_add hSA hSB)
+          rw [abs_mul, abs_of_nonneg hQ'0, abs_mul, abs_of_pos ha0]
+          exact add_le_add (mul_le_mul hab hQ'5 hQ'0 (by positivity)) (mul_le_mul_of_nonneg_left hQQ ha0.le)
+      _ ≤ C1 * (δ * (a * Q)) + C2 * (δ * (a * Q * (lam h * lamD h)⁻¹)) := by
+          have : (5 / 4 * Cm + 1 + 80 * (K : ℝ) * Cm) * (δ * (a * Q)) ≤ C1 * (δ * (a * Q)) :=
+            mul_le_mul_of_nonneg_right (by linarith [show 0 ≤ 19 / 4 * Cm + 2 * Cm ^ 2 by positivity]) (by positivity)
+          linarith [show 0 ≤ 2 * Cm * 256 / c * (δ * (a * Q * (lam h * lamD h)⁻¹)) by positivity]
+  · have hU0 : 0 ≤ b * Q' + ∑ j ∈ S, r' j * t' j := add_nonneg (by positivity) (Finset.sum_nonneg fun j _ => mul_nonneg (hr' j).1 (ht' j).1)
+    have hV0 : 0 ≤ a * Q + ∑ j ∈ S, r j * t j := add_nonneg (by positivity) (Finset.sum_nonneg fun j _ => mul_nonneg (hr j).1 (ht j).1)
+    have hbQ : b * Q' + a * Q ≤ (3 + Cm) * (a * Q) := by
+      have hbb : b ≤ a * (1 + Cm / 4) := by linarith [(abs_le.mp hab).2, mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hδ4 (abs_nonneg Cμ)) ha0.le]
+      linarith [mul_le_mul hbb hQ'5 hQ'0 (by positivity), show a * (1 + Cm / 4) * (5 / 4 * Q) = 5 / 4 * (a * Q) + 5 / 16 * (Cm * (a * Q)) by ring,
+        show 0 ≤ a * Q by positivity, show 0 ≤ Cm * (a * Q) by positivity]
+    have hS9 : (∑ j ∈ S, r' j * t' j) + ∑ j ∈ S, r j * t j ≤ 256 / c * (a * Q * (lam h * lamD h)⁻¹) := by
+      calc (∑ j ∈ S, r' j * t' j) + ∑ j ∈ S, r j * t j ≤ 9 * Q * ∑ j ∈ S, ((4 : ℝ) ^ j)⁻¹ := by
+            rw [← Finset.sum_add_distrib, Finset.mul_sum]; refine Finset.sum_le_sum fun j _ => ?_
+            have m1 := (mul_le_of_le_one_left (ht' j).1 (hr' j).2).trans (ht' j).2
+            have m2 := (mul_le_of_le_one_left (ht j).1 (hr j).2).trans (ht j).2
+            have : 4 / (4 : ℝ) ^ j * Q' + 4 / (4 : ℝ) ^ j * Q = (4 * Q' + 4 * Q) * ((4 : ℝ) ^ j)⁻¹ := by ring
+            exact (by linarith : _ ≤ (4 * Q' + 4 * Q) * ((4 : ℝ) ^ j)⁻¹).trans (mul_le_mul_of_nonneg_right (by linarith) (by positivity))
+        _ ≤ 9 * Q * (256 / (9 * c) * (a * (lam h * lamD h)⁻¹)) := by gcongr
+        _ = 256 / c * (a * Q * (lam h * lamD h)⁻¹) := by ring
+    have h1 : 1 ≤ 2 * Cm * δ := by linarith
+    calc |(b * Q' + ∑ j ∈ S, r' j * t' j) - (a * Q + ∑ j ∈ S, r j * t j)|
+        ≤ 1 * ((3 + Cm) * (a * Q)) + 1 * (256 / c * (a * Q * (lam h * lamD h)⁻¹)) := by rw [abs_le]; constructor <;> linarith
+      _ ≤ (2 * Cm * δ) * ((3 + Cm) * (a * Q)) + (2 * Cm * δ) * (256 / c * (a * Q * (lam h * lamD h)⁻¹)) := by gcongr
+      _ ≤ C1 * (δ * (a * Q)) + C2 * (δ * (a * Q * (lam h * lamD h)⁻¹)) := by
+          linarith [show (2 * Cm * δ) * ((3 + Cm) * (a * Q)) + (2 * Cm * δ) * (256 / c * (a * Q * (lam h * lamD h)⁻¹)) =
+              (6 * Cm + 2 * Cm ^ 2) * (δ * (a * Q)) + (2 * Cm * 256 / c) * (δ * (a * Q * (lam h * lamD h)⁻¹)) by ring,
+            show 0 ≤ (1 + 80 * (K : ℝ) * Cm) * (δ * (a * Q)) by positivity,
+            show 0 ≤ Ct * 256 / (9 * c) * (δ * (a * Q * (lam h * lamD h)⁻¹)) by positivity]
+
+end PositivityTheory.KB.SmoothPartitionUnityBasic
+end
+
+section
+open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL PositivityTheory.KB PositivityTheory.KB.SmoothPartitionUnityBasic.BasicAux
 
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
@@ -203,20 +617,7 @@ theorem pf_Basic : Basic := by
     exact P.contDiff.comp_contDiffOn hF
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
-
 end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.BQRSingle =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GCount =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GCount", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\npublic import Mathlib.Analysis.Matrix.PosDef\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.WittVector.IsPoly\nimport Mathlib.Tactic.Basify\nimport Mathlib.Tactic.ENatToNat\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.Style\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Tactic.ReduceModChar\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
 
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
@@ -497,21 +898,6 @@ theorem pf_GCount : GCount := by
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
 
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GCount =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GProper =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GProper", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\npublic import Mathlib.Analysis.Matrix.PosDef\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Henselian\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.RegularLocalRing.Defs\nimport Mathlib.RingTheory.SimpleRing.Principal\nimport Mathlib.RingTheory.WittVector.IsPoly\nimport Mathlib.Tactic.Basify\nimport Mathlib.Tactic.ENatToNat\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.Style\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Tactic.ReduceModChar\nimport Mathlib.Tactic.TypeStar\nimport Mathlib.Topology.Sheaves.Init\nimport Std.Tactic.BVDecide.Normalize.Prop\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
-open scoped ComplexOrder
-
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
 private theorem qR_smul_VR {L : Type} [Field L] [NumberField L] {N : ℕ} (h : HS L N) (c : ℝ)
@@ -681,21 +1067,6 @@ theorem pf_GProper : GProper := by
   exact Set.Finite.of_finite_image ((Set.Finite.pi fun _ => hF).subset (Set.image_subset_iff.mpr hmaps)) hinj
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
-
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GProper =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GRSmooth =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GRSmooth", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.Locfin\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.LocallyConvex.AbsConvexOpen\npublic import Mathlib.Analysis.LocallyConvex.HahnBanach\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.WittVector.IsPoly\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.Style\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Tactic.ReduceModChar\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
-open scoped ComplexOrder
 
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
@@ -917,21 +1288,6 @@ theorem pf_GRSmooth : GRSmooth := by
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
 
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GRSmooth =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GTrans =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GTrans", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.Grampd\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.RealVec\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.HermiteNormalForms.Realsurj\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Etale.Weakly\nimport Mathlib.RingTheory.PiTensorProduct\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.SimpleRing.Principal\nimport Mathlib.RingTheory.TotallySplit\nimport Mathlib.Tactic.Basify\nimport Mathlib.Tactic.ENatToNat\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.HaveILetI\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
-open scoped ComplexOrder
-
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
 private theorem tr_eq (L : Type) [Field L] [NumberField L] (hC : IsTotallyComplex L) (a : 𝓞 L) :
@@ -1070,21 +1426,6 @@ theorem pf_GTrans : GTrans := by
   exact hc
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
-
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GTrans =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GbGSmooth =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GbGSmooth", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\npublic import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.WittVector.IsPoly\nimport Mathlib.Tactic.Basify\nimport Mathlib.Tactic.ENatToNat\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.Style\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Tactic.ReduceModChar\nimport Mathlib.Topology.Sheaves.Init\nimport Mathlib.Topology.UniformSpace.Uniformizable\nimport Std.Tactic.BVDecide.Normalize.Prop\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
-open scoped ComplexOrder
 
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
@@ -1290,16 +1631,7 @@ theorem pf_GBump : GBump := by
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
 
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GbGSmooth =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QuadBd =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QuadBd", "h": "module\n\npublic import Mathlib.Analysis.Complex.Norm\npublic import Mathlib.Data.Matrix.Mul\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.CStarAlgebra.Classes\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\npublic import Mathlib.Analysis.CStarAlgebra.Basic\npublic import Mathlib.Basic.Complex.BigOperators\n\n"}
-section -- clump:auto
-@[expose] public section
-
+section
 open Matrix
 
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic.DerivationBounds
@@ -1331,17 +1663,9 @@ theorem quad_bd (N : ℕ) (V : Matrix (Fin N) (Fin N) ℂ) (M : ℝ) (hM : 0 ≤
         ring
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic.DerivationBounds
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QuadBd =====
+end
 
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfDerB =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfDerB", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QuadBd\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.LocallyConvex.AbsConvexOpen\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.WittVector.IsPoly\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Tactic.ReduceModChar\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
+section
 open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL PositivityTheory.KB PositivityTheory.KB.SmoothPartitionUnityBasic.DerivationBounds Filter Topology
 
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
@@ -1402,24 +1726,9 @@ theorem pf_DerB : DerB := by
   nlinarith
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
-
 end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfDerB =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfGFin =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfGFin", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.SimpleRing.Principal\nimport Mathlib.Tactic.Basify\nimport Mathlib.Tactic.ENatToNat\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.Style\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
-open scoped ComplexOrder
 
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
-
 
 theorem pf_GFin : GFin := by
   intro hSHt hSm hRS hRE hRL hRD hRLip hTh hPr hBu hNr hDB
@@ -1543,21 +1852,6 @@ theorem pf_GFin : GFin := by
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
 
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfGFin =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QRNonneg =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QRNonneg", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.WittVector.IsPoly\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Tactic.Polynomial.Basic\nimport Mathlib.Tactic.ReduceModChar\nimport Mathlib.Topology.Sheaves.Init\npublic import Mathlib.Algebra.Order.Chebyshev\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
-open scoped ComplexOrder
-
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
 variable {L : Type} [Field L] [NumberField L] {N : ℕ}
@@ -1601,10 +1895,6 @@ private theorem bb_sq (h : HS L N) (u v : Lat L N) :
 
 private theorem rho_mem (x : ℝ) : 0 ≤ rho x ∧ rho x ≤ 1 :=
   ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
-
-private theorem rho_one {x : ℝ} (hx : x ≤ 1) : rho x = 1 := Real.smoothTransition.one_of_one_le (by linarith)
-
-private theorem rho_zero {x : ℝ} (hx : 4 ≤ x) : rho x = 0 := Real.smoothTransition.zero_of_nonpos (by linarith)
 
 private theorem num1 {r B a F G : ℝ} (h1 : B ^ 2 ≤ r * F) (h2 : (B + a) ^ 2 ≤ r * G) : a ^ 2 / 2 ≤ r * (F + G) := by
   nlinarith [sq_nonneg (2 * B + a)]
@@ -1732,21 +2022,6 @@ theorem pf_GRLow : GRLow := by
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
 
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QRNonneg =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.RhoNonneg =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.RhoNonneg", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.Smoothing\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Algebra.Order.Star.Real\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.RingTheory.SimpleRing.Principal\nimport Mathlib.Tactic.Basify\nimport Mathlib.Tactic.ENatToNat\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
-open NumberField Matrix UpperTheory.V.KT UpperTheory.V.KL
-open scoped ComplexOrder
-
 namespace PositivityTheory.KB.SmoothPartitionUnityBasic
 
 variable {L : Type} [Field L] [NumberField L] {N : ℕ}
@@ -1872,16 +2147,6 @@ theorem pf_GREqv : GREqv := by
 
 end PositivityTheory.KB.SmoothPartitionUnityBasic
 
-end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.RhoNonneg =====
-
--- ===== clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.SPUOf =====
--- clump-header: {"m": "Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.SPUOf", "h": "module\n\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.SBridgeAlt\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.BQRSingle\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GCount\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GProdScale\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GProper\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GRDual\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GRSmooth\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GSmMin\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GThick\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GTrans\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.GbGSmooth\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfDerB\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfGFin\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.PfGRLip\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.QRNonneg\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.RhoNonneg\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.RhoNonnegBis\npublic import Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.TransZ\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
 namespace PositivityTheory.KB
 
 open SmoothPartitionUnityBasic
@@ -1896,6 +2161,3 @@ theorem sPU_of : SHt → SPU := fun hH =>
     (pf_GRLip pf_Basic hE hL) (pf_GThick pf_Basic hT) hP (pf_GBump pf_Basic hP) (pf_GNrm pf_Basic) pf_DerB
 
 end PositivityTheory.KB
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.AutomorphicArithmetic.AutomorphicVarieties.LiteratureResults.KTheoryStability.ReductionBoundsTorsion.PartitionUnitySmooth.SPUOf =====
