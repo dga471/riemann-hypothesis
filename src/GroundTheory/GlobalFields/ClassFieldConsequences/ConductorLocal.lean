@@ -3,6 +3,7 @@ module
 public import GroundTheory.GlobalFields.ClassFieldConsequences.CongruenceSubgroupLeStandardOpenSubgroup
 public import GroundTheory.GlobalFields.NormResidueSymbol.RangeFiniteLocalNormLeKerLocalSymbol
 public import GroundTheory.GlobalFields.ClassFieldConsequences.RayClassFieldLocal
+import GroundTheory.GlobalFields.TateThesis.EulerFactorsFourierFinite
 import Mathlib.Tactic.TypeStar
 
 @[expose] public section
@@ -41,44 +42,8 @@ end Modulus
 
 theorem multiplicity_finprod_asIdeal_pow_eq {a : HeightOneSpectrum (𝓞 K) → ℕ}
     (ha : (support a).Finite) (v : HeightOneSpectrum (𝓞 K)) :
-    multiplicity v.asIdeal (∏ᶠ w, w.asIdeal ^ a w) = a v := by
-  classical
-  set I := ∏ᶠ w : HeightOneSpectrum (𝓞 K), w.asIdeal ^ a w
-  have hI : I ≠ ⊥ := finprod_asIdeal_pow_ne_bot a
-  have h1 : a v ≤ multiplicity v.asIdeal I := (finprod_asIdeal_pow_dvd_iff ha hI).1 dvd_rfl v
-  refine le_antisymm ?_ h1
-  by_contra h2
-  push Not at h2
-  set b : HeightOneSpectrum (𝓞 K) → ℕ := fun w ↦ a w + if w = v then 1 else 0
-  have hb : (support b).Finite := (ha.union (Set.finite_singleton v)).subset fun w hw ↦ by
-    by_contra hw'
-    simp only [Set.mem_union, mem_support, Set.mem_singleton_iff, not_or, not_not] at hw'
-    exact hw (by simp [b, hw'.1, hw'.2])
-  have hdvd : (∏ᶠ w, w.asIdeal ^ b w) ∣ I := by
-    refine (finprod_asIdeal_pow_dvd_iff hb hI).2 fun w ↦ ?_
-    by_cases hw : w = v
-    · subst hw
-      simp only [b, ite_true]
-      omega
-    · simp only [b, ite_eq_right hw, add_zero]
-      exact (finprod_asIdeal_pow_dvd_iff ha hI).1 dvd_rfl w
-  have hfa : HasFiniteMulSupport fun w : HeightOneSpectrum (𝓞 K) ↦ w.asIdeal ^ a w := by
-    rw [HasFiniteMulSupport, mulSupport_asIdeal_pow]; exact ha
-  have hfv : HasFiniteMulSupport fun w : HeightOneSpectrum (𝓞 K) ↦
-      w.asIdeal ^ (if w = v then 1 else 0) := by
-    refine (Set.finite_singleton v).subset fun w hw ↦ ?_
-    by_contra hw'
-    exact hw (by simp [Set.mem_singleton_iff.not.1 hw'])
-  have hsplit : (∏ᶠ w, w.asIdeal ^ b w) = I * v.asIdeal := by
-    simp only [b, pow_add]
-    rw [finprod_mul_distrib hfa hfv]
-    congr 1
-    rw [finprod_eq_single _ v fun w hw ↦ by simp [hw], ite_eq_left rfl, pow_one]
-  rw [hsplit] at hdvd
-  have h1' : I * v.asIdeal ∣ I * 1 := by rwa [mul_one]
-  have hv1 := (mul_dvd_mul_iff_left (show I ≠ 0 from hI)).1 h1'
-  rw [Ideal.dvd_iff_le, Ideal.one_eq_top, top_le_iff] at hv1
-  exact v.isPrime.ne_top hv1
+    multiplicity v.asIdeal (∏ᶠ w, w.asIdeal ^ a w) = a v :=
+  multiplicity_finprod_asIdeal_pow ha v
 
 section Local
 

@@ -1,6 +1,7 @@
 module
 
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.LelongChartLimit
+import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PSegreChart
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.StSegreChartIntegral
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.StSegreChartDim
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.StLelongPolyLimit
@@ -53,25 +54,8 @@ theorem LelongChartLimit.proof (hInt : SegreChartIntegral.Statement) (hDim : Seg
     rintro _ ⟨z, -, hzi, rfl⟩
     exact chartLift_blockNonzero σ i (by simp [σ, hzi])
 
-  have key : ∀ x ∈ segreChartSet P σ i, G =ᶠ[𝓝 x] g ∘ lam := by
-    rintro _ ⟨z, -, hzi, rfl⟩
-    by_cases hr : ‖fun a => segre z (σ a)‖ < 1 / δ + 1
-    · filter_upwards [Metric.isOpen_ball.mem_nhds (mem_ball_zero_iff.2 hr)] with y hy
-      simp [G, χ.one_of_mem_closedBall (Metric.ball_subset_closedBall hy)]
-    · have hle : ‖fun a => segre z (σ a)‖ ≤ ‖segre z‖ :=
-        (pi_norm_le_iff_of_nonneg (norm_nonneg _)).2 fun a => norm_le_pi_norm (segre z) (σ a)
-      have hcont : Continuous fun y => segre (lam y) :=
-        continuous_pi fun i' => continuous_finsetProd _ fun k _ =>
-          (continuous_apply (⟨k, i' k⟩ : Σ k, ι k)).comp hlam.continuous
-      have hO : IsOpen {y | ‖segre (lam y) i‖ < δ * ‖segre (lam y)‖} :=
-        isOpen_lt ((continuous_apply i).comp hcont).norm (continuous_const.mul hcont.norm)
-      have hx : ‖segre (lam fun a => segre z (σ a)) i‖ < δ * ‖segre (lam fun a => segre z (σ a))‖ := by
-        rw [segre_chartLift σ i z hzi, hzi, norm_one]
-        have h1 : 1 / δ < ‖segre z‖ := by linarith
-        calc (1 : ℝ) = δ * (1 / δ) := by field_simp
-          _ < δ * ‖segre z‖ := mul_lt_mul_of_pos_left h1 hδ
-      filter_upwards [hO.mem_nhds hx] with y hy
-      simp [G, hsupp _ hy]
+  have key : ∀ x ∈ segreChartSet P σ i, G =ᶠ[𝓝 x] g ∘ lam := fun x hx =>
+    GroundTheory.Heights₂.Heights.segreChart_bump_eventuallyEq σ i hδ hsupp χ rfl hx
   have hJ : ∀ J ∈ segreChartComponents P σ i, ComplexSets.zeroSet J ⊆ Ω := fun J hJ x hx =>
     chartLift_blockNonzero σ i (chart_coord_eq_one hJ hx)
 

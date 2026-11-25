@@ -1,6 +1,7 @@
 module
 
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsArith
+import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PIntegralAgainstPositive
 public import GroundTheory.HeightsAndTheta.Heights.Intersections.ArithVarZero
 import Mathlib.Algebra.Order.Star.Int
 import Mathlib.Algebra.Order.Star.Real
@@ -89,39 +90,15 @@ theorem eval_monomial_one (μ : (Σ k, ι k) →₀ ℕ) (z : (Σ k, ι k) → �
 theorem isConeTangent_of_sheet {P0 P : Ideal (MRing ι)} (hP0 : P0 ≤ P) {e : ℕ}
     {γ : (Fin e → ℂ) → (Σ k, ι k) → ℂ} {y : Fin e → ℂ} (hγ : AnalyticAt ℂ γ y)
     (hpts : ∀ᶠ y' in 𝓝 y, γ y' ∈ mcPts P) (ξ : Fin e → ℂ) :
-    IsConeTangent (Int.castRingHom ℂ) P0 (γ y) (fderiv ℂ γ y ξ) := by
-  intro f hf
-  set F := map (Int.castRingHom ℂ) f
-  have hzero : (fun w => eval w F) ∘ γ =ᶠ[𝓝 y] fun _ => (0 : ℂ) := by
-    filter_upwards [hpts] with w hw
-    exact hw.2 f (hP0 hf)
-  have hd := (ReciprocityTheory.ChartRestriction.G.ArakelovGeometry.adens_hasFDerivAt_eval F (γ y)).comp y
-    hγ.differentiableAt.hasFDerivAt
-  have h0 : HasFDerivAt ((fun w => eval w F) ∘ γ) (0 : (Fin e → ℂ) →L[ℂ] ℂ) y :=
-    (hasFDerivAt_const (0 : ℂ) y).congr_of_eventuallyEq hzero
-  have := congrArg (fun L => L ξ) (hd.unique h0)
-  simpa [ContinuousLinearMap.sum_apply, smul_eq_mul] using this
+    IsConeTangent (Int.castRingHom ℂ) P0 (γ y) (fderiv ℂ γ y ξ) :=
+  IntegralAgainstPositive.isConeTangent_of_sheet hP0 hγ hpts ξ
 
 theorem maDensity_nonneg_of_sheet {P0 P : Ideal (MRing ι)} (hP0 : P0 ≤ P) {A : HermLine ι}
     (hsp : IsSemipositiveRel P0 P A) {e : ℕ} {Ψ : (((k : K) → ι k) → ℂ) →ₗ[ℂ] (Fin (e + 1) → ℂ)}
     {y : Fin e → ℂ} {w : ((k : K) → ι k) → ℂ} {γ : (Fin e → ℂ) → (Σ k, ι k) → ℂ}
     (h : IsSheet P Ψ y w γ) :
-    0 ≤ maDensity (fun _ y' => Real.log (A.h (γ y'))) y := by
-  have hA : AnalyticAt ℂ γ y := sheet_analyticAt osgood h
-  have hpts : ∀ᶠ y' in 𝓝 y, γ y' ∈ mcPts P := h.2.mono fun _ hy' => hy'.2.1
-  have hy : γ y ∈ mcPts P := hpts.self_of_nhds
-  have hh : ContDiffAt ℝ 2 A.h (γ y) :=
-    (hsp.1.contDiffAt (isOpen_blocksNonzero.mem_nhds hy.1)).of_le (WithTop.coe_le_coe.2 le_top)
-  have hlog : ContDiffAt ℝ 2 (fun z => Real.log (A.h z)) (γ y) := hh.log (A.pos _ hy.1).ne'
-  have h2 : ContDiffAt ℝ 2 (fun y' => Real.log (A.h (γ y'))) y :=
-    hlog.comp y (hA.contDiffAt.restrict_scalars ℝ)
-  rw [ReciprocityTheory.ChartRestriction.G.ArakelovGeometry.adens_maDensity_eq_maDens]
-  refine ReciprocityTheory.AnForm.A.maDens_nonneg_of_posSemidef _ _ fun _ => ?_
-  refine ReciprocityTheory.AnForm.A.hessC_posSemidef_of_levi _ _ h2 fun ξ => ?_
-  have hl := ReciprocityTheory.AnForm.levi_comp (φ := fun z => Real.log (A.h z)) ξ hA hlog
-  change 0 ≤ ReciprocityTheory.AnForm.levi ((fun z => Real.log (A.h z)) ∘ γ) y ξ
-  rw [hl]
-  exact hsp.2 _ hy _ (isConeTangent_of_sheet hP0 hA hpts ξ)
+    0 ≤ maDensity (fun _ y' => Real.log (A.h (γ y'))) y :=
+  IntegralAgainstPositive.maDensity_nonneg_of_sheet hP0 (L := fun _ => A) (fun _ => hsp) h
 
 theorem arInt_nonpos {P0 P : Ideal (MRing ι)} (hP0 : P0 ≤ P) {A : HermLine ι}
     (hsp : IsSemipositiveRel P0 P A) {s : MRing ι}

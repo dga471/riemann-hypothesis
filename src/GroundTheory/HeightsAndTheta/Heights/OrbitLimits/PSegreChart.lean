@@ -3,7 +3,7 @@ module
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.StSegreChart
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.StSegreChartDim
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.StSegreChartIntegral
-import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Mathlib.Tactic.TypeStar
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterSheet
 public import Mathlib.Analysis.Calculus.BumpFunction.Basic
@@ -41,6 +41,35 @@ theorem isSmoothHerm_cons_expLine {K : Type*} [Fintype K] {ι : K → Type*} [�
   · exact Real.contDiff_exp.comp_contDiffOn hv.1.neg.neg
   · simpa using hL j
 
+theorem segreChart_bump_eventuallyEq {K : Type} [Fintype K] [DecidableEq K] {ι : K → Type}
+    [∀ k, Fintype (ι k)] {P : Ideal (MRing ι)} {m : ℕ} (σ : Fin m ≃ ((k : K) → ι k))
+    (i : (k : K) → ι k) {u : ((Σ k, ι k) → ℂ) → ℝ} {δ : ℝ} (hδ : 0 < δ)
+    (hsupp : ∀ z, ‖segre z i‖ < δ * ‖segre z‖ → u z = 0)
+    (χ : ContDiffBump (0 : Fin m → ℂ)) (hrin : χ.rIn = 1 / δ + 1)
+    {x : Fin m → ℂ} (hx : x ∈ segreChartSet P σ i) :
+    (fun y => χ y * u (chartLift σ i y)) =ᶠ[𝓝 x] u ∘ chartLift σ i := by
+  rcases hx with ⟨z, -, hzi, rfl⟩
+  by_cases hr : ‖fun a => segre z (σ a)‖ < 1 / δ + 1
+  · filter_upwards [Metric.isOpen_ball.mem_nhds (mem_ball_zero_iff.2 hr)] with y hy
+    have hy' : y ∈ Metric.closedBall (0 : Fin m → ℂ) χ.rIn := by
+      rw [hrin]; exact Metric.ball_subset_closedBall hy
+    simp [χ.one_of_mem_closedBall hy']
+  · have hle : ‖fun a => segre z (σ a)‖ ≤ ‖segre z‖ :=
+      (pi_norm_le_iff_of_nonneg (norm_nonneg _)).2 fun a => norm_le_pi_norm (segre z) (σ a)
+    have hcont : Continuous fun y => segre (chartLift σ i y) :=
+      continuous_pi fun i' => continuous_finsetProd _ fun k _ =>
+        (continuous_apply (⟨k, i' k⟩ : Σ k, ι k)).comp (contDiff_chartLift (n := ∞) σ i).continuous
+    have hO : IsOpen {y | ‖segre (chartLift σ i y) i‖ < δ * ‖segre (chartLift σ i y)‖} :=
+      isOpen_lt ((continuous_apply i).comp hcont).norm (continuous_const.mul hcont.norm)
+    have hx' : ‖segre (chartLift σ i fun a => segre z (σ a)) i‖ <
+        δ * ‖segre (chartLift σ i fun a => segre z (σ a))‖ := by
+      rw [segre_chartLift σ i z hzi, hzi, norm_one]
+      have h1 : 1 / δ < ‖segre z‖ := by linarith
+      calc (1 : ℝ) = δ * (1 / δ) := by field_simp
+        _ < δ * ‖segre z‖ := mul_lt_mul_of_pos_left h1 hδ
+    filter_upwards [hO.mem_nhds hx'] with y hy
+    simp [hsupp _ hy]
+
 theorem SegreChart.proof (hDim : SegreChartDim.Statement) (hInt : SegreChartIntegral.Statement) :
     SegreChart.Statement := by
   classical
@@ -61,25 +90,8 @@ theorem SegreChart.proof (hDim : SegreChartDim.Statement) (hInt : SegreChartInte
   have hpot : ∀ j, ContDiffOn ℝ ∞ (pot L j) {z | ∀ k, ∃ j, z ⟨k, j⟩ ≠ 0} := fun j =>
     (hL j).log fun z hz => ((L j).pos z hz).ne'
 
-  have key : ∀ x ∈ segreChartSet P σ i, U =ᶠ[𝓝 x] u ∘ lam := by
-    rintro _ ⟨z, -, hzi, rfl⟩
-    by_cases hr : ‖fun a => segre z (σ a)‖ < 1 / δ + 1
-    · filter_upwards [Metric.isOpen_ball.mem_nhds (mem_ball_zero_iff.2 hr)] with y hy
-      simp [U, χ.one_of_mem_closedBall (Metric.ball_subset_closedBall hy)]
-    · have hle : ‖fun a => segre z (σ a)‖ ≤ ‖segre z‖ :=
-        (pi_norm_le_iff_of_nonneg (norm_nonneg _)).2 fun a => norm_le_pi_norm (segre z) (σ a)
-      have hcont : Continuous fun y => segre (lam y) :=
-        continuous_pi fun i' => continuous_finsetProd _ fun k _ =>
-          (continuous_apply (⟨k, i' k⟩ : Σ k, ι k)).comp hlam.continuous
-      have hO : IsOpen {y | ‖segre (lam y) i‖ < δ * ‖segre (lam y)‖} :=
-        isOpen_lt ((continuous_apply i).comp hcont).norm (continuous_const.mul hcont.norm)
-      have hx : ‖segre (lam fun a => segre z (σ a)) i‖ < δ * ‖segre (lam fun a => segre z (σ a))‖ := by
-        rw [segre_chartLift σ i z hzi, hzi, norm_one]
-        have h1 : 1 / δ < ‖segre z‖ := by linarith
-        calc (1 : ℝ) = δ * (1 / δ) := by field_simp
-          _ < δ * ‖segre z‖ := mul_lt_mul_of_pos_left h1 hδ
-      filter_upwards [hO.mem_nhds hx] with y hy
-      simp [U, hsupp _ hy]
+  have key : ∀ x ∈ segreChartSet P σ i, U =ᶠ[𝓝 x] u ∘ lam := fun x hx =>
+    segreChart_bump_eventuallyEq σ i hδ hsupp χ rfl hx
   have hJ : ∀ J ∈ segreChartComponents P σ i, ComplexSets.zeroSet J ⊆ Ω := fun J hJ x hx =>
     chartLift_blockNonzero σ i (chart_coord_eq_one hJ hx)
   refine ⟨Fintype.card ((k : K) → ι k), segreChartComponents P σ i, U, V, Φ,
