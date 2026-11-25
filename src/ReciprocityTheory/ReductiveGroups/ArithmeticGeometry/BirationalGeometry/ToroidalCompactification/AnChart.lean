@@ -3,6 +3,7 @@ module
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.Calculus.FDeriv.Defs
 public import Mathlib.RingTheory.Smooth.StandardSmooth
+public import Mathlib.RingTheory.Smooth.StandardSmoothCotangent
 public import Mathlib.Analysis.Analytic.Polynomial
 public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.ContDiff
 import Mathlib.RingTheory.Coalgebra.IsFrobenius
@@ -32,13 +33,14 @@ theorem hasFDerivAt_eval {I : Type} [Fintype I] [DecidableEq I] (p : MvPolynomia
       (Filter.Eventually.of_forall fun y => by simp)
     simp [pderiv_X, Pi.single_apply, mul_add, Finset.sum_add_distrib, Finset.mul_sum, mul_comm, mul_left_comm, apply_ite]
 
-theorem anChart_alg {k A : Type} [Field k] [CommRing A] [Algebra k A] (D : ℕ) [h : Algebra.IsStandardSmoothOfRelativeDimension D k A]
+theorem anChart_alg_span {k A : Type} [Field k] [CommRing A] [Algebra k A] (D : ℕ) [h : Algebra.IsStandardSmoothOfRelativeDimension D k A]
     (σ : k →+* ℂ) (ψ₀ : A →+* ℂ) (h₀ : ψ₀.comp (algebraMap k A) = σ) :
     ∃ (N : ℕ) (g : Fin N → A) (f : Fin D → A) (B : Set (Fin D → ℂ)) (ε : ℝ) (Ψ : (Fin D → ℂ) → (A →+* ℂ)),
       0 < ε ∧ IsOpen B ∧ (∀ b ∈ B, (Ψ b).comp (algebraMap k A) = σ ∧ ∀ i, Ψ b (f i) = b i) ∧
       (∀ a, DifferentiableOn ℂ (fun b => Ψ b a) B) ∧
-      ∀ ψ : A →+* ℂ, ψ.comp (algebraMap k A) = σ → (∀ j, ‖ψ (g j) - ψ₀ (g j)‖ < ε) →
-        (fun i => ψ (f i)) ∈ B ∧ Ψ (fun i => ψ (f i)) = ψ := by
+      (∀ ψ : A →+* ℂ, ψ.comp (algebraMap k A) = σ → (∀ j, ‖ψ (g j) - ψ₀ (g j)‖ < ε) →
+        (fun i => ψ (f i)) ∈ B ∧ Ψ (fun i => ψ (f i)) = ψ) ∧
+      Submodule.span A (Set.range fun i => KaehlerDifferential.D k A (f i)) = ⊤ := by
   classical
   obtain ⟨I, J, _, _, P, hd⟩ := h.out
   have := Fintype.ofFinite I
@@ -102,7 +104,7 @@ theorem anChart_alg {k A : Type} [Field k] [CommRing A] [Algebra k A] (D : ℕ) 
     (cd.mem_toOpenPartialHomeomorph_source (f' := F') hF one_ne_zero)) (hF.continuousAt.preimage_mem_nhds (oO.mem_nhds mO)))
   let n := Fintype.equivFin I
   refine ⟨_, fun j => P.val (n.symm j), fun i => P.val (e i), em ⁻¹' O, ε, fun b => if h : em b ∈ O then Ψ _ (rel b h) else ψ₀, ε0,
-    oO.preimage em.continuous, fun b hb => ?_, fun a => ?_, fun ψ hψ hg => ?_⟩
+    oO.preimage em.continuous, fun b hb => ?_, fun a => ?_, fun ψ hψ hg => ?_, ?_⟩
   · simp only [dite_eq_left (show em b ∈ O from hb)]
     refine ⟨RingHom.ext fun r => ?_, fun i => ?_⟩
     · rw [RingHom.comp_apply, IsScalarTower.algebraMap_apply k P.Ring A, hΨ]; exact eval₂Hom_C _ _ _
@@ -128,5 +130,20 @@ theorem anChart_alg {k A : Type} [Field k] [CommRing A] [Algebra k A] (D : ℕ) 
     refine ⟨mB, (dite_eq_left mB).trans (RingHom.ext fun a => ?_)⟩
     obtain ⟨p, rfl⟩ := P.algebraMap_surjective a
     rw [hΨ, pt ψ hψ, e₁, show T.symm (Φ fun i => ψ (P.val i)) = _ from T.left_inv hx.1]
+  · rw [eq_top_iff, ← P.basisKaehler.span_eq]
+    refine Submodule.span_mono ?_
+    rintro _ ⟨i, rfl⟩
+    obtain ⟨j, hj⟩ := e.surjective ⟨i.1, i.2⟩
+    exact ⟨j, by simp [hj, P.basisKaehler_apply]⟩
+
+theorem anChart_alg {k A : Type} [Field k] [CommRing A] [Algebra k A] (D : ℕ) [h : Algebra.IsStandardSmoothOfRelativeDimension D k A]
+    (σ : k →+* ℂ) (ψ₀ : A →+* ℂ) (h₀ : ψ₀.comp (algebraMap k A) = σ) :
+    ∃ (N : ℕ) (g : Fin N → A) (f : Fin D → A) (B : Set (Fin D → ℂ)) (ε : ℝ) (Ψ : (Fin D → ℂ) → (A →+* ℂ)),
+      0 < ε ∧ IsOpen B ∧ (∀ b ∈ B, (Ψ b).comp (algebraMap k A) = σ ∧ ∀ i, Ψ b (f i) = b i) ∧
+      (∀ a, DifferentiableOn ℂ (fun b => Ψ b a) B) ∧
+      ∀ ψ : A →+* ℂ, ψ.comp (algebraMap k A) = σ → (∀ j, ‖ψ (g j) - ψ₀ (g j)‖ < ε) →
+        (fun i => ψ (f i)) ∈ B ∧ Ψ (fun i => ψ (f i)) = ψ :=
+  let ⟨N, g, f, B, ε, Ψ, h1, h2, h3, h4, h5, _⟩ := anChart_alg_span D σ ψ₀ h₀
+  ⟨N, g, f, B, ε, Ψ, h1, h2, h3, h4, h5⟩
 
 end ReciprocityTheory.ChartRestriction.G.Geo.Tor
