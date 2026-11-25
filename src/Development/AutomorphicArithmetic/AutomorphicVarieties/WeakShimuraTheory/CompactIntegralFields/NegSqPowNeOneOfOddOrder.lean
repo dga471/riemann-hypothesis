@@ -182,7 +182,9 @@ section -- clump:auto
 
 open NumberField IsDedekindDomain Formalism.ConjugateSelfDual Formalism.HC ReciprocityTheory.Gal IsLocalRing Polynomial UpperTheory.V.Base UpperTheory.V.Alg UpperTheory.V.HV UpperTheory.V.GradeZeroInterpolatingElement UpperTheory.V.Ws
 
-private theorem complex_conjugations_conjugate {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω] {σ τ : G ℚ Ω} (hσ : IsCC σ) (hτ : IsCC τ) :
+namespace UpperTheory.V.Ws.SlopeHelpers
+
+theorem complex_conjugations_conjugate {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω] {σ τ : G ℚ Ω} (hσ : IsCC σ) (hτ : IsCC τ) :
     ∃ g : G ℚ Ω, g * τ = σ * g := by
   obtain ⟨j, hj⟩ := hσ
   obtain ⟨j', hj'⟩ := hτ
@@ -192,7 +194,7 @@ private theorem complex_conjugations_conjugate {Ω : Type} [Field Ω] [CharZero 
   refine ⟨AlgHom.restrictNormal' j'.toRatAlgHom Ω, AlgEquiv.ext fun x => j.injective ?_⟩
   rw [AlgEquiv.mul_apply, AlgEquiv.mul_apply, key, hj, hj', key]
 
-private theorem fieldsEx {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω]
+theorem fieldsEx {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω]
     (hpl : ∀ p : ℕ, p.Prime → ∃ A : ValuationSubring Ω, A.valuation (p : Ω) < 1) (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime)
     (H : Subgroup (G ℚ Ω)) (hH : IsOpen (H : Set (G ℚ Ω))) (hc : commutator (G ℚ Ω) ≤ H) (cc : G ℚ Ω) (hcc : IsCC cc) (hm : cc ∈ H) :
     ∃ (K F : IntermediateField ℚ Ω) (_ : NumberField K) (_ : NumberField F) (_ : IsCMField K) (_ : IsTotallyReal F) (_ : IsAbelianGalois ℚ F)
@@ -246,13 +248,13 @@ noncomputable section SlopeTestRemainingChoices
 
 variable {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω] {l : ℕ} [Fact l.Prime] {c : Coef l}
 
-private theorem restrict_mem_fixing_subgroup {F : IntermediateField ℚ Ω} (g : G F Ω) : resQ F g ∈ F.fixingSubgroup :=
+theorem restrict_mem_fixing_subgroup {F : IntermediateField ℚ Ω} (g : G F Ω) : resQ F g ∈ F.fixingSubgroup :=
   (F.mem_fixingSubgroup_iff _).2 fun x hx => g.commutes ⟨x, hx⟩
 
-private theorem restrict_inertia_mem {F : IntermediateField ℚ Ω} [NumberField F] {A : ValuationSubring Ω} {g : G F Ω}
+theorem restrict_inertia_mem {F : IntermediateField ℚ Ω} [NumberField F] {A : ValuationSubring Ω} {g : G F Ω}
     (hg : g ∈ Ine (F := F) A) : resQ F g ∈ Ine (F := ℚ) A := ⟨hg.1, hg.2⟩
 
-private theorem neg_sq_pow_ne_one_of_odd_order {R : Type} [CommRing R] {y : Rˣ} {m : ℕ} (hm : Odd m) (h : y ^ m = 1) (hy : y ≠ 1) (h2 : (-1 : Rˣ) ≠ 1)
+theorem neg_sq_pow_ne_one_of_odd_order {R : Type} [CommRing R] {y : Rˣ} {m : ℕ} (hm : Odd m) (h : y ^ m = 1) (hy : y ≠ 1) (h2 : (-1 : Rˣ) ≠ 1)
     {n : ℕ} (h0 : 0 < n) (h4 : n ≤ 4) : (-y ^ 2) ^ n ≠ 1 := by
   intro e
   rcases Nat.even_or_odd n with hn | hn
@@ -268,23 +270,42 @@ private theorem neg_sq_pow_ne_one_of_odd_order {R : Type} [CommRing R] {y : Rˣ}
     rw [← pow_mul, (hn.mul hm).neg_pow, ← pow_mul, ← mul_assoc, mul_comm _ m, pow_mul, h, one_pow] at e2
     exact h2 e2
 
-private abbrev bU (c : Coef l) : c.Oˣ →* (ResidueField c.O)ˣ := Units.map (residue c.O : c.O →* ResidueField c.O)
+abbrev bU (c : Coef l) : c.Oˣ →* (ResidueField c.O)ˣ := Units.map (residue c.O : c.O →* ResidueField c.O)
 
-private def sgnP (pr : Bool) : ℤ := if pr then -1 else 1
+def sgnP (pr : Bool) : ℤ := if pr then -1 else 1
 
-private theorem reduction_cyclotomic_char_eq (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (chiO ℚ Ω l c.O g) = bU c (D.om g) :=
+theorem reduction_cyclotomic_char_eq (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (chiO ℚ Ω l c.O g) = bU c (D.om g) :=
   Units.ext (hD.om_bar g).symm
 
-private theorem reduction_alpha_eq_xi (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (D.al g) = bU c (D.ξ g) := by
+theorem reduction_alpha_eq_xi (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (D.al g) = bU c (D.ξ g) := by
   simp only [Raw.al, MonoidHom.mul_apply, MonoidHom.inv_apply, map_mul, map_inv, reduction_cyclotomic_char_eq D hD, mul_inv_cancel, one_mul]
 
-private theorem reduction_psi_eq_omega_pow (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (D.Psi g) = bU c (D.om g) ^ D.e * bU c (D.ψ g) := by
+theorem reduction_psi_eq_omega_pow (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (D.Psi g) = bU c (D.om g) ^ D.e * bU c (D.ψ g) := by
   simp only [Raw.Psi, UpperTheory.V.Chr.Psi, MonoidHom.mul_apply, zpow_natCast, MonoidHom.pow_apply, map_mul, map_pow, reduction_cyclotomic_char_eq D hD]
 
-private theorem character_ratios_eq (D : Raw Ω c) (pr : Bool) (g : G ℚ Ω) :
+theorem character_ratios_eq (D : Raw Ω c) (pr : Bool) (g : G ℚ Ω) :
     chi D pr 0 g * (chi D pr 1 g)⁻¹ = D.al g ∧ chi D pr 0 g * (chi D pr 2 g)⁻¹ = D.Psi g ^ sgnP pr ∧
       chi D pr 0 g * (chi D pr 3 g)⁻¹ = D.al g * D.Psi g ^ sgnP pr := by
   cases pr <;> simp [chi, lab, Raw.ps, Raw.th, sgnP, mul_comm]
+
+theorem residual_rep_trivial_iff (D : Raw Ω c) (g : G ℚ Ω) : D.rbar g = 1 ↔ bU c (D.al g) = 1 ∧ bU c (D.Psi g) = 1 := by
+  have key : ∀ i j, D.rbar g i j = residue c.O (Matrix.diagonal (fun i => (D.ps i g : c.O)) i j) := fun _ _ => rfl
+  constructor
+  · intro h
+    have h1 := key 1 1
+    have h2 := key 2 2
+    rw [h, Matrix.one_apply_eq, Matrix.diagonal_apply_eq] at h1 h2
+    exact ⟨Units.ext h2.symm, Units.ext h1.symm⟩
+  · rintro ⟨h1, h2⟩
+    have h3 : ∀ i, residue c.O (D.ps i g : c.O) = 1 := fun i => by
+      have : bU c (D.ps i g) = 1 := by
+        fin_cases i <;> simp [Raw.ps, Raw.th, h1, h2]
+      exact congrArg Units.val this
+    ext i j
+    rw [key]
+    by_cases hij : i = j
+    · subst hij; rw [Matrix.diagonal_apply_eq, Matrix.one_apply_eq, h3]
+    · rw [Matrix.diagonal_apply_ne _ hij, Matrix.one_apply_ne hij, map_zero]
 
 private def del (D : Raw Ω c) (pr : Bool) : G ℚ Ω →* (ResidueField c.O)ˣ :=
   (bU c).comp (D.al ^ 2 * (D.Psi ^ sgnP pr)⁻¹)
@@ -322,26 +343,11 @@ private theorem residual_root_character_eq_pow {D : Raw Ω c} (hD : D.Good) (T :
     rw [e, map_mul, map_zpow, map_zpow _ _ w.2, ← h, reduction_alpha_eq_xi D hD, zpow_add, zpow_mul]; rfl
   rw [← e2]; rfl
 
-private theorem residual_rep_trivial_iff (D : Raw Ω c) (g : G ℚ Ω) : D.rbar g = 1 ↔ bU c (D.al g) = 1 ∧ bU c (D.Psi g) = 1 := by
-  have key : ∀ i j, D.rbar g i j = residue c.O (Matrix.diagonal (fun i => (D.ps i g : c.O)) i j) := fun _ _ => rfl
-  constructor
-  · intro h
-    have h1 := key 1 1
-    have h2 := key 2 2
-    rw [h, Matrix.one_apply_eq, Matrix.diagonal_apply_eq] at h1 h2
-    exact ⟨Units.ext h2.symm, Units.ext h1.symm⟩
-  · rintro ⟨h1, h2⟩
-    have h3 : ∀ i, residue c.O (D.ps i g : c.O) = 1 := fun i => by
-      have : bU c (D.ps i g) = 1 := by
-        fin_cases i <;> simp [Raw.ps, Raw.th, h1, h2]
-      exact congrArg Units.val this
-    ext i j
-    rw [key]
-    by_cases hij : i = j
-    · subst hij; rw [Matrix.diagonal_apply_eq, Matrix.one_apply_eq, h3]
-    · rw [Matrix.diagonal_apply_ne _ hij, Matrix.one_apply_ne hij, map_zero]
-
 end SlopeTestRemainingChoices
+
+end UpperTheory.V.Ws.SlopeHelpers
+
+open UpperTheory.V.Ws.SlopeHelpers in
 
 theorem UpperTheory.V.Ws.exists_tame_tower_ok_three :
     ∀ {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω] {l : ℕ} [Fact l.Prime] {c : Coef l} (D : Raw Ω c), Ctx3 D → ∀ pr, LabOk D pr → ∃ T : Tower D, T.pr = pr ∧ T.Ok ∧ T.Three ∧ TameL l T.F := by

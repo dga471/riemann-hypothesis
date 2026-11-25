@@ -68,101 +68,20 @@ import Mathlib.Tactic.Polynomial.Basic
 import Mathlib.Tactic.ReduceModChar
 import Std.Tactic.BVDecide.Normalize.Prop
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.HeightAndVanishing.EtaKer
+import Development.AutomorphicArithmetic.AutomorphicVarieties.WeakShimuraTheory.CompactIntegralFields.NegSqPowNeOneOfOddOrder
 
 @[expose] public section
 
-open NumberField IsDedekindDomain Formalism.ConjugateSelfDual Formalism.HC ReciprocityTheory.Gal IsLocalRing Polynomial UpperTheory.V.Base UpperTheory.V.Alg UpperTheory.V.HV UpperTheory.V.GradeZeroInterpolatingElement UpperTheory.V.Ws
-
-private theorem complex_conjugations_conjugate' {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω] {σ τ : G ℚ Ω} (hσ : IsCC σ) (hτ : IsCC τ) :
-    ∃ g : G ℚ Ω, g * τ = σ * g := by
-  obtain ⟨j, hj⟩ := hσ
-  obtain ⟨j', hj'⟩ := hτ
-  letI : Algebra Ω ℂ := j.toAlgebra
-  haveI : IsScalarTower ℚ Ω ℂ := IsScalarTower.of_algebraMap_eq' (Subsingleton.elim _ _)
-  have key : ∀ x, j (AlgHom.restrictNormal' j'.toRatAlgHom Ω x) = j' x := fun x => AlgHom.restrictNormal_commutes j'.toRatAlgHom Ω x
-  refine ⟨AlgHom.restrictNormal' j'.toRatAlgHom Ω, AlgEquiv.ext fun x => j.injective ?_⟩
-  rw [AlgEquiv.mul_apply, AlgEquiv.mul_apply, key, hj, hj', key]
+open NumberField IsDedekindDomain Formalism.ConjugateSelfDual Formalism.HC ReciprocityTheory.Gal IsLocalRing Polynomial UpperTheory.V.Base UpperTheory.V.Alg UpperTheory.V.HV UpperTheory.V.GradeZeroInterpolatingElement UpperTheory.V.Ws UpperTheory.V.Ws.SlopeHelpers
 
 private theorem complex_conjugation_sq {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω] {σ : G ℚ Ω} (hσ : IsCC σ) : σ * σ = 1 := by
   obtain ⟨j, hj⟩ := hσ
   refine AlgEquiv.ext fun x => j.injective ?_
   exact (hj (σ x)).trans ((congrArg (starRingEnd ℂ) (hj x)).trans (Complex.conj_conj _))
 
-private theorem exists_cm_and_real_fields {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω]
-    (hpl : ∀ p : ℕ, p.Prime → ∃ A : ValuationSubring Ω, A.valuation (p : Ω) < 1) (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime)
-    (H : Subgroup (G ℚ Ω)) (hH : IsOpen (H : Set (G ℚ Ω))) (hc : commutator (G ℚ Ω) ≤ H) (cc : G ℚ Ω) (hcc : IsCC cc) (hm : cc ∈ H) :
-    ∃ (K F : IntermediateField ℚ Ω) (_ : NumberField K) (_ : NumberField F) (_ : IsCMField K) (_ : IsTotallyReal F) (_ : IsAbelianGalois ℚ F)
-    (J : Subgroup (G ℚ Ω)), Module.finrank ℚ K = 2 ∧ Even (Module.finrank ℚ F) ∧
-    (∀ p ∈ S, ∀ A : ValuationSubring Ω, A.valuation (p : Ω) < 1 → Dec (F := ℚ) A ≤ J) ∧ (∀ g : G ℚ Ω, g ^ 2 ∈ J) ∧ J ≤ K.fixingSubgroup ∧
-    F.fixingSubgroup ≤ H ∧ F.fixingSubgroup ⊓ K.fixingSubgroup = H ⊓ J ∧ ∀ A : ValuationSubring Ω, Ine (F := ℚ) A ⊓ F.fixingSubgroup ≤ K.fixingSubgroup := by
-  obtain ⟨p, η, h⟩ := quadEx Ω (-1) S hS
-  obtain ⟨p', η', h'⟩ := quadEx Ω (-1) (insert p S) fun q hq => (Finset.mem_insert.1 hq).elim (fun e => e ▸ h.prime) (hS q)
-  have hk : ∀ g, g ∈ (η * η'⁻¹).ker ↔ η g = η' g := fun g => by
-    rw [MonoidHom.mem_ker, MonoidHom.mul_apply, MonoidHom.inv_apply, mul_inv_eq_one]
-  have ho : IsOpen ((η * η'⁻¹).ker : Set (G ℚ Ω)) :=
-    Subgroup.isOpen_mono (H₁ := η.ker ⊓ η'.ker) (fun g hg => (hk g).2 (Eq.trans hg.1 (Eq.symm hg.2))) (h.opn.inter h'.opn)
-  obtain ⟨K, _, _, hK, dK⟩ := fixAb Ω η.ker h.opn (Abelianization.commutator_subset_ker _)
-  obtain ⟨F, _, _, hF, dF⟩ := fixAb Ω (H ⊓ (η * η'⁻¹).ker) (hH.inter ho) (le_inf hc (Abelianization.commutator_subset_ker _))
-  have hN : H.Normal := Subgroup.Normal.of_commutator_le _ hc
-  refine ⟨K, F, inferInstance, inferInstance, (fixInf Ω K).2 (fun σ hσ e => ?_) (dK.trans h.idx), (fixInf Ω F).1 fun σ hσ => ?_, inferInstance,
-    η.ker ⊓ η'.ker, dK.trans h.idx, ?_, fun q hq A hA => le_inf (h.split q hq A hA) (h'.split q (Finset.mem_insert_of_mem hq) A hA),
-    fun g => ⟨?_, ?_⟩, hK ▸ inf_le_left, hF ▸ inf_le_left, ?_, fun A g hg => ?_⟩
-  · rw [hK, MonoidHom.mem_ker, h.cc σ hσ] at e
-    exact absurd e (by decide)
-  · obtain ⟨g, hg⟩ := complex_conjugations_conjugate' hσ hcc
-    have e : σ = g * cc * g⁻¹ := by rw [hg, mul_inv_cancel_right]
-    rw [hF]
-    exact ⟨e ▸ hN.conj_mem cc hm g, (hk σ).2 ((h.cc σ hσ).trans (h'.cc σ hσ).symm)⟩
-  · obtain ⟨A, hA⟩ := hpl p h.prime
-    obtain ⟨g, hg, e⟩ := h.ram A hA
-    have e' : η' g = 1 := h'.split p (Finset.mem_insert_self _ _) A hA (Ine_le_Dec A hg)
-    have h2 : (η * η'⁻¹).ker.index = 2 := by
-      rw [Subgroup.index_ker]
-      have ht : (η * η'⁻¹).range = ⊤ := eq_top_iff.2 fun u _ => by
-        rcases Int.units_eq_one_or u with rfl | rfl
-        exacts [one_mem _, ⟨g, by simp [e, e']⟩]
-      rw [ht, Subgroup.card_top, Nat.card_eq_fintype_card]; rfl
-    rw [dF, even_iff_two_dvd, ← h2]
-    exact Subgroup.index_dvd_of_le inf_le_right
-  · show η (g ^ 2) = 1
-    rw [map_pow, Int.units_sq]
-  · show η' (g ^ 2) = 1
-    rw [map_pow, Int.units_sq]
-  · rw [hF, hK]
-    ext g
-    exact ⟨fun ⟨⟨a, b⟩, d⟩ => ⟨a, d, ((hk g).1 b).symm.trans d⟩, fun ⟨a, b, d⟩ => ⟨⟨a, (hk g).2 (Eq.trans b (Eq.symm d))⟩, b⟩⟩
-  · rw [hK]
-    by_cases hA : A.valuation (p : Ω) < 1
-    · have e := hg.2
-      rw [hF] at e
-      exact ((hk g).1 e.2).trans (h'.split p (Finset.mem_insert_self _ _) A hA (Ine_le_Dec A hg.1))
-    · exact h.unr A hA hg.1
-
 noncomputable section SlopeTestRemainingChoices
 
 variable {Ω : Type} [Field Ω] [CharZero Ω] [IsAlgClosure ℚ Ω] {l : ℕ} [Fact l.Prime] {c : Coef l}
-
-private theorem restrict_mem_fixing_subgroup_case_three {F : IntermediateField ℚ Ω} (g : G F Ω) : resQ F g ∈ F.fixingSubgroup :=
-  (F.mem_fixingSubgroup_iff _).2 fun x hx => g.commutes ⟨x, hx⟩
-
-private theorem restrict_inertia_mem_case_three {F : IntermediateField ℚ Ω} [NumberField F] {A : ValuationSubring Ω} {g : G F Ω}
-    (hg : g ∈ Ine (F := F) A) : resQ F g ∈ Ine (F := ℚ) A := ⟨hg.1, hg.2⟩
-
-private theorem neg_sq_pow_ne_one_case_three {R : Type} [CommRing R] {y : Rˣ} {m : ℕ} (hm : Odd m) (h : y ^ m = 1) (hy : y ≠ 1) (h2 : (-1 : Rˣ) ≠ 1)
-    {n : ℕ} (h0 : 0 < n) (h4 : n ≤ 4) : (-y ^ 2) ^ n ≠ 1 := by
-  intro e
-  rcases Nat.even_or_odd n with hn | hn
-  · rw [hn.neg_pow, ← pow_mul] at e
-    have h8 : (2 * n).Coprime m := by
-      have : 2 * n ∣ 2 ^ 3 := by
-        obtain ⟨k, rfl⟩ := hn
-        have : k = 1 ∨ k = 2 := by omega
-        rcases this with rfl | rfl <;> norm_num
-      exact Nat.Coprime.coprime_dvd_left this (Nat.Coprime.pow_left 3 ((Nat.coprime_two_left).2 hm))
-    exact hy (orderOf_eq_one_iff.1 (Nat.eq_one_of_dvd_coprimes h8 (orderOf_dvd_of_pow_eq_one e) (orderOf_dvd_of_pow_eq_one h)))
-  · have e2 : ((-y ^ 2) ^ n) ^ m = 1 := by rw [e, one_pow]
-    rw [← pow_mul, (hn.mul hm).neg_pow, ← pow_mul, ← mul_assoc, mul_comm _ m, pow_mul, h, one_pow] at e2
-    exact h2 e2
 
 private theorem neg_pow_ne_one_of_odd_order {R : Type} [CommRing R] {z : Rˣ} {m : ℕ} (hm : Odd m) (h : z ^ m = 1) (hz : z ≠ 1) (h2 : (-1 : Rˣ) ≠ 1)
     {n : ℕ} (h0 : 0 < n) (h4 : n ≤ 4) : (-z) ^ n ≠ 1 := by
@@ -171,7 +90,7 @@ private theorem neg_pow_ne_one_of_odd_order {R : Type} [CommRing R] {z : Rˣ} {m
     rw [← pow_mul, show (k + 1) * 2 = m + 1 by omega, pow_succ, h, one_mul]
   have e1 : (z ^ (k + 1)) ^ m = 1 := by rw [← pow_mul, mul_comm, pow_mul, h, one_pow]
   have e2 : z ^ (k + 1) ≠ 1 := fun h' => hz (by rw [← e, h', one_pow])
-  have := neg_sq_pow_ne_one_case_three ⟨k, hk⟩ e1 e2 h2 h0 h4
+  have := neg_sq_pow_ne_one_of_odd_order ⟨k, hk⟩ e1 e2 h2 h0 h4
   rwa [e] at this
 
 private theorem odd_order_unit_ne_neg_one {R : Type} [CommRing R] {z : Rˣ} {m : ℕ} (hm : Odd m) (h : z ^ m = 1) (h2 : (-1 : Rˣ) ≠ 1) : z ≠ -1 := by
@@ -225,28 +144,10 @@ private theorem distinct_four_eigenvalues_injective {R : Type} [CommRing R] {z :
     | exact absurd (neg_eq_iff_eq_neg.1 e.symm) hn
     | exact absurd (neg_eq_iff_eq_neg.1 e) hn
 
-private abbrev bU (c : Coef l) : c.Oˣ →* (ResidueField c.O)ˣ := Units.map (residue c.O : c.O →* ResidueField c.O)
-
-private def sgnP (pr : Bool) : ℤ := if pr then -1 else 1
-
-private theorem reduction_cyclotomic_char_eq_case_three (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (chiO ℚ Ω l c.O g) = bU c (D.om g) :=
-  Units.ext (hD.om_bar g).symm
-
-private theorem reduction_alpha_eq_xi_case_three (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (D.al g) = bU c (D.ξ g) := by
-  simp only [Raw.al, MonoidHom.mul_apply, MonoidHom.inv_apply, map_mul, map_inv, reduction_cyclotomic_char_eq_case_three D hD, mul_inv_cancel, one_mul]
-
-private theorem reduction_psi_eq_omega_pow_case_three (D : Raw Ω c) (hD : D.Good) (g : G ℚ Ω) : bU c (D.Psi g) = bU c (D.om g) ^ D.e * bU c (D.ψ g) := by
-  simp only [Raw.Psi, UpperTheory.V.Chr.Psi, MonoidHom.mul_apply, zpow_natCast, MonoidHom.pow_apply, map_mul, map_pow, reduction_cyclotomic_char_eq_case_three D hD]
-
-private theorem character_ratios_eq_case_three (D : Raw Ω c) (pr : Bool) (g : G ℚ Ω) :
-    chi D pr 0 g * (chi D pr 1 g)⁻¹ = D.al g ∧ chi D pr 0 g * (chi D pr 2 g)⁻¹ = D.Psi g ^ sgnP pr ∧
-      chi D pr 0 g * (chi D pr 3 g)⁻¹ = D.al g * D.Psi g ^ sgnP pr := by
-  cases pr <;> simp [chi, lab, Raw.ps, Raw.th, sgnP, mul_comm]
-
 private theorem residual_root_character_explicit {D : Raw Ω c} (T : Tower D) (w : ℤ × ℤ) (g : G T.F Ω) :
     T.rb w g = ((bU c (D.al (resQ T.F g)) ^ w.1 * (bU c (D.Psi (resQ T.F g)) ^ sgnP T.pr) ^ w.2 : (ResidueField c.O)ˣ) :
       ResidueField c.O) := by
-  obtain ⟨h1, h2, -⟩ := character_ratios_eq_case_three D T.pr (resQ T.F g)
+  obtain ⟨h1, h2, -⟩ := character_ratios_eq D T.pr (resQ T.F g)
   have e : (T.fr ∅).rt w g = D.al (resQ T.F g) ^ w.1 * (D.Psi (resQ T.F g) ^ sgnP T.pr) ^ w.2 := by
     rw [← h1, ← h2]; rfl
   have e2 : bU c ((T.fr ∅).rt w g) = bU c (D.al (resQ T.F g)) ^ w.1 * (bU c (D.Psi (resQ T.F g)) ^ sgnP T.pr) ^ w.2 := by
@@ -256,7 +157,7 @@ private theorem residual_root_character_explicit {D : Raw Ω c} (T : Tower D) (w
 private theorem reduced_character_quotient_explicit (D : Raw Ω c) (pr : Bool) (g : G ℚ Ω) (i : Fin 4) :
     bU c (chi D pr i g) = bU c (chi D pr 0 g) *
       ((![1, bU c (D.al g), bU c (D.Psi g) ^ sgnP pr, bU c (D.al g) * bU c (D.Psi g) ^ sgnP pr] : Fin 4 → (ResidueField c.O)ˣ) i)⁻¹ := by
-  obtain ⟨h1, h2, h3⟩ := character_ratios_eq_case_three D pr g
+  obtain ⟨h1, h2, h3⟩ := character_ratios_eq D pr g
   have k1 := congrArg (bU c) h1
   have k2 := congrArg (bU c) h2
   have k3 := congrArg (bU c) h3
@@ -266,25 +167,6 @@ private theorem reduced_character_quotient_explicit (D : Raw Ω c) (pr : Bool) (
   · simp [← k1]
   · simp [← k2]
   · simp [← k3]
-
-private theorem residual_rep_trivial_iff_case_three (D : Raw Ω c) (g : G ℚ Ω) : D.rbar g = 1 ↔ bU c (D.al g) = 1 ∧ bU c (D.Psi g) = 1 := by
-  have key : ∀ i j, D.rbar g i j = residue c.O (Matrix.diagonal (fun i => (D.ps i g : c.O)) i j) := fun _ _ => rfl
-  constructor
-  · intro h
-    have h1 := key 1 1
-    have h2 := key 2 2
-    rw [h, Matrix.one_apply_eq, Matrix.diagonal_apply_eq] at h1 h2
-    exact ⟨Units.ext h2.symm, Units.ext h1.symm⟩
-  · rintro ⟨h1, h2⟩
-    have h3 : ∀ i, residue c.O (D.ps i g : c.O) = 1 := fun i => by
-      have : bU c (D.ps i g) = 1 := by
-        fin_cases i <;> simp [Raw.ps, Raw.th, h1, h2]
-      exact congrArg Units.val this
-    ext i j
-    rw [key]
-    by_cases hij : i = j
-    · subst hij; rw [Matrix.diagonal_apply_eq, Matrix.one_apply_eq, h3]
-    · rw [Matrix.diagonal_apply_ne _ hij, Matrix.one_apply_ne hij, map_zero]
 
 end SlopeTestRemainingChoices
 
@@ -615,7 +497,7 @@ theorem UpperTheory.V.Cu.existsTensorSeedTower_holds : ExistsTensorFactorTower :
     refine (memH g).2 ⟨?_, ?_⟩
     · rw [MonoidHom.mem_ker.1 a1]
       simp [ηc, MonoidHom.mem_ker.1 a2]
-    · rw [reduction_psi_eq_omega_pow_case_three D hD, MonoidHom.mem_ker.1 a4, MonoidHom.mem_ker.1 a3]
+    · rw [reduction_psi_eq_omega_pow D hD, MonoidHom.mem_ker.1 a4, MonoidHom.mem_ker.1 a3]
       simp
   have hcomm : commutator (G ℚ Ω) ≤ H :=
     le_inf (Abelianization.commutator_subset_ker _) (Abelianization.commutator_subset_ker _)
@@ -634,10 +516,10 @@ theorem UpperTheory.V.Cu.existsTensorSeedTower_holds : ExistsTensorFactorTower :
     · rw [MonoidHom.mem_ker.1 a1]
       ext
       simp [ηc, Int.units_sq]
-    · rw [reduction_psi_eq_omega_pow_case_three D hD, ← map_pow _ _ D.e, h2e, MonoidHom.mem_ker.1 a2]
+    · rw [reduction_psi_eq_omega_pow D hD, ← map_pow _ _ D.e, h2e, MonoidHom.mem_ker.1 a2]
       simp
   obtain ⟨K, F, _, _, _, _, _, J, hK, hev, hJS, hJ2, hJK, hFH, hFK, hunr⟩ :=
-    exists_cm_and_real_fields (fun p hp => ⟨_, hD.pl_over p hp⟩) (insert q D.S)
+    fieldsEx (fun p hp => ⟨_, hD.pl_over p hp⟩) (insert q D.S)
       (fun p hp => (Finset.mem_insert.1 hp).elim (fun e => e ▸ hq) (hD.S_prime p)) H hopen hcomm D.cc hD.isCC hcc
   have hL : ∀ g, g ∈ H → g ∈ J → ∃ g' : G F Ω, resQ F g' = g ∧ resQ F g' ∈ K.fixingSubgroup := fun g a b => by
     have h : g ∈ F.fixingSubgroup ⊓ K.fixingSubgroup := hFK ▸ ⟨a, b⟩
@@ -656,7 +538,7 @@ theorem UpperTheory.V.Cu.existsTensorSeedTower_holds : ExistsTensorFactorTower :
   have hηx : ηc (g1 * g5 * g2 ^ 2) = -1 := by
     ext
     simp [ηc, map_mul, hη1, e5, Int.units_sq]
-  obtain ⟨g0, hg0, hg0K⟩ := hL (g1 * g5 * g2 ^ 2) ((memH _).2 ⟨hx.trans hηx.symm, by rw [reduction_psi_eq_omega_pow_case_three D hD, hw]; simp⟩)
+  obtain ⟨g0, hg0, hg0K⟩ := hL (g1 * g5 * g2 ^ 2) ((memH _).2 ⟨hx.trans hηx.symm, by rw [reduction_psi_eq_omega_pow D hD, hw]; simp⟩)
     (J.mul_mem (J.mul_mem (hJS 2 (Finset.mem_insert_of_mem hD.two_mem) _ (hD.pl_over 2 Nat.prime_two) (Ine_le_Dec _ i1))
       (hJS q (Finset.mem_insert_self _ _) _ (hD.pl_over q hq) (Ine_le_Dec _ i5))) (hJ2 g2))
 
@@ -673,7 +555,7 @@ theorem UpperTheory.V.Cu.existsTensorSeedTower_holds : ExistsTensorFactorTower :
   have hrb : ∀ (w : ℤ × ℤ) (g : G T.F Ω), T.rb w g =
       ((bU c (D.ξ (resQ T.F g)) ^ w.1 * (bU c (D.ψ (resQ T.F g)) ^ sgnP T.pr) ^ w.2 : (ResidueField c.O)ˣ) : ResidueField c.O) := by
     intro w g
-    rw [residual_root_character_explicit, reduction_alpha_eq_xi_case_three D hD, ((memH _).1 (hFH (restrict_mem_fixing_subgroup_case_three g))).2]
+    rw [residual_root_character_explicit, reduction_alpha_eq_xi D hD, ((memH _).1 (hFH (restrict_mem_fixing_subgroup g))).2]
   set y : (ResidueField c.O)ˣ := bU c (D.ψ g2) ^ 2 with hy
   set z : (ResidueField c.O)ˣ := y ^ sgnP T.pr with hz
   have hξ0 : bU c (D.ξ (resQ T.F g0)) = -1 := by rw [hg0, hx]; ext; simp
@@ -696,15 +578,15 @@ theorem UpperTheory.V.Cu.existsTensorSeedTower_holds : ExistsTensorFactorTower :
     rw [hrb, hξ0, hψ0]
   have hdist : ∀ i j : Fin 4, bU c (chi D T.pr i (resQ T.F g0)) = bU c (chi D T.pr j (resQ T.F g0)) → i = j := by
     intro i j e
-    rw [reduced_character_quotient_explicit D T.pr _ i, reduced_character_quotient_explicit D T.pr _ j, mul_right_inj, inv_inj, reduction_alpha_eq_xi_case_three D hD, ((memH _).1 (hFH (restrict_mem_fixing_subgroup_case_three g0))).2, hξ0,
+    rw [reduced_character_quotient_explicit D T.pr _ i, reduced_character_quotient_explicit D T.pr _ j, mul_right_inj, inv_inj, reduction_alpha_eq_xi D hD, ((memH _).1 (hFH (restrict_mem_fixing_subgroup g0))).2, hξ0,
       hψ0] at e
     refine distinct_four_eigenvalues_injective hm1 hz1 hzn i j ?_
     have e' : (![1, -1, z, -1 * z] : Fin 4 → (ResidueField c.O)ˣ) i = ![1, -1, z, -1 * z] j := e
     simpa only [neg_one_mul] using e'
   have hxK : ∀ g : G T.F Ω, resQ T.F g ∈ K'.fixingSubgroup ↔ η (resQ T.F g) = 1 := fun g => by
     rw [hK'fix, MonoidHom.mem_ker]
-  have hξF : ∀ g : G T.F Ω, D.ξ (resQ T.F g) = ηc (resQ T.F g) := fun g => ((memH _).1 (hFH (restrict_mem_fixing_subgroup_case_three g))).1
-  refine ⟨T, rfl, ⟨hlab, hev, fun A g hg => hunr A ⟨restrict_inertia_mem_case_three hg, restrict_mem_fixing_subgroup_case_three g⟩,
+  have hξF : ∀ g : G T.F Ω, D.ξ (resQ T.F g) = ηc (resQ T.F g) := fun g => ((memH _).1 (hFH (restrict_mem_fixing_subgroup g))).1
+  refine ⟨T, rfl, ⟨hlab, hev, fun A g hg => hunr A ⟨restrict_inertia_mem hg, restrict_mem_fixing_subgroup g⟩,
     fun p hp A hA => (hJS p (Finset.mem_insert_of_mem hp) A hA).trans hJK, fun w => ⟨g4, hg4K, ?_⟩,
     fun w hw => ⟨g0, hg0K, ?_⟩, fun η' _ hη' h => ?_, ⟨wTh, by decide, fun n h0 h4 => ⟨g0, hg0K, ?_⟩⟩,
     fun A hA g hg hr => ?_, ⟨m, hlm, fun g _ => ?_⟩, fun A hA g hg => ?_, fun i j hij e => ?_,
@@ -726,14 +608,14 @@ theorem UpperTheory.V.Cu.existsTensorSeedTower_holds : ExistsTensorFactorTower :
   · rw [hrb0, ← Units.val_pow_eq_pow_val, Ne, Units.val_eq_one]
     have := neg_pow_ne_one_of_odd_order hm' hzm hz1 hm1 h0 h4
     simpa [wTh, neg_one_mul] using this
-  · have h1 := ((residual_rep_trivial_iff_case_three D _).1 hr).2
-    rw [reduction_psi_eq_omega_pow_case_three D hD, MonoidHom.mem_ker.1 (o6 A (hA l (Finset.mem_singleton_self l)) (restrict_inertia_mem_case_three hg)), map_one, one_pow, one_mul] at h1
+  · have h1 := ((residual_rep_trivial_iff D _).1 hr).2
+    rw [reduction_psi_eq_omega_pow D hD, MonoidHom.mem_ker.1 (o6 A (hA l (Finset.mem_singleton_self l)) (restrict_inertia_mem hg)), map_one, one_pow, one_mul] at h1
     exact large₂.redOne c m hlm _ (by rw [← MonoidHom.pow_apply, hm]; rfl) (congrArg Units.val h1)
   · rw [← MonoidHom.pow_apply, hm]; rfl
-  · have a1 := MonoidHom.mem_ker.1 (hIl A hA (restrict_inertia_mem_case_three hg)).1
-    have a2 := MonoidHom.mem_ker.1 (hIl A hA (restrict_inertia_mem_case_three hg)).2
-    refine (residual_rep_trivial_iff_case_three D _).2 ⟨by rw [reduction_alpha_eq_xi_case_three D hD, a1, map_one], ?_⟩
-    rw [((memH _).1 (hFH (restrict_mem_fixing_subgroup_case_three g))).2, a2, map_one]
+  · have a1 := MonoidHom.mem_ker.1 (hIl A hA (restrict_inertia_mem hg)).1
+    have a2 := MonoidHom.mem_ker.1 (hIl A hA (restrict_inertia_mem hg)).2
+    refine (residual_rep_trivial_iff D _).2 ⟨by rw [reduction_alpha_eq_xi D hD, a1, map_one], ?_⟩
+    rw [((memH _).1 (hFH (restrict_mem_fixing_subgroup g))).2, a2, map_one]
   · rw [hT0] at e
     exact hij (hdist i j (Units.ext e))
   · rw [hK'd, Int.dvd_neg, Int.natCast_dvd_natCast]
