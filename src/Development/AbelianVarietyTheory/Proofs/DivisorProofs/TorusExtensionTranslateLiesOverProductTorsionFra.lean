@@ -66,207 +66,6 @@ end GlobalTheory.DvrAnyChar
 namespace GlobalTheory.Poinc.Tors.AnyField
 open GlobalTheory.TorsionAnyChar
 
-def FieldUF (p : ∀ {R : Type} [CommRing R] [IsDomain R] {I : Ideal R} {D : DegData R I}
-    {A : PolAV (Spec (CommRingCat.of (FractionRing R)))} {G : Over (Spec (CommRingCat.of R))} [GrpObj G] [IsCommMonObj G],
-    Unif I D A G → ∀ (F : Type) [Field F] [Algebra (FractionRing R) F], Prop) : Prop :=
-  AnyU fun {R} _ _ {_} {_} {_} {_} _ _ U => ∀ (F : Type) [Field F] [Algebra (FractionRing R) F], p U F
-
-def FieldD (p : ∀ {R : Type} [CommRing R] [IsDomain R] {I : Ideal R}, DegData R I →
-    ∀ (F : Type) [Field F] [Algebra (FractionRing R) F], Prop) : Prop :=
-  ∀ (R : Type) [CommRing R] [IsDomain R] (I : Ideal R), AdmBase R I → ∀ (D : DegData R I)
-    (F : Type) [Field F] [Algebra (FractionRing R) F], p D F
-
-section
-open GlobalTheory.UT.CoefBasic GlobalTheory.UT.CoefPhi
-
-theorem coefPhi_field : LL → FieldD fun {R} _ _ {I} D F _ _ => ∀ (k : ℕ), 1 ≤ k → ∀ (p : QkPt D.toPre F k) (w : Frm D.toPre F k p.g.b), w.IsGen → ∀ (g₀ g₁ : GtPtF D.toPre F), g₀.IsAdd p.g g₁ → ∀ ω₀ : Frm D.toPre F k g₀.b, ω₀.IsGen → ∃ ω₁ : Frm D.toPre F k g₁.b, ω₁.IsGen ∧ (g₀.IsZero → FrmOne ω₀ → ∀ z J, Good D.toPre.P.L z J → val ω₁ (𝟙 _) z J = val w (𝟙 _) z J) ∧ ∀ (n N : ℕ), 1 ≤ n → N = k * n → ∀ (q : QkPt D.toPre F N), q.y = n • p.y → q.g = p.g → ∀ (wN : Frm D.toPre F N q.g.b) (w₀ : Frm D.toPre F N g₀.b) (w₁ : Frm D.toPre F N g₁.b), (wN.IsGen ∧ ∀ z J, Good D.toPre.P.L z J → val wN (𝟙 _) z J = val w (𝟙 _) z J ^ n) → (w₀.IsGen ∧ ∀ z J, Good D.toPre.P.L z J → val w₀ (𝟙 _) z J = val ω₀ (𝟙 _) z J ^ n) → (w₁.IsGen ∧ ∀ z J, Good D.toPre.P.L z J → val w₁ (𝟙 _) z J = val ω₁ (𝟙 _) z J ^ n) → ∀ s s' : Fam D.toPre F N, PhiRel D.toPre F N q wN s s' → ∀ α, coef s' g₀ w₀ (α + q.y) = coef s g₁ w₁ α := by
-  intro hL R _ _ I _ D F _ _ k _ p w hw g₀ g₁ hadd ω₀ h₀
-  obtain ⟨hb, hs⟩ := (isAdd_iff _ _ _).1 hadd
-  obtain ⟨ω₁, h₁, v₁⟩ := exists_frame p w hw g₀ ω₀ h₀ g₁.b hb
-  refine ⟨ω₁, h₁, fun hz ho z J hJ => ?_, ?_⟩
-  · obtain ⟨z₁, z₂⟩ := (isZero_iff _).1 hz
-    rw [v₁ z J hJ, ho.2 z J hJ, z₂ _ z J hJ, show cubN (th D.toPre z J) k 1 p.g.b g₀.b = 1 by
-      rw [z₁, (isCub_cubV D.toPre.cub hJ).N_one], _root_.one_mul, _root_.mul_one, _root_.mul_one]
-  · rintro n _ _ rfl ⟨qy, qg, qe⟩ hy hg wN w₀ w₁ ⟨hN, vN⟩ ⟨-, v₀⟩ ⟨hw₁, vw₁⟩ s s' hΦ α
-    dsimp only at hy hg; subst hy hg
-    refine coef_eq fun z J hJ => ?_
-    have e₁ := (phiRel_iff hL.1.globalFns _ wN hN s s').1 hΦ α _ rfl _ (lift (𝟙 (TF (R := R) F)) g₀.b) z J hJ
-    have t : lift (𝟙 (TF (R := R) F)) g₀.b ≫ DegPre.trPt D.toPre F p.g.b = lift (𝟙 (TF (R := R) F)) g₁.b :=
-      CartesianMonoidalCategory.hom_ext _ _ (by rw [Category.assoc, tr_fst, lift_fst, lift_fst])
-        (by rw [lift_snd, hb, Category.assoc]; refine (congrArg (_ ≫ ·) (tr_pr D.toPre F p.g.b)).trans ?_
-            rw [MonObj.comp_mul, lift_fst_assoc, Category.id_comp, lift_snd])
-    dsimp only at e₁ vN
-    rw [t, uVal, lift_fst_assoc, lift_fst, lift_snd, Category.id_comp, Over.id_left, val_mul hJ, vN z J hJ,
-      CoefPhi.cubN_mul (isCub_cubV D.toPre.cub hJ)] at e₁
-    have e₂ := gt_nsmul (𝟙 (TF (R := R) F)) hJ g₀ α p.y n
-    rw [Category.id_comp, Over.id_left, cPoint_y] at e₂
-    rw [isCoef_coef g₁ hw₁ α s z J hJ]
-    dsimp only
-    rw [e₁, v₀ z J hJ, vw₁ z J hJ, v₁ z J hJ]
-    simp only [_root_.mul_assoc, ← Units.val_mul]
-    congr 2
-    apply Additive.ofMul.injective
-    have a₂ := congrArg Additive.ofMul e₂
-    have a₃ := congrArg Additive.ofMul (hs α z J hJ)
-    simp only [ofMul_mul, ofMul_inv, ofMul_pow] at a₂ a₃ ⊢
-    linear_combination (norm := module) a₃ - a₂
-
-end
-
-section
-open GlobalTheory.AbLaw GlobalTheory.AbLaw.Seesaw GlobalTheory.SecAdicSum
-
-theorem sumF_field : LL → FieldD fun {R} _ _ {I} D F _ _ => ∀ (K : Type) [Fintype K] (φ : K → (D.toPre.P.A.left ⟶ D.toPre.P.A.left)) (ε : K → ℤ) (Ix : Type) (n : Ix → LB.Sec (LB.LinComb D.toPre.P.L φ ε)) (n₀ : LB.Sec (LB.LinComb D.toPre.P.L φ ε)), (∀ e : ℕ, ∃ S : Finset Ix, ∀ (Z : Scheme.{0}) (r : Z ⟶ (thickObj R I e D.toPre.P.A).left) (z : Z) (J), Good D.toPre.P.L z J → (∀ i ∉ S, sval (n i) (r ≫ (D.toPre.prBe I e).left) z J = 0) ∧ sval n₀ (r ≫ (D.toPre.prBe I e).left) z J = ∑ i ∈ S, sval (n i) (r ≫ (D.toPre.prBe I e).left) z J) → ∀ (b : TF (R := R) F ⟶ D.toPre.P.A) (τ : LB.Gen (LB.LinComb D.toPre.P.L (fun i => b.left ≫ φ i) ε)), τ.IsGen → ∀ (x : Ix → F) (x₀ : F), (∀ z J, Good D.toPre.P.L z J → (∀ i, sval (n i) b.left z J = cst F z (x i) * (val τ (𝟙 _) z J).val) ∧ sval n₀ b.left z J = cst F z x₀ * (val τ (𝟙 _) z J).val) → SumF I F x x₀ := by
-  intro hR R _ _ I hI D F _ _ K _ φ ε Ix n n₀ hS b τ _ x x₀ hx
-  have := hR.1; have := hI.1; have := D.toPre.P.isAb.smooth
-  have hL := D.toPre.P.isLB
-  obtain ⟨P⟩ := GlobalTheory.T.nonempty_perfectSectionsComplex_of_noetherian R _ D.toPre.P.A.hom inferInstance
-    (GlobalTheory.AbProj.isProjBy_of_isPullback D.toPre.P (IsPullback.id_horiz _)) _ (LB.isLB_linComb hL φ ε)
-  choose v hv hv' using fun i => exists_vec P (n i)
-  obtain ⟨v₀, hv₀, hv₀'⟩ := exists_vec P n₀
-  obtain ⟨z⟩ := CoefBasic.exists_pt (R := R) (F := F)
-  obtain ⟨J, hJ⟩ := CoefBasic.exists_good' hL z
-  obtain ⟨i₀, hi₀⟩ := exists_mem P (b.left z)
-  let t := trF φ ε b.left z (P.ch i₀) (fun k => J (b.left ≫ φ k)) * val τ (𝟙 _) z J
-  choose y hy using fun k => CoefBasic.cstH_surj z (gs b.left z _ (P.u k i₀) * (t⁻¹).val)
-  letI : Module R F := Module.compHom F (algebraMap R (FractionRing R))
-  let ev : (Fin P.a → R) →ₗ[R] F := Fintype.linearCombination R y
-  have key : ∀ (s : LB.Sec (LB.LinComb D.toPre.P.L φ ε)) (w : Fin P.a → R) (c : F),
-      (∀ i, AbLaw.rs _ (P.le i) (s.f (P.ch i)) = loc₀ P w i) →
-      sval s b.left z J = UT.cst F z c * (val τ (𝟙 _) z J).val → c = ev w := fun s w c h₁ h₂ => by
-    have e := gs_loc₀ P h₁ b.left z hi₀ hJ
-    rw [h₂, mul_left_comm, ← Units.val_mul, CoefBasic.cst_eq] at e
-    refine CoefBasic.cstH_inj (R := R) z ?_
-    have hs : ∀ a : Fin P.a → Γ(D.toPre.P.A.left, P.W i₀), gs b.left z _ (∑ k, a k) = ∑ k, gs b.left z _ (a k) :=
-      fun a => by simp only [gs_eq b.left z _ hi₀, map_sum]
-    rw [(Units.eq_mul_inv_iff_mul_eq t).2 e.symm, loc₀, hs, Finset.sum_mul]
-    refine Eq.trans (Finset.sum_congr rfl fun k _ => ?_) (map_sum _ (fun k => w k • y k) _).symm
-    rw [gs_mul b.left z _ hi₀, gs_cst_point b z _ hi₀, _root_.mul_assoc, ← hy, ← map_mul, ← Algebra.smul_def]; rfl
-  obtain rfl : x = fun i => ev (v i) := funext fun i => key _ _ _ (hv' i) ((hx z J hJ).1 i)
-  obtain rfl : x₀ = ev v₀ := key _ _ _ hv₀' (hx z J hJ).2
-  refine sumI_of_ker I P.D₀ ev v v₀ hv hv₀ fun e => ?_
-  obtain ⟨S, hS⟩ := hS e
-  refine ⟨S, fun T hT k => Ideal.Quotient.eq_zero_iff_mem.1 (congrFun (comp_eq_zero P
-    (IsPullback.of_hasPullback D.toPre.P.A.hom (thick R I e)) (v₀ - ∑ i ∈ T, v i)
-    (by simp only [Matrix.mulVec_sub, Matrix.mulVec_sum, hv, hv₀, Finset.sum_const_zero, sub_zero])
-    fun i p hp => by
-      obtain ⟨J', hJ'⟩ := CoefBasic.exists_good' hL p
-      obtain ⟨h₁, h₂⟩ := hS _ (𝟙 _) p J' hJ'
-      rw [Category.id_comp] at h₁ h₂
-      have e₀ := gs_loc₀ P hv₀' _ p hp hJ'
-      have e₁ := fun j => gs_loc₀ P (hv' j) _ p hp hJ'
-      rw [gs_eq _ p _ hp] at e₀
-      simp only [gs_eq _ p _ hp] at e₁
-      rw [loc₀_sub_sum, gs_eq _ p _ hp, map_sub, map_sub, map_sum, map_sum, e₀, Finset.sum_congr rfl fun j _ => e₁ j,
-        ← Finset.mul_sum]
-      exact sub_eq_zero.2 (congrArg _ (h₂.trans (Finset.sum_subset hT fun j _ hj => h₁ j hj)))) k)⟩
-
-end
-
-section
-open GlobalTheory.FieldBaseChange GlobalTheory.UT.ProdConv
-
-variable {R : Type} [CommRing R] [IsDomain R] {I : Ideal R} {D : DegData R I}
-  {A : PolAV (Spec (CommRingCat.of (FractionRing R)))}
-  {G : Over (Spec (CommRingCat.of R))} [GrpObj G] [IsCommMonObj G] (U : UnifPre I D A G)
-  {F : Type} [Field F] [Algebra (FractionRing R) F]
-
-theorem point_field (hL : LL) (hR : AdmBase R I) {k l m : ℕ} (r : R) {σ : H0 U.LG.L k}
-    {σ' : H0 U.LG.L l} {σ'' : H0 U.LG.L m} (hm : m = k + l)
-    {f : ∀ α, D.toPre.SecB k α} {f' : ∀ α, D.toPre.SecB l α} {f'' : ∀ α, D.toPre.SecB m α}
-    (h : ∀ e, U.ExpandsAt e k σ f) (h' : ∀ e, U.ExpandsAt e l σ' f') (h'' : ∀ e, U.ExpandsAt e m σ'' f'')
-    (hσ : ∀ (Z : Scheme.{0}) (q : Z ⟶ G.left) (z : Z) (j), q z ∈ U.LG.L.U j →
-      sv U m σ'' q z j = constVal (q ≫ G.hom) z r * (sv U k σ q z j * sv U l σ' q z j))
-    (g : GtPtF D.toPre F) {w : Frm D.toPre F k g.b} {w' : Frm D.toPre F l g.b} {w'' : Frm D.toPre F m g.b}
-    (hw : w''.IsGen) (hww : ∀ z J, Good D.toPre.P.L z J → val w'' (𝟙 _) z J = val w (𝟙 _) z J * val w' (𝟙 _) z J)
-    {x x' : D.toPre.X → F} (hx : ∀ χ, IsTerm g w (f χ) (x χ)) (hx' : ∀ χ, IsTerm g w' (f' χ) (x' χ))
-    (α : D.toPre.X) {x'' : F} (hx'' : IsTerm g w'' (f'' α) x'') :
-    SumF I F (fun χ => algebraMap (FractionRing R) F (algebraMap R (FractionRing R) r) * (x χ * x' (α - χ))) x'' := by
-  subst hm
-  choose p hp using fun α β => exists_isProd r k l (add_sub_cancel β α) (f β) (f' (α - β))
-  obtain ⟨τ, hτ, vτ⟩ := exists_frame g hw α
-  refine sumF_field hL R I hR D F (Fin 4) (D.toPre.famφB α) (DegPre.famε (k + l)) D.toPre.X (p α) (f'' α)
-    (fun e => level U e r rfl (h e) (h' e) (h'' e) hσ p hp α) g.b τ hτ _ _ fun z J hJ => ⟨fun χ => ?_, ?_⟩
-  · have b := gt_mul (𝟙 (TF (R := R) F)) hJ g χ (α - χ)
-    rw [add_sub_cancel, Category.id_comp, Over.id_left] at b
-    rw [hp α χ _ g.b z J hJ, vτ z J hJ, constVal_TF, hww z J hJ, CoefBasic.cst_eq z (_ * _), map_mul, map_mul,
-      ← CoefBasic.cst_eq, ← CoefBasic.cst_eq, ← CoefBasic.cst_eq]
-    exact alg_prod _ (hx χ z J hJ) (hx' (α - χ) z J hJ) b
-  · rw [vτ z J hJ]
-    exact alg_term (hx'' z J hJ)
-
-end
-
-section
-open GlobalTheory.FieldBaseChange GlobalTheory.UT.ProdConv
-
-theorem prodConv_field : LL → FieldUF fun {R} _ _ {I} {D} {A} {G} _ _ U F _ _ => ∀ (w₀ : W0 U.toUnifPre), w₀.IsGen → ∀ (k k' k'' : ℕ), 1 ≤ k → 1 ≤ k' → k'' = k + k' → ∀ (t : SecA A F k) (t' : SecA A F k') (t'' : SecA A F k'') s s' s'', U.ExpandsF F k w₀ t s → U.ExpandsF F k' w₀ t' s' → U.ExpandsF F k'' w₀ t'' s'' → (∀ z J, Good A.L z J → sA t'' (𝟙 _) z J = sA t (𝟙 _) z J * sA t' (𝟙 _) z J) → ∀ (g : GtPtF D.toPre F) (w : Frm D.toPre F k g.b) (w' : Frm D.toPre F k' g.b) (w'' : Frm D.toPre F k'' g.b), w.IsGen → w'.IsGen → w''.IsGen → (∀ z J, Good D.toPre.P.L z J → val w'' (𝟙 _) z J = val w (𝟙 _) z J * val w' (𝟙 _) z J) → ∀ α, SumF I F (fun χ => coef s g w χ * coef s' g w' (α - χ)) (coef s'' g w'' α) := by
-  intro hL R _ _ I hR D A G _ _ _ U F _ _ w₀ hw₀ k k' k'' hk hk' hm t t' t'' s s' s'' h h' h'' ht g w w' w'' hw hw' hw''
-    hww α
-  have hG := hL.1.globalFns
-  have hk'' : 1 ≤ k'' := by omega
-  obtain ⟨v, a, b⟩ := h
-  obtain ⟨v', a', b'⟩ := h'
-  obtain ⟨v'', a'', b''⟩ := h''
-  obtain ⟨n, c, x, hx, e₁, e₂⟩ := (expandsG_iff U.toUnifPre F k v s).1 b
-  obtain ⟨n', c', x', hx', e₁', e₂'⟩ := (expandsG_iff U.toUnifPre F k' v' s').1 b'
-  obtain ⟨u, hu⟩ := exists_powMul A.isLB (q := (snd (TFK (R := R) F) A.A).left) hm t t'
-  obtain rfl : t'' = u := sec_ext' A.isLB fun y J hJ => (ht y J hJ).trans (hu _ (𝟙 _) y _ (hJ (𝟙 _ ≫ _))).symm
-  choose τ hτ using fun p : Fin n × Fin n' => exists_powMul U.LG.isLB (q := 𝟙 G.left) hm (x p.1).1 (x' p.2).1
-  choose Φ hΦ using fun p => ((U.expand k'' hk'').1 (genericSec U.toUnifPre k'' (τ p))).exists
-  choose r hr y hy d₁ d₂ using fun p => (expands_iff U.toUnifPre k'' _ _).1 (hΦ p)
-  have hr' : ∀ p, algebraMap (FractionRing R) F (algebraMap R (FractionRing R) (r p)) ≠ 0 := fun p => by
-    rw [map_ne_zero]; exact (map_ne_zero_iff _ (IsFractionRing.injective R (FractionRing R))).2 (hr p)
-  have hyτ : ∀ p, (y p).1 = r p • (show IntSec U.toUnifPre k'' from τ p) := fun p =>
-    genericSec_injective U.toUnifPre k'' ((d₁ p).trans (map_smulₛₗ _ _ _).symm)
-  have hv : v'' = (∑ p : Fin n × Fin n', (c p.1 * c' p.2) • extendSec U.toUnifPre F k'' (genericSec U.toUnifPre k'' (τ p)) :
-      GroupSec U.toUnifPre F k'') := by
-    refine powVal_ext U.LG.isLB fun z i hi => ?_
-    obtain ⟨i₁, hi₁⟩ := exists_chart A.isLB
-      (U.gen.hom.left ((snd (TFK (R := R) F) ((Over.pullback (jK R)).obj G)).left z))
-    have m := (isoRelM_iff _ _ _ _ a.1 _ a.2.1 _ _).1 a _ (𝟙 _) z i i₁ hi hi₁
-    have m' := (isoRelM_iff _ _ _ _ a'.1 _ a'.2.1 _ _).1 a' _ (𝟙 _) z i i₁ hi hi₁
-    have m'' := (isoRelM_iff _ _ _ _ a''.1 _ a''.2.1 _ _).1 a'' _ (𝟙 _) z i i₁ hi hi₁
-    have b₁ : (snd (TFK (R := R) F) A.A).left ((𝟙 _ ≫ (U.genF F).left) z) ∈ A.L.U i₁ :=
-      (congrArg (fun q => q z ∈ A.L.U i₁) a.1).mpr hi₁
-    have m₀ := hu _ _ z i₁ b₁
-    rw [Category.comp_id] at m m' m''
-    refine Eq.trans ?_ (powVal_comb U.toUnifPre _ τ z hi).symm
-    rw [show powVal v'' (𝟙 _) z i = powVal v (𝟙 _) z i * powVal v' (𝟙 _) z i by
-        rw [m, m', m'', m₀, hm, Nat.cast_add, zpow_add, Units.val_mul]; ring,
-      (congrArg (fun q => powVal q (𝟙 _) z i) e₁).trans (powVal_comb U.toUnifPre c (fun p => (x p).1) z hi),
-      (congrArg (fun q => powVal q (𝟙 _) z i) e₁').trans (powVal_comb U.toUnifPre c' (fun p => (x' p).1) z hi),
-      Finset.sum_mul_sum, Fintype.sum_prod_type]
-    refine Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => ?_
-    rw [hτ (p, q) _ (UnifPre.gFK (G := G) F) z i hi,
-      show constVal (groupBase G F) z (c p * c' q) = constVal (groupBase G F) z (c p) * constVal (groupBase G F) z (c' q) from
-        (congrArg (gs _ z ⊤) (map_mul _ _ _)).trans (gs_mul _ z ⊤ trivial _ _)]
-    ring
-  have hs : ∀ β, famProj D.toPre F k'' β (∑ p : Fin n × Fin n', (c p.1 * c' p.2) • famPull D.toPre (FractionRing R) F hG k'' (Φ p)) =
-      ∑ p : Fin n × Fin n', (c p.1 * c' p.2 * (algebraMap (FractionRing R) F (algebraMap R (FractionRing R) (r p)))⁻¹) •
-        termPull D.toPre (FractionRing R) F k'' β (genericTerm D k'' β ((y p).2 β)) := fun β => by
-    rw [map_sum]
-    exact Finset.sum_congr rfl fun p _ => by
-      rw [d₂, map_smulₛₗ, map_smulₛₗ, smul_smul, inv_mul_cancel_right₀ (hr' p)]; rfl
-  have hE := expandsG_of_fintype U.toUnifPre F k'' v'' _ _ y hy (hv.trans (Finset.sum_congr (M := GroupSec U.toUnifPre F k'') rfl fun p _ => by
-    rw [d₁, map_smulₛₗ, smul_smul, inv_mul_cancel_right₀ (hr' p)])) hs
-  rw [← ((expandsG_bijective U.toUnifPre F hG hk'' (U.expand k'' hk'')).1 v'').unique b'' hE] at hs
-  choose z hz using fun i χ => exists_isTerm g hw ((x i).2 χ)
-  choose z' hz' using fun i χ => exists_isTerm g hw' ((x' i).2 χ)
-  choose z'' hz'' using fun p => exists_isTerm g hw'' ((y p).2 α)
-  have key := sumF_sum hR Finset.univ (fun p : Fin n × Fin n' =>
-      c p.1 * c' p.2 * (algebraMap (FractionRing R) F (algebraMap R (FractionRing R) (r p)))⁻¹)
-    fun p => point_field U.toUnifPre hL hR (r p) hm (hx p.1) (hx' p.2) (hy p) (fun Z q z j hj => by
-      rw [hyτ p]; exact (powVal_smul _ _ q z hj).trans (congrArg _ (hτ p Z q z j hj))) g hw'' hww (hz p.1) (hz' p.2) α (hz'' p)
-  rw [coef_eq_sum g hz'' (hs α)]
-  convert key using 2 with χ
-  rw [coef_eq_sum g (fun i => hz i χ) (e₂ χ), coef_eq_sum g (fun i => hz' i (α - χ)) (e₂' (α - χ)), Finset.sum_mul_sum,
-    Fintype.sum_prod_type]
-  refine Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => ?_
-  have := hr' (p, q); field_simp
-
-end
-
 theorem qkToAkU_level_field : LL → FieldUF fun {R} _ _ {I} {D} {A} {G} _ _ U F _ _ => ∀ (k n N : ℕ), 1 ≤ k → 1 ≤ n →
     N = k * n → ∀ (p : QkPt D.toPre F k) (q : QkPt D.toPre F N) x, q.y = n • p.y → q.g = p.g →
     QkToAkU U.toUnifPre F k p x → QkToAkU U.toUnifPre F N q x := by
@@ -439,7 +238,7 @@ theorem value_at_level (hB : AdmBase R I) (hG : IsSemiAbelian G) (U : Unif I D A
   obtain ⟨w', hw', hΦ⟩ := hθ θ rfl
   obtain ⟨u, hu, hval⟩ := exists_act_value N θ x₁ x₂ hx₂ e₁ he₁ e he
   obtain ⟨W, hW, hWv⟩ := TorsionValue.exists_frm_pow w₁ hw₁ N
-  obtain ⟨ω, hω, -, hc⟩ := coefPhi_field hL R _ hB D F N hN1 q w' hw' g₁ g₂ hadd W hW
+  obtain ⟨ω, hω, -, hc⟩ := GlobalTheory.TorsionAnyChar.coefPhi_field hL R _ hB D F N hN1 q w' hw' g₁ g₂ hadd W hW
   obtain ⟨d, hd, -, hdc⟩ := ((coef_basic R D.toPre F N g₂).2.2 ω hω).2.2.1 w hw
   refine ⟨d * u, mul_ne_zero hd hu, fun t s c hts hc' => ?_⟩
   obtain ⟨t', ht'⟩ := GlobalTheory.VVRank.exists_isTwistPull A.A (ψ := translT A.A θ.pt) (m := translPt A.A θ.pt)
@@ -567,7 +366,7 @@ theorem exists_liesOver (hB : AdmBase R I) (hG : IsSemiAbelian G) (U : Unif I D 
       obtain ⟨t'', h''⟩ := TorsionValue.exists_secA_mul t t'
       obtain ⟨s'', hs'', -⟩ := (hbij (k + k') (by lia) w₀ hw₀).1 t''
       refine ⟨_, ⟨t'', s'', hs'', fun z J hJ => ?_, rfl⟩, fun α =>
-        (prodConv_field hL R _ hB D A G hG U _ w₀ hw₀ k k' _ hk hk' rfl t t' t'' s s' s'' hs hs' hs''
+        (GlobalTheory.TorsionAnyChar.prodConv_field hL R _ hB D A G hG U _ w₀ hw₀ k k' _ hk hk' rfl t t' t'' s s' s'' hs hs' hs''
           (fun z J hJ => h'' _ _ z J hJ) g₂ _ _ _ (hΩ k) (hΩ k') (hΩ _)
           (fun z J hJ => by rw [hΩv _ z J hJ, hΩv _ z J hJ, hΩv _ z J hJ, pow_add]) α)⟩
       change _ = UT.cst (R := R) (FractionRing R) z (c * c') * _
