@@ -209,10 +209,8 @@ theorem chval_div (φ : A →+* V) (e : ℕ) (he : 0 < e) (f : FractionRing A) (
 
 theorem chval_nonneg (φ : A →+* V) (e : ℕ) (f : FractionRing A) (r : EReal) (h : ChV φ e f r) (a s : A)
     (hfs : f * algebraMap A (FractionRing A) s = algebraMap A (FractionRing A) a) (hs : φ s ∉ maximalIdeal V) :
-    0 ≤ r := by
-  have hs0 : φ s ≠ 0 := fun h0 => hs (h0 ▸ (maximalIdeal V).zero_mem)
-  rw [chval_eq φ e f r h a s hfs hs0, GlobalTheory.Reg.TrivBound.nval_unit e _ hs, sub_zero]
-  exact GlobalTheory.Reg.TrivBound.nval_nonneg e _
+    0 ≤ r :=
+  _root_.GlobalTheory.Reg.TrivBound.chval_nonneg φ e f r h a s hfs hs
 
 end Basic
 
@@ -224,59 +222,39 @@ variable {A : Type} [CommRing A] [IsDomain A]
 def vr (e : ℕ) (x : V) : ℝ := (vV V (algebraMap V (FractionRing V) x) : ℝ) / e
 
 theorem nval_eq_vr (e : ℕ) {x : V} (hx : x ≠ 0) :
-    nval V e (algebraMap V (FractionRing V) x) = (vr e x : EReal) := by
-  rw [nval_of_ne (GlobalTheory.Reg.TrivBound.ne_zero_map hx)]
-  rfl
+    nval V e (algebraMap V (FractionRing V) x) = (vr e x : EReal) :=
+  _root_.GlobalTheory.Reg.TrivBound.nval_eq_vr e hx
 
-theorem vr_mul (e : ℕ) {x y : V} (hx : x ≠ 0) (hy : y ≠ 0) : vr e (x * y) = vr e x + vr e y := by
-  unfold vr
-  rw [map_mul, vV_mul (GlobalTheory.Reg.TrivBound.ne_zero_map hx) (GlobalTheory.Reg.TrivBound.ne_zero_map hy)]
-  push_cast
-  ring
+theorem vr_mul (e : ℕ) {x y : V} (hx : x ≠ 0) (hy : y ≠ 0) : vr e (x * y) = vr e x + vr e y :=
+  _root_.GlobalTheory.Reg.TrivBound.vr_mul e hx hy
 
 theorem vr_one (e : ℕ) : vr e (1 : V) = 0 :=
   _root_.GlobalTheory.Reg.TrivBound.vr_one e
 
 theorem chval_fin_iff (φ : A →+* V) (e : ℕ) (f : FractionRing A) (u : ℝ) :
     ChV φ e f (u : EReal) ↔ ∃ x s : A, φ s ≠ 0 ∧ φ x ≠ 0 ∧
-      f * algebraMap A (FractionRing A) s = algebraMap A (FractionRing A) x ∧ u = vr e (φ x) - vr e (φ s) := by
-  apply GlobalTheory.Reg.TrivBound.chval_fin_iff
+      f * algebraMap A (FractionRing A) s = algebraMap A (FractionRing A) x ∧ u = vr e (φ x) - vr e (φ s) :=
+  _root_.GlobalTheory.Reg.TrivBound.chval_fin_iff φ e f u
 
 theorem chval_fin_mul (φ : A →+* V) (e : ℕ) {f1 f2 : FractionRing A} {u1 u2 : ℝ}
     (h1 : ChV φ e f1 (u1 : EReal)) (h2 : ChV φ e f2 (u2 : EReal)) :
-    ChV φ e (f1 * f2) ((u1 + u2 : ℝ) : EReal) := by
-  obtain ⟨x1, s1, hs1, hx1, hf1, hu1⟩ := (chval_fin_iff φ e f1 u1).1 h1
-  obtain ⟨x2, s2, hs2, hx2, hf2, hu2⟩ := (chval_fin_iff φ e f2 u2).1 h2
-  refine (chval_fin_iff φ e _ _).2 ⟨x1 * x2, s1 * s2, ?_, ?_, ?_, ?_⟩
-  · rw [map_mul]; exact mul_ne_zero hs1 hs2
-  · rw [map_mul]; exact mul_ne_zero hx1 hx2
-  · rw [map_mul, map_mul, ← hf1, ← hf2]; ring
-  · rw [map_mul, map_mul, vr_mul e hx1 hx2, vr_mul e hs1 hs2, hu1, hu2]; ring
+    ChV φ e (f1 * f2) ((u1 + u2 : ℝ) : EReal) :=
+  _root_.GlobalTheory.Reg.TrivBound.chval_fin_mul φ e h1 h2
 
-theorem chval_fin_one (φ : A →+* V) (e : ℕ) : ChV φ e (1 : FractionRing A) ((0 : ℝ) : EReal) := by
-  refine (chval_fin_iff φ e _ _).2 ⟨1, 1, ?_, ?_, ?_, ?_⟩ <;> simp [vr_one]
+theorem chval_fin_one (φ : A →+* V) (e : ℕ) : ChV φ e (1 : FractionRing A) ((0 : ℝ) : EReal) :=
+  _root_.GlobalTheory.Reg.TrivBound.chval_fin_one φ e
 
 theorem chval_fin_inv (φ : A →+* V) (e : ℕ) {f : FractionRing A} {u : ℝ} (h : ChV φ e f (u : EReal)) :
-    ChV φ e f⁻¹ ((-u : ℝ) : EReal) := by
-  apply GlobalTheory.Reg.TrivBound.chval_fin_inv <;> assumption
+    ChV φ e f⁻¹ ((-u : ℝ) : EReal) :=
+  _root_.GlobalTheory.Reg.TrivBound.chval_fin_inv φ e h
 
 theorem chval_fin_alg (φ : A →+* V) (e : ℕ) (a : A) (ha : φ a ≠ 0) :
-    ChV φ e (algebraMap A (FractionRing A) a) ((vr e (φ a) : ℝ) : EReal) := by
-  refine (chval_fin_iff φ e _ _).2 ⟨a, 1, ?_, ha, ?_, ?_⟩
-  · rw [map_one]; exact one_ne_zero
-  · rw [map_one, mul_one]
-  · rw [map_one, vr_one, sub_zero]
+    ChV φ e (algebraMap A (FractionRing A) a) ((vr e (φ a) : ℝ) : EReal) :=
+  _root_.GlobalTheory.Reg.TrivBound.chval_fin_alg φ e a ha
 
 theorem chval_fin_zpow (φ : A →+* V) (e : ℕ) {f : FractionRing A} {u : ℝ} (h : ChV φ e f (u : EReal))
-    (Z : ℤ) : ChV φ e (f ^ Z) (((Z : ℝ) * u : ℝ) : EReal) := by
-  rcases Int.eq_nat_or_neg Z with ⟨N, rfl | rfl⟩
-  · rw [zpow_natCast]
-    exact_mod_cast GlobalTheory.Reg.TrivBound.chval_fin_pow φ e h N
-  · rw [zpow_neg, zpow_natCast]
-    have := chval_fin_inv φ e (GlobalTheory.Reg.TrivBound.chval_fin_pow φ e h N)
-    convert this using 2
-    push_cast
-    ring
+    (Z : ℤ) : ChV φ e (f ^ Z) (((Z : ℝ) * u : ℝ) : EReal) :=
+  _root_.GlobalTheory.Reg.TrivBound.chval_fin_zpow φ e h Z
 
 end Finite
 
@@ -290,10 +268,8 @@ theorem regular_at_centre {O A : Type} [CommRing O] [IsDomain O] [IsDiscreteValu
       [Module.Finite O V] (φ : A →ₐ[O] V), φ x ≠ 0 →
         ∃ (e : ℕ) (r : EReal), 0 < e ∧ ChV φ.toRingHom e g r ∧ 0 ≤ r)
     (qq : Ideal A) [qq.IsPrime] (hqq : qq ⊔ Ideal.map (algebraMap O A) (maximalIdeal O) ≠ ⊤) :
-    ∃ a s : A, s ∉ qq ∧ g * algebraMap A (FractionRing A) s = algebraMap A (FractionRing A) a := by
-  refine RegC.key_centre g x hx0 (fun V _ _ _ _ _ φ a b hab hb hφx => ?_) qq hqq
-  obtain ⟨e, r, he, hr, hr0⟩ := hpts V φ hφx
-  exact chval_div φ.toRingHom e he g r hr hr0 a b hab hb
+    ∃ a s : A, s ∉ qq ∧ g * algebraMap A (FractionRing A) s = algebraMap A (FractionRing A) a :=
+  _root_.GlobalTheory.Reg.TrivBound.transfer'' g x hx0 hpts qq hqq
 
 theorem comb_core {O A : Type} [CommRing O] [IsDomain O] [IsDiscreteValuationRing O]
     [IsAdicComplete (maximalIdeal O) O] [CharZero O]
@@ -314,91 +290,9 @@ theorem comb_core {O A : Type} [CommRing O] [IsDomain O] [IsDiscreteValuationRin
     (hφx : φ x ≠ 0) (hφϖ : algebraMap O V ϖ ≠ 0)
     (hqq : (maximalIdeal V).comap φ.toRingHom ⊔ Ideal.map (algebraMap O A) (maximalIdeal O) ≠ ⊤)
     (e : ℕ) (w t : ℝ) (hW : ChV φ.toRingHom e fw (w : EReal)) (hT : ChV φ.toRingHom e fe (t : EReal)) :
-    (N : ℝ) * w ≤ Aexp * vr e (algebraMap O V ϖ) + B * t := by
-  classical
-  set ϖA : FractionRing A := algebraMap A (FractionRing A) (algebraMap O A ϖ)
-  set g : FractionRing A := ϖA ^ Aexp * fe ^ B * (fw ^ N)⁻¹
-
-  have hgval : ∀ (V : Type) [CommRing V] [IsDomain V] [IsDiscreteValuationRing V] [Algebra O V]
-      (φ : A →ₐ[O] V) (e : ℕ) (w t : ℝ), algebraMap O V ϖ ≠ 0 → ChV φ.toRingHom e fw (w : EReal) →
-      ChV φ.toRingHom e fe (t : EReal) →
-      ChV φ.toRingHom e g (((Aexp : ℝ) * vr e (algebraMap O V ϖ) + B * t + -((N : ℝ) * w) : ℝ) : EReal) := by
-    intro V _ _ _ _ φ e w t hϖ hW hT
-    have h1 : φ.toRingHom (algebraMap O A ϖ) ≠ 0 := by
-      rw [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.commutes]; exact hϖ
-    have hϖv := chval_fin_alg φ.toRingHom e (algebraMap O A ϖ) h1
-    rw [show φ.toRingHom (algebraMap O A ϖ) = algebraMap O V ϖ by
-      rw [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.commutes]] at hϖv
-    exact chval_fin_mul _ _ (chval_fin_mul _ _ (chval_fin_zpow _ _ hϖv Aexp) (GlobalTheory.Reg.TrivBound.chval_fin_pow _ _ hT B))
-      (chval_fin_inv _ _ (GlobalTheory.Reg.TrivBound.chval_fin_pow _ _ hW N))
-  have hyeK : algebraMap A (FractionRing A) ye ≠ 0 := fun h => hye (IsFractionRing.injective A _ (by rw [h, map_zero]))
-  obtain ⟨a, s, hs, hgs⟩ := regular_at_centre (O := O) g (x * ye) (mul_ne_zero hx hye)
-    (fun V _ _ _ _ _ φ' hφ' => by
-      rw [map_mul] at hφ'
-      have hφ'x : φ' x ≠ 0 := left_ne_zero_of_mul hφ'
-      have hφ'y : φ' ye ≠ 0 := right_ne_zero_of_mul hφ'
-      obtain ⟨e', W', T', he', hϖ', hW', hT', hT0, hb⟩ := halg V φ' hφ'x
-      have hϖ0 : algebraMap O V ϖ ≠ 0 := by
-        intro h0
-        rw [h0, map_zero, GlobalTheory.Reg.TrivBound.vV_zero', zero_mul] at hϖ'
-        omega
-      have hP : ∀ k : ℕ, φ' ((algebraMap O A ϖ * x) ^ k) ≠ 0 := by
-        intro k
-        rw [map_pow, map_mul, AlgHom.commutes]
-        exact pow_ne_zero _ (mul_ne_zero hϖ0 hφ'x)
-
-      have hTe := chval_eq φ'.toRingHom e' fe T' hT' ye _ hfe (hP te)
-      have hTf : T' = ((vr e' (φ' ye) - vr e' (φ' ((algebraMap O A ϖ * x) ^ te)) : ℝ) : EReal) := by
-        rw [hTe, EReal.coe_sub, ← nval_eq_vr e' hφ'y, ← nval_eq_vr e' (hP te)]
-        rfl
-
-      obtain ⟨xw, sw, hsw, hfws, hWv⟩ := hW'
-      have hrel : fw * algebraMap A (FractionRing A) yw = algebraMap A (FractionRing A) ((algebraMap O A ϖ * x) ^ tw) := by
-        rw [← hfw]; field_simp
-      have hxy : xw * yw = sw * (algebraMap O A ϖ * x) ^ tw := by
-        apply IsFractionRing.injective A (FractionRing A)
-        rw [map_mul, map_mul, ← hfws, ← hrel]; ring
-      have hxw : φ' xw ≠ 0 := by
-        intro h0
-        have := congrArg φ' hxy
-        rw [map_mul, map_mul, h0, zero_mul] at this
-        exact mul_ne_zero hsw (hP tw) this.symm
-      have hWf : W' = ((vr e' (φ' xw) - vr e' (φ' sw) : ℝ) : EReal) := by
-        rw [hWv, EReal.coe_sub]
-        exact congrArg₂ (· - ·) (nval_eq_vr e' hxw) (nval_eq_vr e' hsw)
-      set w' := vr e' (φ' xw) - vr e' (φ' sw)
-      set t' := vr e' (φ' ye) - vr e' (φ' ((algebraMap O A ϖ * x) ^ te))
-      have hWc : ChV φ'.toRingHom e' fw (w' : EReal) := hWf ▸ ⟨xw, sw, hsw, hfws, hWv⟩
-      have hTc : ChV φ'.toRingHom e' fe (t' : EReal) := hTf ▸ hT'
-      have ht0 : 0 ≤ t' := by rw [hTf] at hT0; exact_mod_cast hT0
-      have hwb : w' ≤ nu0 + c' * t' := by
-        have := hb (by rw [hTf]; exact EReal.coe_ne_top _)
-        rw [hWf, hTf, ← EReal.coe_mul, ← EReal.coe_add] at this
-        exact_mod_cast this
-      have hκ : vr e' (algebraMap O V ϖ) * eO = 1 := by
-        unfold vr
-        have hv : ((vV (K' := FractionRing V) V (algebraMap V (FractionRing V) (algebraMap O V ϖ)) : ℤ) : ℝ) * eO = e' := by
-          exact_mod_cast hϖ'
-        have he'r : (0 : ℝ) < e' := by exact_mod_cast he'
-        field_simp
-        linarith
-      refine ⟨e', _, he', hgval V φ' e' w' t' hϖ0 hWc hTc, ?_⟩
-      have heOr : (0 : ℝ) < eO := by exact_mod_cast heO
-      have h1 : (N : ℝ) * nu0 ≤ Aexp * vr e' (algebraMap O V ϖ) := by
-        have hv1 : vr e' (algebraMap O V ϖ) = 1 / eO := by
-          rw [eq_div_iff (ne_of_gt heOr)]; exact hκ
-        have : (Aexp : ℝ) * vr e' (algebraMap O V ϖ) = Aexp / eO := by
-          rw [hv1, mul_one_div]
-        rw [this, le_div_iff₀ heOr]
-        linarith
-      have h2 : (N : ℝ) * c' * t' ≤ B * t' := mul_le_mul_of_nonneg_right hB ht0
-      have h3 : (N : ℝ) * w' ≤ N * (nu0 + c' * t') := mul_le_mul_of_nonneg_left hwb (Nat.cast_nonneg N)
-      exact EReal.coe_nonneg.2 (by nlinarith))
-    ((maximalIdeal V).comap φ.toRingHom) hqq
-  have hval := hgval V φ e w t hφϖ hW hT
-  have := chval_nonneg φ.toRingHom e g _ hval a s hgs hs
-  have h0 := EReal.coe_nonneg.1 this
-  linarith
+    (N : ℝ) * w ≤ Aexp * vr e (algebraMap O V ϖ) + B * t :=
+  _root_.GlobalTheory.Reg.TrivBound.comb_core ϖ eO heO fw fe hfw0 x hx ye hye te hfe yw tw hfw
+    nu0 c' N Aexp B hA hB halg V φ hφx hφϖ hqq e w t hW hT
 
 end Core
 
