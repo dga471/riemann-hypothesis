@@ -1,11 +1,7 @@
 module
 
 public import GroundTheory.GlobalFields.ClassFieldConsequences.HilbertClassField
-public import GroundTheory.GlobalFields.ComplexMultiplication.Algebraicity
-public import GroundTheory.GlobalFields.ComplexMultiplication.HilbertClassFieldArtin
-public import GroundTheory.GlobalFields.ComplexMultiplication.HilbertClassFieldModels
-public import GroundTheory.GlobalFields.ComplexMultiplication.AlgebraicityClass
-public import GroundTheory.GlobalFields.ComplexMultiplication.AlgebraicityGalois
+public import GroundTheory.GlobalFields.ComplexMultiplication.AlgebraicityCore
 
 @[expose] public section
 

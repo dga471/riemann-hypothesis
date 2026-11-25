@@ -1,8 +1,7 @@
 module
 
-public import GroundTheory.GlobalFields.ComplexMultiplication.EllipticConstant
+public import GroundTheory.GlobalFields.ComplexMultiplication.EllipticUniformization
 public import GroundTheory.ArithmeticGeometry.AbelianVarieties.KodairaNeron
-public import GroundTheory.GlobalFields.ComplexMultiplication.UniformizationGroup
 public import GroundTheory.GlobalFields.ComplexMultiplication.ClassGroupActionIso
 public import GroundTheory.GlobalFields.ComplexMultiplication.JInvariantHomothety
 

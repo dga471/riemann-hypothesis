@@ -9,7 +9,7 @@ public import GroundTheory.GlobalFields.ClassFieldConsequences.RayClassField
 public import GroundTheory.GlobalFields.ComplexMultiplication.IdeleActionQuotient
 public import GroundTheory.GlobalFields.GlobalArtinMap.ArtinMap
 public import GroundTheory.GlobalFields.Artin.OneDim
-public import GroundTheory.GlobalFields.ComplexMultiplication.HilbertClassFieldArtin
+public import GroundTheory.GlobalFields.ComplexMultiplication.AlgebraicityCore
 import Mathlib.Tactic.TypeStar
 import GroundTheory.GlobalFields.CompletionAtPlace.Inertia
 import GroundTheory.GlobalFields.GlobalReciprocity.Frobenius

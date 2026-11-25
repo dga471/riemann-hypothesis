@@ -5,9 +5,8 @@ public import GroundTheory.GlobalFields.ComplexMultiplication.ClassGroupActionLa
 public import GroundTheory.GlobalFields.ComplexMultiplication.IdeleActionQuotient
 public import GroundTheory.GlobalFields.ComplexMultiplication.ReductionMap
 public import GroundTheory.GlobalFields.GlobalArtinMap.ArtinMap
-public import GroundTheory.GlobalFields.ComplexMultiplication.AnalyticUniformizationClassification
+public import GroundTheory.GlobalFields.ComplexMultiplication.AlgebraicityCore
 import GroundTheory.GlobalFields.ComplexMultiplication.JInvariantHomothety
-public import GroundTheory.GlobalFields.ComplexMultiplication.MainTheoremLattice
 public import GroundTheory.GlobalFields.ComplexMultiplication.MainTheoremLevel
 
 @[expose] public section

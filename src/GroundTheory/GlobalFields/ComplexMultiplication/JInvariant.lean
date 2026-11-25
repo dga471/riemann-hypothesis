@@ -1,6 +1,6 @@
 module
 
-public import GroundTheory.GlobalFields.ComplexMultiplication.Uniformization
+public import GroundTheory.GlobalFields.ComplexMultiplication.EllipticUniformization
 public import Mathlib.NumberTheory.ModularForms.Discriminant
 public import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
 import Mathlib.Tactic.Lemma

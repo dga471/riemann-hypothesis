@@ -1,6 +1,6 @@
 module
 
-public import GroundTheory.GlobalFields.ComplexMultiplication.VariableChangePoints
+public import GroundTheory.GlobalFields.ComplexMultiplication.DifferentialsAndBaseChange
 public import Mathlib.Topology.Compactification.OnePoint.Basic
 import Mathlib.RingTheory.Henselian
 import Mathlib.RingTheory.RegularLocalRing.Defs

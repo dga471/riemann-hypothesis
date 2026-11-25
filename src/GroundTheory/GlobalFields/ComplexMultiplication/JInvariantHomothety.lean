@@ -2,7 +2,7 @@ module
 
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass
-public import GroundTheory.GlobalFields.ComplexMultiplication.UniformizationAddition
+public import GroundTheory.GlobalFields.ComplexMultiplication.EllipticUniformization
 public import GroundTheory.GlobalFields.ComplexMultiplication.JInvariant
 public import Mathlib.AlgebraicGeometry.EllipticCurve.IsomOfJ
 public import Mathlib.Analysis.Normed.Module.Connected

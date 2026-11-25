@@ -1,12 +1,9 @@
 module
 
-public import GroundTheory.GlobalFields.ComplexMultiplication.WeberFunctionAutomorphisms
+public import GroundTheory.GlobalFields.ComplexMultiplication.AlgebraicityCore
 public import GroundTheory.GlobalFields.ComplexMultiplication.AnalyticUniformization
 public import GroundTheory.GlobalFields.ComplexMultiplication.ClassGroupActionLattice
 public import GroundTheory.GlobalFields.ComplexMultiplication.ReductionMap
-public import GroundTheory.GlobalFields.ComplexMultiplication.Algebraicity
-public import GroundTheory.GlobalFields.ComplexMultiplication.AnalyticUniformizationClassification
-public import GroundTheory.GlobalFields.ComplexMultiplication.MainTheoremLattice
 
 @[expose] public section
 

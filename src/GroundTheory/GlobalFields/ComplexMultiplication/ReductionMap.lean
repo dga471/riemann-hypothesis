@@ -1,7 +1,6 @@
 module
 
-public import GroundTheory.GlobalFields.ComplexMultiplication.ReductionPoints
-public import GroundTheory.GlobalFields.ComplexMultiplication.ReductionGauss
+public import GroundTheory.GlobalFields.ComplexMultiplication.ReductionBase
 public import GroundTheory.ArithmeticGeometry.AbelianVarieties.ReductionTorsion
 import Mathlib.Tactic.TypeStar
 
