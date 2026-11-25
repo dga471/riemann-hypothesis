@@ -30,32 +30,7 @@ theorem isMulRightInvariant_infinite [MeasurableSpace (AdelicGLn.InfiniteAdelicG
     exact Measure.map_id
   set μf : Measure (AdelicGLn.FiniteAdelicGL K n) := Measure.haar
   set P := μi.prod μf
-  set e := AdelicGLn.prodEquiv K n
-  set ν : Measure (AdelicGLn.AdelicGL K n) := Measure.haar
-  have hν := GJGlobal.isMulRightInvariant_haar ν hn
-  have he : Measurable e := e.continuous.measurable
-  have : (ν.map e).IsHaarMeasure :=
-    MulEquiv.isHaarMeasure_map ν e.toMulEquiv e.continuous e.symm.continuous
-  have hν' : ∀ p, (ν.map e).map (· * p) = ν.map e := by
-    intro p
-    have hcomp : (· * p) ∘ e = e ∘ (· * e.symm p) := by
-      funext x
-      simp only [Function.comp_apply, map_mul, ContinuousMulEquiv.apply_symm_apply]
-    rw [Measure.map_map (measurable_mul_const p) he, hcomp,
-      ← Measure.map_map he (measurable_mul_const _), map_mul_right_eq_self]
-  set c := haarScalarFactor (ν.map e) P
-  have hc : ν.map e = c • P := by
-      exact isMulLeftInvariant_eq_smul (ν.map e) P
-  have hc0 : c ≠ 0 := by
-    intro h0
-    rw [h0, zero_smul] at hc
-    have hne := isOpen_univ.measure_ne_zero (ν.map e) univ_nonempty
-    rw [hc] at hne
-    exact hne rfl
-  have hP : ∀ p, P.map (· * p) = P := by
-    intro p
-    have h1 : P = c⁻¹ • ν.map e := by rw [hc, smul_smul, inv_mul_cancel₀ hc0, one_smul]
-    rw [h1, Measure.map_smul _ (measurable_mul_const p).aemeasurable, hν']
+  have hP := (GJGlobal.isMulRightInvariant_prod_haar hn μi μf).map_mul_right_eq_self
   refine ⟨fun g => ?_⟩
   have hprod : P.map (· * (g, (1 : AdelicGLn.FiniteAdelicGL K n))) = (μi.map (· * g)).prod μf := by
     have hf : (· * (g, (1 : AdelicGLn.FiniteAdelicGL K n))) = Prod.map (· * g) id := by

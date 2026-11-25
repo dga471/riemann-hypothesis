@@ -137,6 +137,42 @@ theorem integral_comp_inv (hn : 0 < n) {E : Type*} [NormedAddCommGroup E] [Norme
 
 end GJGlobal
 
+section ProdHaar
+
+theorem GJGlobal.isMulRightInvariant_prod_haar {K : Type*} [Field K] [NumberField K] {n : ℕ}
+    (hn : 0 < n) [MeasurableSpace (AdelicGLn.InfiniteAdelicGL K n)]
+    [BorelSpace (AdelicGLn.InfiniteAdelicGL K n)]
+    (μi : Measure (AdelicGLn.InfiniteAdelicGL K n)) [μi.IsHaarMeasure]
+    (μf : Measure (AdelicGLn.FiniteAdelicGL K n)) [μf.IsHaarMeasure] :
+    (μi.prod μf).IsMulRightInvariant := by
+  set P := μi.prod μf
+  set e := AdelicGLn.prodEquiv K n
+  set ν : Measure (AdelicGLn.AdelicGL K n) := Measure.haar
+  have hν := GJGlobal.isMulRightInvariant_haar ν hn
+  have he : Measurable e := e.continuous.measurable
+  have : (ν.map e).IsHaarMeasure :=
+    MulEquiv.isHaarMeasure_map ν e.toMulEquiv e.continuous e.symm.continuous
+  have hν' : ∀ p, (ν.map e).map (· * p) = ν.map e := by
+    intro p
+    have hcomp : (· * p) ∘ e = e ∘ (· * e.symm p) := by
+      funext x
+      simp only [Function.comp_apply, map_mul, ContinuousMulEquiv.apply_symm_apply]
+    rw [Measure.map_map (measurable_mul_const p) he, hcomp,
+      ← Measure.map_map he (measurable_mul_const _), map_mul_right_eq_self]
+  set c := Measure.haarScalarFactor (ν.map e) P
+  have hc : ν.map e = c • P := Measure.isMulLeftInvariant_eq_smul (ν.map e) P
+  have hc0 : c ≠ 0 := by
+    intro h0
+    rw [h0, zero_smul] at hc
+    have hne := isOpen_univ.measure_ne_zero (ν.map e) univ_nonempty
+    rw [hc] at hne
+    exact hne rfl
+  refine ⟨fun p => ?_⟩
+  have h1 : P = c⁻¹ • ν.map e := by rw [hc, smul_smul, inv_mul_cancel₀ hc0, one_smul]
+  rw [h1, Measure.map_smul _ (measurable_mul_const p).aemeasurable, hν']
+
+end ProdHaar
+
 end
 
 end GroundTheory.Automorphic
