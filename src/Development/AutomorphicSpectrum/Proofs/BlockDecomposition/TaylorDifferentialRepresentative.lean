@@ -59,101 +59,14 @@ open GlobalTheory.CompanionTheory.CocProd
 variable {R : Type} [CommRing R] {C : Type 1} [Category.{0} C] {Φ : PDF R C} {d : ℕ}
   (E : Frame Φ d) (σ : ∀ T : C, E.D ⟶ T)
 
-def headP {j : ℕ} (I : Fin j → Fin d) (s : ComposableArrows C (j + 1)) : Φ.A.obj (s.obj (Fin.last (j + 1))) :=
-  ∏ k : Fin j, ga E σ (I k) s k.castSucc.castSucc k.succ.castSucc (by rw [Fin.le_def]; simp)
+abbrev headP {j : ℕ} (I : Fin j → Fin d) (s : ComposableArrows C (j + 1)) : Φ.A.obj (s.obj (Fin.last (j + 1))) :=
+  GlobalTheory.CompanionTheory.CocProd.headP E σ I s
 
 theorem alt_sum_form {j : ℕ} (I : Fin j → Fin d) (x : Φ.A.obj E.D) (s : ComposableArrows C (j + 1)) :
     ∑ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) =
       (-1) ^ j * (headP E σ I s * ((Φ.A.map (σ (s.obj (Fin.last (j + 1))))).hom x -
-        (Φ.A.map (σ _ ≫ toLast (Fin.last (j + 1)) s)).hom x)) := by
-  classical
-  set u : Fin j → Φ.A.obj (s.obj (Fin.last (j + 1))) := fun k =>
-    ga E σ (I k) s k.castSucc.castSucc k.succ.castSucc (by rw [Fin.le_def]; simp) with hu
-  set v : Fin j → Φ.A.obj (s.obj (Fin.last (j + 1))) := fun k =>
-    ga E σ (I k) s k.succ.castSucc k.succ.succ (by rw [Fin.le_def]; simp) with hv
-  set P : ℕ → Φ.A.obj (s.obj (Fin.last (j + 1))) := fun n => ∏ k : Fin j, if (k : ℕ) < n then u k else v k with hP
-  set T : Fin (j + 2) → Φ.A.obj (s.obj (Fin.last (j + 1))) := fun i =>
-    ∏ k : Fin j, ga E σ (I k) s (i.succAbove k.castSucc) (i.succAbove k.succ)
-        ((Fin.strictMono_succAbove i).monotone (Fin.castSucc_lt_succ (i := k)).le) with hT
-  set W : Fin (j + 2) → Φ.A.obj (s.obj (Fin.last (j + 1))) := fun i =>
-    (Φ.A.map (toLast i s)).hom ((Φ.A.map (σ _)).hom x) with hW
-  set Y := (Φ.A.map (σ (s.obj (Fin.last (j + 1))))).hom x with hY
-  have hT0 : T 0 = P 0 := by
-    refine Finset.prod_congr rfl fun k _ => ?_
-    simp only [Nat.not_lt_zero, ite_false]
-    refine ga_congr E σ _ s _ _ ?_ ?_ <;> simp
-  have hTl : T (Fin.last (j + 1)) = P j := by
-    refine Finset.prod_congr rfl fun k _ => ?_
-    simp only [k.2, ite_true]
-    refine ga_congr E σ _ s _ _ ?_ ?_ <;> simp
-  have hTi : ∀ i : Fin j, T i.succ.castSucc = P (i + 1) + P i := by
-    intro i
-    have hPa : P (i + 1) = u i * ∏ k ∈ Finset.univ.erase i, (if (k : ℕ) < i + 1 then u k else v k) := by
-      have := Finset.mul_prod_erase Finset.univ (fun k : Fin j => if (k : ℕ) < i + 1 then u k else v k) (Finset.mem_univ i)
-      simp only [Nat.lt_add_one, ite_true] at this
-      exact this.symm
-    have hPb : P i = v i * ∏ k ∈ Finset.univ.erase i, (if (k : ℕ) < i then u k else v k) := by
-      have := Finset.mul_prod_erase Finset.univ (fun k : Fin j => if (k : ℕ) < i then u k else v k) (Finset.mem_univ i)
-      simp only [lt_irrefl, ite_false] at this
-      exact this.symm
-    have hTa : T i.succ.castSucc = (u i + v i) * ∏ k ∈ Finset.univ.erase i, (if (k : ℕ) < i then u k else v k) := by
-      have := Finset.mul_prod_erase Finset.univ (fun k : Fin j => ga E σ (I k) s (i.succ.castSucc.succAbove k.castSucc)
-        (i.succ.castSucc.succAbove k.succ) ((Fin.strictMono_succAbove _).monotone (Fin.castSucc_lt_succ (i := k)).le)) (Finset.mem_univ i)
-      refine this.symm.trans ?_
-      congr 1
-      · rw [hu, hv]
-        dsimp only
-        rw [← ga_add]
-        refine ga_congr E σ _ s _ _ ?_ ?_ <;> simp <;> (try split_ifs)
-      · refine Finset.prod_congr rfl fun k hk => ?_
-        have hki : (k : ℕ) ≠ i := fun h => Finset.ne_of_mem_erase hk (Fin.ext h)
-        split_ifs with h
-        · refine ga_congr E σ _ s _ _ ?_ ?_ <;> simp [sa_val] <;> (try split_ifs) <;> simp_all <;> omega
-        · refine ga_congr E σ _ s _ _ ?_ ?_ <;> simp [sa_val] <;> (try split_ifs) <;> simp_all <;> omega
-    have hE : ∏ k ∈ Finset.univ.erase i, (if (k : ℕ) < i + 1 then u k else v k) =
-        ∏ k ∈ Finset.univ.erase i, (if (k : ℕ) < i then u k else v k) := by
-      refine Finset.prod_congr rfl fun k hk => ?_
-      have hki : (k : ℕ) ≠ i := fun h => Finset.ne_of_mem_erase hk (Fin.ext h)
-      have : (k : ℕ) < i + 1 ↔ (k : ℕ) < i := by omega
-      simp only [this]
-    rw [hTa, hPa, hPb, hE]
-    ring
-  have hWY : ∀ i : Fin (j + 2), i ≠ Fin.last (j + 1) → W i = Y := by
-    intro i hi
-    have hi' : i.succAbove (Fin.last j) = Fin.last (j + 1) := by
-      have h1 : (i : ℕ) ≠ j + 1 := fun h => hi (Fin.ext h)
-      have h2 := i.2
-      apply Fin.ext
-      rw [sa_val]
-      simp only [Fin.val_last]
-      split_ifs <;> omega
-    calc W i = (Φ.A.map (σ _ ≫ toLast i s)).hom x := map_map _ _ _
-      _ = Y := by rw [show σ _ ≫ toLast i s = σ (s.obj (Fin.last (j + 1))) from sec_last E σ s _ hi']
-  have hPj : headP E σ I s = P j := by
-    refine Finset.prod_congr rfl fun k _ => ?_
-    simp only [k.2, ite_true]
-    rfl
-  have hWl : (Φ.A.map (σ _ ≫ toLast (Fin.last (j + 1)) s)).hom x = W (Fin.last (j + 1)) := (map_map _ _ _).symm
-  rw [hWl, hPj]
-  have hterm : ∀ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) =
-      (-1) ^ (i : ℕ) * (T i * W i) := by
-    intro i
-    rw [face_form, zsmul_eq_mul]
-    push_cast
-    rfl
-  rw [Finset.sum_congr rfl fun i _ => hterm i, Fin.sum_univ_castSucc, Fin.sum_univ_succ]
-  have h0 : T (Fin.castSucc 0) = P 0 := hT0
-  have hne0 : Fin.castSucc (0 : Fin (j + 1)) ≠ Fin.last (j + 1) := (Fin.castSucc_lt_last _).ne
-  have hint : ∑ i : Fin j, (-1) ^ ((i.succ.castSucc : Fin (j + 2)) : ℕ) * (T i.succ.castSucc * W i.succ.castSucc) =
-      (∑ m ∈ Finset.range j, (-1) ^ (m + 1) * (P (m + 1) + P m)) * Y := by
-    rw [Finset.sum_mul, ← Fin.sum_univ_eq_sum_range (fun m => (-1) ^ (m + 1) * (P (m + 1) + P m) * Y) j]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [hTi, hWY _ (Fin.castSucc_lt_last _).ne]
-    simp only [Fin.val_castSucc, Fin.val_succ]
-    ring
-  rw [hint, h0, hWY _ hne0, hTl]
-  simp only [Fin.val_castSucc, Fin.val_zero, Fin.val_last, pow_zero]
-  linear_combination Y * tele P j
+        (Φ.A.map (σ _ ≫ toLast (Fin.last (j + 1)) s)).hom x)) :=
+  GlobalTheory.CompanionTheory.CocProd.alt_sum_form E σ I x s
 
 theorem form_snoc {j : ℕ} (I : Fin j → Fin d) (k : Fin d) (z : Φ.A.obj E.D) (s : ComposableArrows C (j + 1)) :
     E.form σ (Fin.snoc (α := fun _ => Fin d) I k) z s =

@@ -102,10 +102,13 @@ theorem sec_last {n : ℕ} (s : ComposableArrows C n) (p : Fin (n + 1)) (hp : p 
   have : (homOfLE (Fin.le_last (Fin.last n)) : Fin.last n ⟶ Fin.last n) = 𝟙 _ := Subsingleton.elim _ _
   rw [this, s.map_id, Category.comp_id]
 
-theorem d_form_mem {Fil : ℤ → IdF Φ.A} (hF : IsFil Φ Fil) (hc : E.GrConst Fil) (j q : ℕ)
-    (I : Fin j → Fin d) (x : Φ.A.obj E.D) (hx : x ∈ (Fil q).S E.D) (s : ComposableArrows C (j + 1)) :
-    ∑ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) ∈
-      (Fil (((j : ℤ) + q) + 1)).S _ := by
+def headP {j : ℕ} (I : Fin j → Fin d) (s : ComposableArrows C (j + 1)) : Φ.A.obj (s.obj (Fin.last (j + 1))) :=
+  ∏ k : Fin j, ga E σ (I k) s k.castSucc.castSucc k.succ.castSucc (by rw [Fin.le_def]; simp)
+
+theorem alt_sum_form {j : ℕ} (I : Fin j → Fin d) (x : Φ.A.obj E.D) (s : ComposableArrows C (j + 1)) :
+    ∑ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) =
+      (-1) ^ j * (headP E σ I s * ((Φ.A.map (σ (s.obj (Fin.last (j + 1))))).hom x -
+        (Φ.A.map (σ _ ≫ toLast (Fin.last (j + 1)) s)).hom x)) := by
   classical
   set u : Fin j → Φ.A.obj (s.obj (Fin.last (j + 1))) := fun k =>
     ga E σ (I k) s k.castSucc.castSucc k.succ.castSucc (by rw [Fin.le_def]; simp) with hu
@@ -169,38 +172,41 @@ theorem d_form_mem {Fil : ℤ → IdF Φ.A} (hF : IsFil Φ Fil) (hc : E.GrConst 
       split_ifs <;> omega
     calc W i = (Φ.A.map (σ _ ≫ toLast i s)).hom x := map_map _ _ _
       _ = Y := by rw [show σ _ ≫ toLast i s = σ (s.obj (Fin.last (j + 1))) from sec_last E σ s _ hi']
-  have hYW : Y - W (Fin.last (j + 1)) ∈ (Fil ((q : ℤ) + 1)).S _ := by
-    have h := hc q (σ (s.obj (Fin.last (j + 1)))) (σ _ ≫ toLast (Fin.last (j + 1)) s) hx
-    rwa [show W (Fin.last (j + 1)) = (Φ.A.map (σ _ ≫ toLast (Fin.last (j + 1)) s)).hom x from map_map _ _ _]
-  have hsum : ∑ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) =
-      (-1) ^ j * (P j * (Y - W (Fin.last (j + 1)))) := by
-    have hterm : ∀ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) =
-        (-1) ^ (i : ℕ) * (T i * W i) := by
-      intro i
-      rw [face_form, zsmul_eq_mul]
-      push_cast
-      rfl
-    rw [Finset.sum_congr rfl fun i _ => hterm i, Fin.sum_univ_castSucc, Fin.sum_univ_succ]
-    have h0 : T (Fin.castSucc 0) = P 0 := hT0
-    have hne0 : Fin.castSucc (0 : Fin (j + 1)) ≠ Fin.last (j + 1) := (Fin.castSucc_lt_last _).ne
-    have hint : ∑ i : Fin j, (-1) ^ ((i.succ.castSucc : Fin (j + 2)) : ℕ) * (T i.succ.castSucc * W i.succ.castSucc) =
-        (∑ m ∈ Finset.range j, (-1) ^ (m + 1) * (P (m + 1) + P m)) * Y := by
-      rw [Finset.sum_mul, ← Fin.sum_univ_eq_sum_range (fun m => (-1) ^ (m + 1) * (P (m + 1) + P m) * Y) j]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [hTi, hWY _ (Fin.castSucc_lt_last _).ne]
-      simp only [Fin.val_castSucc, Fin.val_succ]
-      ring
-    rw [hint, h0, hWY _ hne0, hTl]
-    simp only [Fin.val_castSucc, Fin.val_zero, Fin.val_last, pow_zero]
-    linear_combination Y * tele P j
-  rw [hsum]
+  have hPj : headP E σ I s = P j := by
+    refine Finset.prod_congr rfl fun k _ => ?_
+    simp only [k.2, ite_true]
+    rfl
+  have hWl : (Φ.A.map (σ _ ≫ toLast (Fin.last (j + 1)) s)).hom x = W (Fin.last (j + 1)) := (map_map _ _ _).symm
+  rw [hWl, hPj]
+  have hterm : ∀ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) =
+      (-1) ^ (i : ℕ) * (T i * W i) := by
+    intro i
+    rw [face_form, zsmul_eq_mul]
+    push_cast
+    rfl
+  rw [Finset.sum_congr rfl fun i _ => hterm i, Fin.sum_univ_castSucc, Fin.sum_univ_succ]
+  have h0 : T (Fin.castSucc 0) = P 0 := hT0
+  have hne0 : Fin.castSucc (0 : Fin (j + 1)) ≠ Fin.last (j + 1) := (Fin.castSucc_lt_last _).ne
+  have hint : ∑ i : Fin j, (-1) ^ ((i.succ.castSucc : Fin (j + 2)) : ℕ) * (T i.succ.castSucc * W i.succ.castSucc) =
+      (∑ m ∈ Finset.range j, (-1) ^ (m + 1) * (P (m + 1) + P m)) * Y := by
+    rw [Finset.sum_mul, ← Fin.sum_univ_eq_sum_range (fun m => (-1) ^ (m + 1) * (P (m + 1) + P m) * Y) j]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [hTi, hWY _ (Fin.castSucc_lt_last _).ne]
+    simp only [Fin.val_castSucc, Fin.val_succ]
+    ring
+  rw [hint, h0, hWY _ hne0, hTl]
+  simp only [Fin.val_castSucc, Fin.val_zero, Fin.val_last, pow_zero]
+  linear_combination Y * tele P j
+
+theorem d_form_mem {Fil : ℤ → IdF Φ.A} (hF : IsFil Φ Fil) (hc : E.GrConst Fil) (j q : ℕ)
+    (I : Fin j → Fin d) (x : Φ.A.obj E.D) (hx : x ∈ (Fil q).S E.D) (s : ComposableArrows C (j + 1)) :
+    ∑ i : Fin (j + 2), (-1 : ℤ) ^ (i : ℕ) • (Φ.A.map (toLast i s)).hom (E.form σ I x (face i s)) ∈
+      (Fil (((j : ℤ) + q) + 1)).S _ := by
+  rw [alt_sum_form]
   refine Ideal.mul_mem_left _ _ ?_
-  have h := prod_mem hF (fun k : Fin j => if (k : ℕ) < j then u k else v k)
-    (fun k => by
-      split_ifs
-      · exact ga_mem E σ hF _ s _ _ _
-      · exact ga_mem E σ hF _ s _ _ _)
-    (q := q + 1) (x := Y - W (Fin.last (j + 1))) (by push_cast; exact hYW)
+  have hYW := hc q (σ (s.obj (Fin.last (j + 1)))) (σ _ ≫ toLast (Fin.last (j + 1)) s) hx
+  have h := prod_mem hF (fun k : Fin j => ga E σ (I k) s k.castSucc.castSucc k.succ.castSucc (by rw [Fin.le_def]; simp))
+    (fun k => ga_mem E σ hF _ s _ _ _) (q := q + 1) (by push_cast; exact hYW)
   have e : ((j + (q + 1) : ℕ) : ℤ) = (j : ℤ) + q + 1 := by push_cast; ring
   rwa [e] at h
 
