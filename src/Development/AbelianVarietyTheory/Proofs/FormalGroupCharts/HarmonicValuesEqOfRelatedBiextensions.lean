@@ -154,74 +154,89 @@ theorem jeq_main [Algebra ℚ k] {n : ℕ} (m q : ℕ) (φ φi a : Pt k 1 d) (hi
 end SlopeTestRemainingChoices
 
 open GlobalTheory.FBMap in
+theorem nabValN_transport (R : Type) [CommRing R] (d : ℕ) (O : Type) [CommRing O] [StarRing O] [Module.Free ℤ O]
+    [Module.Finite ℤ O] [IsReduced O] (k : Type) [Field k] [Algebra ℚ k] [Algebra R k] (B B' : FB R d O)
+    (φ φi : Pt R 1 d) (h h' : PS k 2 d) (hh : B.IsCanonGauge k h) (hh' : B'.IsCanonGauge k h')
+    (T : Type) [Fintype T] (r : T → ℕ) (cc : T → T) (isX : T → Prop) (σ : T → O →+* k) (h1 : ∀ τ, cc (cc τ) = τ)
+    (h2 : ∀ τ, isX τ ∨ isX (cc τ)) (h3 : ∀ τ a, σ (cc τ) a = σ τ (star a))
+    (h4 : ∀ τ τ', τ ≠ τ' → ∃ a, IsUnit (σ τ a - σ τ' a)) (u u' : (Σ τ : T, Fin (r τ)) → Fin d → k)
+    (hu' : ∀ l a, (dAct k B' a).mulVec (u' l) = σ l.1 a • u' l)
+    (hu : ∀ l, u l = ((dLin φ).map (algebraMap R k)).mulVec (u' l)) (n : ℕ) (P : MvPolynomial (Letter T r n) k)
+    (hP : P ∈ harmK r n k cc isX (fun _ => 1)) (w0 : O) (q : ℕ) (f' : PS R n d) (m : ℕ) (hm : m = P.totalDegree + 2)
+    (ε : PS R 2 d) (hε : JRel m B B' φ φi ε) :
+    nabValN B k h w0 q (MvPowerSeries.map (algebraMap R k) (ev (n := n) (fun b => comp1 φi (pt R (n := n) d b))
+        (f' * ∏ b : Fin n, (ev ![pt R (n := n) d b, comp1 (B'.A.act w0) (pt R (n := n) d b)] ε) ^ q)))
+      (fun ℓ : Letter T r n => ℓ.2.2) (fun ℓ : Letter T r n => u ⟨ℓ.1, ℓ.2.1⟩) P =
+    nabValN B' k h' w0 q (MvPowerSeries.map (algebraMap R k) f') (fun ℓ : Letter T r n => ℓ.2.2)
+      (fun ℓ : Letter T r n => u' ⟨ℓ.1, ℓ.2.1⟩) P := by
+  have hε1 := (GlobalTheory.ChartCmp.jRel_axes R d O m B B' φ φi ε hε).1
+  obtain ⟨lam, hl0, hle⟩ := (GlobalTheory.ChartCmp.jeq_expS_iff_and_exists_log k 2 d m).2 (FB.toK k ε) (by simp [FB.toK, hε1])
+  have hbi := GlobalTheory.T.canonicalGauge_difference_biadditive_jet R d O m B B' φ φi ε hε k h h' lam hh hh' hl0 hle
+  obtain ⟨g', hg', hgg⟩ := GlobalTheory.T.exists_biadditive_series_jetEq_of_biadditiveJet R d O B' k m (by omega) _ hbi
+  have hcan := GlobalTheory.T.isCanonicalGauge_sub_biadditive R d O B' k h' g' hh' hg'
+  have c0 : ∀ {C : FB R d O} {g : PS k 2 d}, C.IsCanonGauge k g → MvPowerSeries.constantCoeff g = 0 := by
+    intro C g hg
+    have := congrArg MvPowerSeries.constantCoeff hg.ax0
+    rwa [gt_const_ev_eq _ (pair_points_zero_constant gp_zero₂ (gp_pt 0)), map_zero] at this
+  have hφ : NoConst φ := hε.inv.1
+  have hφi : NoConst φi := hε.inv.2.1
+  have hinv : IsInvPair (mapPt (algebraMap R k) φ) (mapPt (algebraMap R k) φi) := by
+    refine ⟨fun i => by simp [mapPt, hφ i], fun i => by simp [mapPt, hφi i], ?_, ?_⟩
+    · rw [← mapPt_comp1 _ _ hφi, hε.inv.2.2.1, mapPt_pt]
+    · rw [← mapPt_comp1 _ _ hφ, hε.inv.2.2.2, mapPt_pt]
+  have hact : B'.actK k w0 = comp1 (mapPt (algebraMap R k) φi) (comp1 (B.actK k w0) (mapPt (algebraMap R k) φ)) := by
+    change mapPt (algebraMap R k) (B'.A.act w0) = comp1 _ (comp1 (mapPt (algebraMap R k) (B.A.act w0)) _)
+    rw [hε.act w0, mapPt_comp1 _ _ (nc_comp1 (nc_act _ _) hφ), mapPt_comp1 _ _ hφ]
+  have hF : B'.FK k = transF (mapLaw (algebraMap R k) B.G).F (mapPt (algebraMap R k) φ) (mapPt (algebraMap R k) φi) := by
+    funext i
+    change MvPowerSeries.map (algebraMap R k) (B'.G.F i) = _
+    rw [hε.law i]
+    unfold transF
+    rw [map_ev1 _ (nc_addOf (nc_law _) (nc_comp1 hφ (nc_pt _)) (nc_comp1 hφ (nc_pt _))),
+      mapPt_addOf _ _ (nc_comp1 hφ (nc_pt _)) (nc_comp1 hφ (nc_pt _)), mapPt_comp1 _ _ (nc_pt _),
+      mapPt_comp1 _ _ (nc_pt _), mapPt_pt, mapPt_pt]
+    rfl
+  have hd : dLin (mapPt (algebraMap R k) φ) = (dLin φ).map (algebraMap R k) := by
+    ext i j
+    simp [dLin, mapPt]
+  have hj : JEq m (h' - g') (ev ![comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 0),
+      comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 1)] h + lam) := by
+    intro e he
+    have := hgg e he
+    rw [map_sub, map_sub] at this
+    rw [map_sub, map_add (f := _), ← this]
+    change _ - (_ - MvPowerSeries.coeff e (ev ![comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 0),
+      comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 1)] h) - _) = _
+    ring
+  have haK : GP (B.actK k w0) := fun i => by simp [FB.actK, B.A.const w0 i]
+  have key := jeq_main (n := n) m q _ _ (B.actK k w0) hinv haK h (h' - g') lam (c0 hh) (c0 hcan) hl0 hj
+    (MvPowerSeries.map (algebraMap R k) f')
+  rw [GlobalTheory.nabValN_harmonic_gauge_independent R d O k B' h' (h' - g') hh' hcan T r cc isX σ h1 h2 h3 h4 u' hu' n P hP w0 q]
+  have hmap : MvPowerSeries.map (algebraMap R k) (ev (n := n) (fun b => comp1 φi (pt R (n := n) d b))
+      (f' * ∏ b : Fin n, (ev ![pt R (n := n) d b, comp1 (B'.A.act w0) (pt R (n := n) d b)] ε) ^ q)) =
+      ev (n := n) (fun b => comp1 (mapPt (algebraMap R k) φi) (pt k (n := n) d b))
+        (MvPowerSeries.map (algebraMap R k) f' * ∏ b : Fin n, (ev ![pt k (n := n) d b,
+          comp1 (B'.actK k w0) (pt k (n := n) d b)] (FB.expS k lam)) ^ q) := by
+    rw [map_ev _ (fun b => nc_comp1 hφi (nc_pt b)), map_mul, map_prod]
+    congr 1
+    · funext b
+      rw [mapPt_comp1 _ _ (nc_pt _), mapPt_pt]
+    · congr 1
+      refine Finset.prod_congr rfl fun b _ => ?_
+      rw [map_pow, map_ev2 _ (nc_pt _) (nc_comp1 (nc_act _ _) (nc_pt _)), mapPt_comp1 _ _ (nc_pt _), mapPt_pt, hle]
+      rfl
+  unfold nabValN FB.hL
+  rw [hmap, hF, hact, _root_.GlobalTheory.ChartCmp.constantCoeff_DpolyN_jEq k d n _ _ _ _ P m _ _ (by omega) key,
+    _root_.GlobalTheory.ChartTransN.dpolyN_transF k d n (mapLaw (algebraMap R k) B.G) _ _ hinv,
+    gt_const_ev_eq _ (fun b => gp_comp1 _ _ hinv.1 (gp_pt b)), hd]
+  simp only [hu]
+  rfl
+
+open GlobalTheory.FBMap in
 theorem exists_nabValN_eq : ∀ (R : Type) [CommRing R] (d : ℕ) (O : Type) [CommRing O] [StarRing O] [Module.Free ℤ O] [Module.Finite ℤ O] [IsReduced O] (k : Type) [Field k] [Algebra ℚ k] [Algebra R k] (B B' : FB R d O) (φ φi : Pt R 1 d), (∀ m, ∃ ε : PS R 2 d, JRel m B B' φ φi ε) → ∀ h h' : PS k 2 d, B.IsCanonGauge k h → B'.IsCanonGauge k h' → ∀ (T : Type) [Fintype T] (r : T → ℕ) (cc : T → T) (isX : T → Prop) (σ : T → O →+* k), (∀ τ, cc (cc τ) = τ) → (∀ τ, isX τ ∨ isX (cc τ)) → (∀ τ a, σ (cc τ) a = σ τ (star a)) → (∀ τ τ', τ ≠ τ' → ∃ a, IsUnit (σ τ a - σ τ' a)) → ∀ u u' : (Σ τ : T, Fin (r τ)) → Fin d → k, (∀ l a, (dAct k B' a).mulVec (u' l) = σ l.1 a • u' l) → (∀ l, u l = ((dLin φ).map (algebraMap R k)).mulVec (u' l)) → ∀ (n : ℕ) (P : MvPolynomial (Letter T r n) k), P ∈ harmK r n k cc isX (fun _ => 1) → ∀ (w0 : O) (q : ℕ) (f' : PS R n d), ∃ f : PS R n d, nabValN B k h w0 q (MvPowerSeries.map (algebraMap R k) f) (fun ℓ : Letter T r n => ℓ.2.2) (fun ℓ : Letter T r n => u ⟨ℓ.1, ℓ.2.1⟩) P = nabValN B' k h' w0 q (MvPowerSeries.map (algebraMap R k) f') (fun ℓ : Letter T r n => ℓ.2.2) (fun ℓ : Letter T r n => u' ⟨ℓ.1, ℓ.2.1⟩) P := by
   intro R _ d O _ _ _ _ _ k _ _ _ B B' φ φi hrel h h' hh hh' T _ r cc isX σ h1 h2 h3 h4 u u' hu' hu n P hP w0 q f'
-  open GlobalTheory.FBMap in
-    obtain ⟨ε, hε⟩ := hrel (P.totalDegree + 2)
-    set m := P.totalDegree + 2 with hm
-    have hε1 := (GlobalTheory.ChartCmp.jRel_axes R d O m B B' φ φi ε hε).1
-    obtain ⟨lam, hl0, hle⟩ := (GlobalTheory.ChartCmp.jeq_expS_iff_and_exists_log k 2 d m).2 (FB.toK k ε) (by simp [FB.toK, hε1])
-    have hbi := GlobalTheory.T.canonicalGauge_difference_biadditive_jet R d O m B B' φ φi ε hε k h h' lam hh hh' hl0 hle
-    obtain ⟨g', hg', hgg⟩ := GlobalTheory.T.exists_biadditive_series_jetEq_of_biadditiveJet R d O B' k m (by omega) _ hbi
-    have hcan := GlobalTheory.T.isCanonicalGauge_sub_biadditive R d O B' k h' g' hh' hg'
-    have c0 : ∀ {C : FB R d O} {g : PS k 2 d}, C.IsCanonGauge k g → MvPowerSeries.constantCoeff g = 0 := by
-      intro C g hg
-      have := congrArg MvPowerSeries.constantCoeff hg.ax0
-      rwa [gt_const_ev_eq _ (pair_points_zero_constant gp_zero₂ (gp_pt 0)), map_zero] at this
-    have hφ : NoConst φ := hε.inv.1
-    have hφi : NoConst φi := hε.inv.2.1
-    have hinv : IsInvPair (mapPt (algebraMap R k) φ) (mapPt (algebraMap R k) φi) := by
-      refine ⟨fun i => by simp [mapPt, hφ i], fun i => by simp [mapPt, hφi i], ?_, ?_⟩
-      · rw [← mapPt_comp1 _ _ hφi, hε.inv.2.2.1, mapPt_pt]
-      · rw [← mapPt_comp1 _ _ hφ, hε.inv.2.2.2, mapPt_pt]
-    have hact : B'.actK k w0 = comp1 (mapPt (algebraMap R k) φi) (comp1 (B.actK k w0) (mapPt (algebraMap R k) φ)) := by
-      change mapPt (algebraMap R k) (B'.A.act w0) = comp1 _ (comp1 (mapPt (algebraMap R k) (B.A.act w0)) _)
-      rw [hε.act w0, mapPt_comp1 _ _ (nc_comp1 (nc_act _ _) hφ), mapPt_comp1 _ _ hφ]
-    have hF : B'.FK k = transF (mapLaw (algebraMap R k) B.G).F (mapPt (algebraMap R k) φ) (mapPt (algebraMap R k) φi) := by
-      funext i
-      change MvPowerSeries.map (algebraMap R k) (B'.G.F i) = _
-      rw [hε.law i]
-      unfold transF
-      rw [map_ev1 _ (nc_addOf (nc_law _) (nc_comp1 hφ (nc_pt _)) (nc_comp1 hφ (nc_pt _))),
-        mapPt_addOf _ _ (nc_comp1 hφ (nc_pt _)) (nc_comp1 hφ (nc_pt _)), mapPt_comp1 _ _ (nc_pt _),
-        mapPt_comp1 _ _ (nc_pt _), mapPt_pt, mapPt_pt]
-      rfl
-    have hd : dLin (mapPt (algebraMap R k) φ) = (dLin φ).map (algebraMap R k) := by
-      ext i j
-      simp [dLin, mapPt]
-    have hj : JEq m (h' - g') (ev ![comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 0),
-        comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 1)] h + lam) := by
-      intro e he
-      have := hgg e he
-      rw [map_sub, map_sub] at this
-      rw [map_sub, map_add (f := _), ← this]
-      change _ - (_ - MvPowerSeries.coeff e (ev ![comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 0),
-        comp1 (mapPt (algebraMap R k) φ) (pt k (n := 2) d 1)] h) - _) = _
-      ring
-    have haK : GP (B.actK k w0) := fun i => by simp [FB.actK, B.A.const w0 i]
-    have key := jeq_main (n := n) m q _ _ (B.actK k w0) hinv haK h (h' - g') lam (c0 hh) (c0 hcan) hl0 hj
-      (MvPowerSeries.map (algebraMap R k) f')
-    refine ⟨ev (n := n) (fun b => comp1 φi (pt R (n := n) d b))
-      (f' * ∏ b : Fin n, (ev ![pt R (n := n) d b, comp1 (B'.A.act w0) (pt R (n := n) d b)] ε) ^ q), ?_⟩
-    rw [GlobalTheory.nabValN_harmonic_gauge_independent R d O k B' h' (h' - g') hh' hcan T r cc isX σ h1 h2 h3 h4 u' hu' n P hP w0 q]
-    have hmap : MvPowerSeries.map (algebraMap R k) (ev (n := n) (fun b => comp1 φi (pt R (n := n) d b))
-        (f' * ∏ b : Fin n, (ev ![pt R (n := n) d b, comp1 (B'.A.act w0) (pt R (n := n) d b)] ε) ^ q)) =
-        ev (n := n) (fun b => comp1 (mapPt (algebraMap R k) φi) (pt k (n := n) d b))
-          (MvPowerSeries.map (algebraMap R k) f' * ∏ b : Fin n, (ev ![pt k (n := n) d b,
-            comp1 (B'.actK k w0) (pt k (n := n) d b)] (FB.expS k lam)) ^ q) := by
-      rw [map_ev _ (fun b => nc_comp1 hφi (nc_pt b)), map_mul, map_prod]
-      congr 1
-      · funext b
-        rw [mapPt_comp1 _ _ (nc_pt _), mapPt_pt]
-      · congr 1
-        refine Finset.prod_congr rfl fun b _ => ?_
-        rw [map_pow, map_ev2 _ (nc_pt _) (nc_comp1 (nc_act _ _) (nc_pt _)), mapPt_comp1 _ _ (nc_pt _), mapPt_pt, hle]
-        rfl
-    unfold nabValN FB.hL
-    rw [hmap, hF, hact, _root_.GlobalTheory.ChartCmp.constantCoeff_DpolyN_jEq k d n _ _ _ _ P m _ _ (by omega) key,
-      _root_.GlobalTheory.ChartTransN.dpolyN_transF k d n (mapLaw (algebraMap R k) B.G) _ _ hinv,
-      gt_const_ev_eq _ (fun b => gp_comp1 _ _ hinv.1 (gp_pt b)), hd]
-    simp only [hu]
-    rfl
+  obtain ⟨ε, hε⟩ := hrel (P.totalDegree + 2)
+  exact ⟨_, nabValN_transport R d O k B B' φ φi h h' hh hh' T r cc isX σ h1 h2 h3 h4 u u' hu' hu n P hP w0 q f'
+    (P.totalDegree + 2) rfl ε hε⟩
 
 end GlobalTheory.ChartVal
