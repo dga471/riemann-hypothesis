@@ -27,118 +27,6 @@ namespace GlobalTheory.KTypeExists
 
 open Formalism.REAL GlobalTheory.UnitaryDerived GlobalTheory.UnitaryHighestWeight
 
-section Smooth
-
-open scoped Matrix.Norms.Elementwise
-
-theorem inUJ_mul {n : ℕ} {ε : Fin n → Bool} {g h : Matrix (Fin n) (Fin n) ℂ} (hg : inUJ ε g) (hh : inUJ ε h) :
-    inUJ ε (g * h) := by
-  unfold inUJ at *
-  calc (g * h)ᴴ * Jm ε * (g * h) = hᴴ * (gᴴ * Jm ε * g) * h := by
-        simp only [conjTranspose_mul, Matrix.mul_assoc]
-    _ = Jm ε := by rw [hg, hh]
-
-theorem exists_smooth_equivariant {n : ℕ} {ε : Fin n → Bool} {B : Type} [NormedRing B] [NormedAlgebra ℂ B]
-    [CompleteSpace B] {σ : Matrix (Fin n) (Fin n) ℂ → B} (h1 : σ 1 = 1)
-    (hcont : ContinuousOn σ {g | inUJ ε g}) :
-    ∃ F : Matrix (Fin n) (Fin n) ℂ → B, SmoothOnGV ε F ∧ F 1 = 1 ∧
-      ∀ k, inUJ ε k → (∀ g, inUJ ε g → σ (k * g) = σ k * σ g) → ∀ x, inUJ ε x → F (k * x) = σ k * F x := by
-  obtain ⟨hemb, hrange⟩ := isClosedEmbeddingMatrix n ε
-  set μ := muG ε
-  have hmem : ∀ g : UJ ε, inUJ ε (toM g) := fun g => g.2
-  have hu : Continuous fun g : UJ ε => toM g := hemb.continuous
-  have hb : Continuous fun g : UJ ε => σ (toM g) := hcont.comp_continuous hu hmem
-  have hone : inUJ ε (1 : Matrix (Fin n) (Fin n) ℂ) := hmem 1
-  have hnb : {g | ‖σ g - 1‖ < 1 / 2} ∈ 𝓝[{g | inUJ ε g}] (1 : Matrix (Fin n) (Fin n) ℂ) := by
-    have h := (hcont 1 hone) (Metric.ball_mem_nhds _ (half_pos one_pos))
-    simpa [h1, Set.preimage, dist_eq_norm] using h
-  obtain ⟨U, hU, hUs⟩ := mem_nhdsWithin_iff_exists_mem_nhds_inter.1 hnb
-  obtain ⟨φ, hφU, hφc, hφ, hφr, hφ1⟩ := exists_contDiff_tsupport_subset (n := ⊤) hU
-  have hφ0 : ∀ y, 0 ≤ φ y := fun y => (hφr ⟨y, rfl⟩).1
-  have hψ : Continuous fun g : UJ ε => φ (toM g) := hφ.continuous.comp hu
-  have hψc : HasCompactSupport fun g : UJ ε => φ (toM g) := hφc.comp_isClosedEmbedding hemb
-  have hint' : ∀ x, inUJ ε x → Integrable (fun g : UJ ε => φ (toM g) • σ (x * toM g)) μ := fun x hx =>
-    (hψ.smul (hcont.comp_continuous (continuous_const.matrix_mul hu)
-      fun g => inUJ_mul hx (hmem g))).integrable_of_hasCompactSupport hψc.smul_right
-  have hint : Integrable (fun g : UJ ε => φ (toM g) • σ (toM g)) μ := by simpa using hint' 1 hone
-  have hψi : Integrable (fun g : UJ ε => φ (toM g)) μ := hψ.integrable_of_hasCompactSupport hψc
-  have hpos : 0 < ∫ g : UJ ε, φ (toM g) ∂μ :=
-    hψ.integral_pos_of_hasCompactSupport_nonneg_nonzero (x := 1) hψc (fun g => hφ0 _)
-      (by show φ 1 ≠ 0; rw [hφ1]; exact one_ne_zero)
-  set c := ∫ g : UJ ε, φ (toM g) ∂μ with hc
-  set A := ∫ g : UJ ε, φ (toM g) • σ (toM g) ∂μ with hA
-  have hAu : ∃ A' : B, A * A' = 1 := by
-    have e1 : ∫ g : UJ ε, (φ (toM g) • σ (toM g) - φ (toM g) • (1 : B)) ∂μ = A - c • (1 : B) := by
-      rw [integral_sub hint (hψi.smul_const _), integral_smul_const]
-    have e2 : ‖∫ g : UJ ε, (φ (toM g) • σ (toM g) - φ (toM g) • (1 : B)) ∂μ‖
-        ≤ ∫ g : UJ ε, φ (toM g) * (1 / 2) ∂μ := by
-      refine norm_integral_le_of_norm_le (hψi.mul_const _) (Filter.Eventually.of_forall fun g => ?_)
-      rw [← smul_sub, norm_smul, Real.norm_of_nonneg (hφ0 _)]
-      by_cases hg : φ (toM g) = 0
-      · simp [hg]
-      · exact mul_le_mul_of_nonneg_left (le_of_lt (hUs ⟨hφU (subset_tsupport _ hg), hmem g⟩)) (hφ0 _)
-    rw [e1, integral_mul_const, ← hc] at e2
-    have e3 : ‖(1 : B) - c⁻¹ • A‖ < 1 := by
-      have : (1 : B) - c⁻¹ • A = -(c⁻¹ • (A - c • (1 : B))) := by
-        rw [smul_sub, smul_smul, inv_mul_cancel₀ hpos.ne', one_smul, neg_sub]
-      rw [this, norm_neg, norm_smul, Real.norm_of_nonneg (inv_pos.2 hpos).le, inv_mul_lt_iff₀ hpos]
-      linarith
-    obtain ⟨u, hu⟩ := isUnit_one_sub_of_norm_lt_one e3
-    rw [sub_sub_cancel] at hu
-    refine ⟨c⁻¹ • (↑u⁻¹ : B), ?_⟩
-    rw [mul_smul_comm, ← smul_mul_assoc, ← hu, Units.mul_inv]
-  obtain ⟨A', hA'⟩ := hAu
-  let y : Matrix (Fin n) (Fin n) ℂ → Matrix (Fin n) (Fin n) ℂ := fun x => Jm ε * xᴴ * Jm ε
-  have hy : ContDiff ℝ ∞ y := contDiff_matMul (contDiff_matMul contDiff_const contDiff_adj) contDiff_const
-  have hyx : ∀ x, inUJ ε x → y x * x = 1 := fun x hx => by
-    have h : xᴴ * Jm ε * x = Jm ε := hx
-    calc y x * x = Jm ε * (xᴴ * Jm ε * x) := by simp only [y, Matrix.mul_assoc]
-      _ = 1 := by rw [h, Jm_mul_self]
-  have hform : ∀ x, inUJ ε x →
-      ∫ g : UJ ε, φ (toM g) • σ (x * toM g) ∂μ = ∫ g : UJ ε, φ (y x * toM g) • σ (toM g) ∂μ := by
-    intro x hx
-    obtain ⟨z, hz⟩ : x ∈ Set.range (fun g : UJ ε => toM g) := by
-      rw [show Set.range (fun g : UJ ε => toM g) = _ from hrange]; exact hx
-    have hz' : toM z = x := hz
-    rw [← integral_mul_left_eq_self (fun g : UJ ε => φ (y x * toM g) • σ (toM g)) z]
-    refine integral_congr_ae (Filter.Eventually.of_forall fun g => ?_)
-    have e : toM (z * g) = x * toM g := by rw [← hz']; rfl
-    simp only [e]
-    rw [← Matrix.mul_assoc, hyx x hx, Matrix.one_mul]
-  refine ⟨fun x => (∫ g : UJ ε, φ (toM g) • σ (x * toM g) ∂μ) * A', ?_, ?_, ?_⟩
-  · intro x₀ _
-    have hC : IsCompact (Set.image2 (· * ·) (Metric.closedBall x₀ 1) (tsupport φ)) := by
-      rw [← Set.image_prod]
-      exact ((isCompact_closedBall x₀ 1).prod hφc).image (contDiff_matMul contDiff_fst contDiff_snd).continuous
-    have hK := hemb.isCompact_preimage hC
-    have hs : ContDiff ℝ ∞ fun x => ∫ g in (fun g : UJ ε => toM g) ⁻¹'
-        (Set.image2 (· * ·) (Metric.closedBall x₀ 1) (tsupport φ)), φ (y x * toM g) • σ (toM g) ∂μ :=
-      contDiff_infty.2 fun m => GlobalTheory.GardingVec.contDiff_setIntegral_nat μ hK (hu.prodMk hb) m
-        (fun z : Matrix (Fin n) (Fin n) ℂ × (Matrix (Fin n) (Fin n) ℂ × B) => φ (y z.1 * z.2.1) • z.2.2)
-        ((hφ.comp (contDiff_matMul (hy.comp contDiff_fst) (contDiff_fst.comp contDiff_snd))).smul
-          (contDiff_snd.comp contDiff_snd))
-    refine ⟨Metric.ball x₀ 1, _, Metric.isOpen_ball, Metric.mem_ball_self one_pos,
-      (hs.mul (contDiff_const (c := A'))).contDiffOn, fun x hx hxG => ?_⟩
-    rw [setIntegral_eq_integral_of_forall_compl_eq_zero, ← hform x hxG]
-    intro g hg
-    by_contra hne
-    refine hg ⟨x, Metric.ball_subset_closedBall hx, y x * toM g,
-      subset_tsupport _ fun h => hne (by rw [h, zero_smul]), ?_⟩
-    show x * (y x * toM g) = toM g
-    rw [← Matrix.mul_assoc, mul_eq_one_comm.1 (hyx x hxG), Matrix.one_mul]
-  · simpa only [Matrix.one_mul] using hA'
-  · intro k hk hmul x hx
-    have := (ContinuousLinearMap.mul ℂ B (σ k)).integral_comp_comm (hint' x hx)
-    rw [ContinuousLinearMap.mul_apply'] at this
-    beta_reduce
-    rw [← mul_assoc (σ k), ← this]
-    congr 1
-    refine integral_congr_ae (Filter.Eventually.of_forall fun g => ?_)
-    beta_reduce
-    rw [Matrix.mul_assoc, hmul _ (inUJ_mul hx (hmem g)), ContinuousLinearMap.mul_apply', mul_smul_comm]
-
-end Smooth
-
 section Lie
 
 variable {n : ℕ} {ε : Fin n → Bool}
@@ -200,37 +88,14 @@ section Deriv
 variable {n : ℕ} {ε : Fin n → Bool} {B : Type} [NormedRing B] [NormedAlgebra ℂ B]
   {F : Matrix (Fin n) (Fin n) ℂ → B}
 
-theorem rdV_left (hs : SmoothOnGV ε F) (hK : ∀ k ∈ Kset ε, ∀ x, inUJ ε x → F (k * x) = F k * F x)
-    {X : Matrix (Fin n) (Fin n) ℂ} (hX : inG ε X) {g : Matrix (Fin n) (Fin n) ℂ} (hg : g ∈ Kset ε) :
-    RdV X F g = F g * RdV X F 1 := by
-  rw [← ((hasDerivAt_rdV hs hX).const_mul (F g)).deriv, RdV]
-  congr 1
-  funext t
-  exact hK _ hg _ (exp_indefinite_unitary_holds n ε X hX t)
-
-theorem rdV_one_of_eqK (hs : SmoothOnGV ε F) {f : Matrix (Fin n) (Fin n) ℂ → B} {b : B}
-    (hf : ∀ g ∈ Kset ε, f g = F g * b) {X : Matrix (Fin n) (Fin n) ℂ} (hX : inK ε X) :
-    RdV X f 1 = RdV X F 1 * b := by
-  rw [← ((hasDerivAt_rdV hs hX.1).mul_const b).deriv, RdV]
-  congr 1
-  funext t
-  rw [Matrix.one_mul]
-  exact hf _ (exp_memK hX t)
-
-theorem eabV_left (hs : SmoothOnGV ε F) (hK : ∀ k ∈ Kset ε, ∀ x, inUJ ε x → F (k * x) = F k * F x)
-    (a b : Fin n) {g : Matrix (Fin n) (Fin n) ℂ} (hg : g ∈ Kset ε) :
-    EabV ε a b F g = F g * EabV ε a b F 1 := by
-  obtain ⟨h1, h2, -⟩ := cpartMem n ε (Matrix.single a b 1)
-  simp only [EabV, EcV]
-  rw [rdV_left hs hK h1 hg, rdV_left hs hK h2 hg, mul_add, mul_smul_comm]
-
 theorem eabV_eabVK (hs : SmoothOnGV ε F) (hK : ∀ k ∈ Kset ε, ∀ x, inUJ ε x → F (k * x) = F k * F x)
     {a b : Fin n} (hab : ε a = ε b) (c d : Fin n) :
     EabV ε a b (EabV ε c d F) 1 = EabV ε a b F 1 * EabV ε c d F 1 := by
   obtain ⟨h1, h2⟩ := cpart_inK hab
-  have h := fun g hg => eabV_left hs hK c d (g := g) hg
+  have h := fun g hg => eabV_mul_of hs (hK g hg) c d
   show RdV _ _ 1 + Complex.I • RdV _ _ 1 = (RdV _ F 1 + Complex.I • RdV _ F 1) * _
-  rw [rdV_one_of_eqK hs h h1, rdV_one_of_eqK hs h h2, add_mul, smul_mul_assoc]
+  rw [rdV_one_of_eq_line hs h1.1 (fun t => h _ (exp_memK h1 t)),
+    rdV_one_of_eq_line hs h2.1 (fun t => h _ (exp_memK h2 t)), add_mul, smul_mul_assoc]
 
 theorem kRel_eabV (hs : SmoothOnGV ε F) (hK : ∀ k ∈ Kset ε, ∀ x, inUJ ε x → F (k * x) = F k * F x) :
     KRel ε fun a b => EabV ε a b F 1 := by
@@ -245,20 +110,6 @@ section Unit
 
 variable {n : ℕ} {ε : Fin n → Bool} {W : Type} [NormedAddCommGroup W] [InnerProductSpace ℂ W]
   {π : Matrix (Fin n) (Fin n) ℂ → (W →L[ℂ] W)}
-
-theorem rdV_skewK (hs : SmoothOnGV ε π) (h1 : π 1 = 1) (hiso : ∀ g ∈ Kset ε, ∀ v, ‖π g v‖ = ‖v‖)
-    {X : Matrix (Fin n) (Fin n) ℂ} (hX : inK ε X) (x y : W) :
-    ⟪RdV X π 1 x, y⟫_ℂ = -⟪x, RdV X π 1 y⟫_ℂ := by
-  have h := (hasDerivAt_apply hs hX.1 x).inner ℂ (hasDerivAt_apply hs hX.1 y)
-  have hc : (fun t : ℝ => ⟪π (NormedSpace.exp ((t : ℂ) • X)) x, π (NormedSpace.exp ((t : ℂ) • X)) y⟫_ℂ)
-      = fun _ => ⟪x, y⟫_ℂ := by
-    funext t
-    exact LinearIsometry.inner_map_map
-      ⟨(π (NormedSpace.exp ((t : ℂ) • X))).toLinearMap, hiso _ (exp_memK hX t)⟩ x y
-  rw [hc] at h
-  have h0 := h.unique (hasDerivAt_const (0 : ℝ) _)
-  simp only [Complex.ofReal_zero, zero_smul, NormedSpace.exp_zero, h1, ContinuousLinearMap.one_apply] at h0
-  linear_combination h0
 
 theorem exists_derived (hs : SmoothOnGV ε π) (h1 : π 1 = 1)
     (hK : ∀ k ∈ Kset ε, ∀ x, inUJ ε x → π (k * x) = π k * π x) (hiso : ∀ g ∈ Kset ε, ∀ v, ‖π g v‖ = ‖v‖) :
@@ -282,8 +133,8 @@ theorem exists_derived (hs : SmoothOnGV ε π) (h1 : π 1 = 1)
     simp only [EabV, EcV, e1, e2, e3, ContinuousLinearMap.coe_coe,
       ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, inner_add_left, inner_add_right,
       inner_smul_left, inner_smul_right]
-    have s1 := rdV_skewK hs h1 hiso h1' x y
-    have s2 := rdV_skewK hs h1 hiso h2' x y
+    have s1 := rdV_skew_line hs h1 h1'.1 (fun t => hiso _ (exp_memK h1' t)) x y
+    have s2 := rdV_skew_line hs h1 h2'.1 (fun t => hiso _ (exp_memK h2' t)) x y
     rw [s1, s2]
     simp
   · intro Z hZ v
