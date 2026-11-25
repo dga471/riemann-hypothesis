@@ -66,76 +66,8 @@ attribute [local instance] Over.cartesianMonoidalCategory
 theorem exists_universal_basis (hS : SecBaseChangeSt) (R : Type) [CommRing R] [IsLocalRing R] [IsNoetherianRing R]
     (P : PolAV (Spec (CommRingCat.of R))) (n : ℕ) (hn : 1 ≤ n) :
     ∃ β : Fin (n ^ P.g) → H0 P.L n, ∀ (C : Type) [CommRing C] (q : Sp C ⟶ Sp R) (Y : Scheme.{0})
-      (π : Y ⟶ P.A.left) (f : Y ⟶ Sp C), IsPullback f π q P.A.hom → ∀ s, ∃! c, Rep π f β s c := by
-  have hL := P.isLB
-  obtain ⟨U, hU, b, hb⟩ := hS (Spec (CommRingCat.of R)) P n hn (closedPoint R)
-  obtain rfl : U = ⊤ := eq_top_of_closedPoint_mem U hU
-  let V := overRes (T := baseOver (Spec (CommRingCat.of R))) ⊤
-  let t₀ : Spec (CommRingCat.of R) ⟶ V.left := (Spec (CommRingCat.of R)).topIso.inv
-  have ht : t₀ ≫ V.hom = 𝟙 _ := by
-    show (Spec (CommRingCat.of R)).topIso.inv ≫ (Scheme.Opens.ι ⊤ ≫ 𝟙 _) = 𝟙 _
-    rw [Category.comp_id]
-    exact (Spec (CommRingCat.of R)).topIso.inv_hom_id
-  have ht' : V.hom ≫ t₀ = 𝟙 _ := by
-    show (Scheme.Opens.ι ⊤ ≫ 𝟙 _) ≫ (Spec (CommRingCat.of R)).topIso.inv = 𝟙 _
-    rw [Category.comp_id]
-    exact (Spec (CommRingCat.of R)).topIso.hom_inv_id
-  let u : P.A ⟶ V := Over.homMk (P.A.hom ≫ t₀) (by rw [Category.assoc, ht, Category.comp_id])
-  have hu : snd V P.A ≫ u = fst V P.A := Over.OverMorphism.ext (by
-    show (snd V P.A).left ≫ P.A.hom ≫ t₀ = (fst V P.A).left
-    rw [← Category.assoc, Over.w (snd V P.A), ← Over.w (fst V P.A), Category.assoc, ht', Category.comp_id])
-  have e₁ : lift u (𝟙 P.A) ≫ snd V P.A = 𝟙 _ := lift_snd _ _
-  have e₂ : snd V P.A ≫ lift u (𝟙 P.A) = 𝟙 _ := by
-    rw [comp_lift, hu, Category.comp_id, lift_fst_snd]
-  choose β hβ0 hβ using fun i => exists_pull (K := Fin 1) (b i) (lift u (𝟙 P.A)).left (fun _ => 𝟙 P.A.left)
-    (fun _ => congrArg CommaMorphism.left e₁)
-  refine ⟨β, fun C _ q Y π f hp => ?_⟩
-  let t : Spec (CommRingCat.of C) ⟶ V.left := q ≫ t₀
-  have hq : (baseAt t).hom = q := by
-    show (q ≫ t₀) ≫ V.hom = q
-    rw [Category.assoc, ht, Category.comp_id]
-  choose b' hb0 hb' using fun i => exists_pull (K := Fin 1) (b i) (homAt t ▷ P.A).left
-      (fun _ => (snd (baseAt t) P.A).left)
-      (fun _ => congrArg CommaMorphism.left (whiskerRight_snd (homAt t) P.A))
-  obtain ⟨hli, hsp⟩ := hb C t b' (fun i j => hb0 i j _)
-  have e₃ : snd (baseAt t) P.A ≫ lift u (𝟙 P.A) = homAt t ▷ P.A := by
-    rw [← whiskerRight_snd (homAt t) P.A, Category.assoc, e₂, Category.comp_id]
-  have e₄ : (snd (baseAt t) P.A).left ≫ (lift u (𝟙 P.A)).left = (homAt t ▷ P.A).left :=
-    congrArg CommaMorphism.left e₃
-  have hp' : IsPullback f π (baseAt t).hom P.A.hom := hq ▸ hp
-  refine rep_transport (Y := (baseAt t ⊗ P.A).left) (π := (snd (baseAt t) P.A).left)
-    (f := (fst (baseAt t) P.A).left) hp'.isoPullback hp'.isoPullback_hom_snd hp'.isoPullback_hom_fst fun s => ?_
-  have bij := ConcreteCategory.bijective_of_isIso (Scheme.ΓSpecIso (CommRingCat.of C)).inv
-  have hv : ∀ (c : Fin (n ^ P.g) → C) (Z : Scheme.{0}) (r : Z ⟶ (baseAt t ⊗ P.A).left) (z : Z) (J), Good P.L z J →
-      sval (linSec (fun i => scal (fst (baseAt t) P.A).left (c i)) b') r z J =
-        ∑ i, cst (r ≫ (fst (baseAt t) P.A).left) z (c i) * sval (β i) (r ≫ (snd (baseAt t) P.A).left) z J :=
-    fun c Z r z J hJ => by
-      rw [sval_linSec _ _ _ _ _ hJ]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [hb' i Z r z J hJ, hβ i Z _ z J hJ, Category.assoc, e₄]
-  have key : ∀ c : Fin (n ^ P.g) → C, Rep (snd (baseAt t) P.A).left (fst (baseAt t) P.A).left β s c ↔
-      ∑ i, (show Γ((baseAt t).left, ⊤) from (Scheme.ΓSpecIso (CommRingCat.of C)).inv.hom (c i)) •
-        (SecM.ofSec P.A (b' i) : SecM P.A P.L n (baseAt t)) = SecM.ofSec P.A s := fun c => by
-    have ev : ∀ j, (∑ i, (show Γ((baseAt t).left, ⊤) from (Scheme.ΓSpecIso (CommRingCat.of C)).inv.hom (c i)) •
-        (SecM.ofSec P.A (b' i) : SecM P.A P.L n (baseAt t))).1 j =
-        (linSec (fun i => scal (fst (baseAt t) P.A).left (c i)) b').f j := fun j => by
-      rw [Submodule.coe_sum, Finset.sum_apply]
-      rfl
-    constructor
-    · intro h
-      refine Subtype.ext (funext fun j => (ev j).trans ?_)
-      exact sec_ext_val hL (fun y J hJ => (hv c _ _ y J hJ).trans (h _ _ y J hJ).symm) j
-    · intro h Z r z J hJ
-      have : s = linSec (fun i => scal (fst (baseAt t) P.A).left (c i)) b' :=
-        SecOps.sec_ext fun j => (congrFun (congrArg Subtype.val h) j).symm.trans (ev j)
-      rw [this]
-      exact hv c Z r z J hJ
-  obtain ⟨r, hr⟩ := (Submodule.mem_span_range_iff_exists_fun _).1
-    (hsp.ge (Submodule.mem_top : SecM.ofSec P.A s ∈ ⊤))
-  choose a ha using fun i => bij.2 (r i)
-  obtain rfl : (fun i => (Scheme.ΓSpecIso (CommRingCat.of C)).inv.hom (a i)) = r := funext ha
-  refine ⟨a, (key a).2 hr, fun a' ha' => funext fun i => bij.1 ?_⟩
-  exact Fintype.linearIndependent_iffₛ.1 hli _ _ (((key a').1 ha').trans hr.symm) i
+      (π : Y ⟶ P.A.left) (f : Y ⟶ Sp C), IsPullback f π q P.A.hom → ∀ s, ∃! c, Rep π f β s c :=
+  exists_basis_pow hS R P n hn
 
 end Universal
 

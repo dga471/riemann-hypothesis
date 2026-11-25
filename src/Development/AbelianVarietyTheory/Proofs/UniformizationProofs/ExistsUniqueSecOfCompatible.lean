@@ -147,9 +147,9 @@ theorem sval_linSec {K : Type} [Fintype K] {φ : K → (Y ⟶ X)} {ε : K → �
 
 end Calc
 
-theorem exists_basis (hS : SecBaseChangeSt) (R : Type) [CommRing R] [IsLocalRing R] [IsNoetherianRing R]
+theorem exists_basis_pow (hS : SecBaseChangeSt) (R : Type) [CommRing R] [IsLocalRing R] [IsNoetherianRing R]
     (P : PolAV (Spec (CommRingCat.of R))) (n : ℕ) (hn : 1 ≤ n) :
-    ∃ (N : ℕ) (β : Fin N → H0 P.L n), ∀ (C : Type) [CommRing C] (q : Sp C ⟶ Sp R) (Y : Scheme.{0})
+    ∃ β : Fin (n ^ P.g) → H0 P.L n, ∀ (C : Type) [CommRing C] (q : Sp C ⟶ Sp R) (Y : Scheme.{0})
       (π : Y ⟶ P.A.left) (f : Y ⟶ Sp C), IsPullback f π q P.A.hom → ∀ s, ∃! c, Rep π f β s c := by
   have hL := P.isLB
   obtain ⟨U, hU, b, hb⟩ := hS (Spec (CommRingCat.of R)) P n hn (closedPoint R)
@@ -173,7 +173,7 @@ theorem exists_basis (hS : SecBaseChangeSt) (R : Type) [CommRing R] [IsLocalRing
     rw [comp_lift, hu, Category.comp_id, lift_fst_snd]
   choose β hβ0 hβ using fun i => exists_pull (K := Fin 1) (b i) (lift u (𝟙 P.A)).left (fun _ => 𝟙 P.A.left)
     (fun _ => congrArg CommaMorphism.left e₁)
-  refine ⟨_, β, fun C _ q Y π f hp => ?_⟩
+  refine ⟨β, fun C _ q Y π f hp => ?_⟩
   let t : Spec (CommRingCat.of C) ⟶ V.left := q ≫ t₀
   have hq : (baseAt t).hom = q := by
     show (q ≫ t₀) ≫ V.hom = q
@@ -220,6 +220,13 @@ theorem exists_basis (hS : SecBaseChangeSt) (R : Type) [CommRing R] [IsLocalRing
   obtain rfl : (fun i => (Scheme.ΓSpecIso (CommRingCat.of C)).inv.hom (a i)) = r := funext ha
   refine ⟨a, (key a).2 hr, fun a' ha' => funext fun i => bij.1 ?_⟩
   exact Fintype.linearIndependent_iffₛ.1 hli _ _ (((key a').1 ha').trans hr.symm) i
+
+theorem exists_basis (hS : SecBaseChangeSt) (R : Type) [CommRing R] [IsLocalRing R] [IsNoetherianRing R]
+    (P : PolAV (Spec (CommRingCat.of R))) (n : ℕ) (hn : 1 ≤ n) :
+    ∃ (N : ℕ) (β : Fin N → H0 P.L n), ∀ (C : Type) [CommRing C] (q : Sp C ⟶ Sp R) (Y : Scheme.{0})
+      (π : Y ⟶ P.A.left) (f : Y ⟶ Sp C), IsPullback f π q P.A.hom → ∀ s, ∃! c, Rep π f β s c :=
+  let ⟨β, hβ⟩ := exists_basis_pow hS R P n hn
+  ⟨_, β, hβ⟩
 
 theorem existsUnique_sec_of_compatible : SecBaseChangeSt → ∀ (R : Type) [CommRing R] [IsLocalRing R] [IsNoetherianRing R] (I : Ideal R) [IsAdicComplete I R] (P : PolAV (Spec (CommRingCat.of R))) (n : ℕ), 1 ≤ n → ∀ s : ∀ e : ℕ, LB.Sec (LB.LinComb P.L (K := Fin 1) (fun _ => (fstG I e P.A).left) (fun _ => (n : ℤ))), (∀ (e : ℕ) (Z : Scheme.{0}) (r : Z ⟶ (thickObj R I e P.A).left) (z : Z) (J : (Z ⟶ P.A.left) → P.L.ι), Geo.Tor.Good P.L z J → Geo.Tor.sval (s (e + 1)) (r ≫ thickMap R I e P.A) z J = Geo.Tor.sval (s e) r z J) → ∃! σ : H0 P.L n, ∀ (e : ℕ) (Z : Scheme.{0}) (r : Z ⟶ (thickObj R I e P.A).left) (z : Z) (J : (Z ⟶ P.A.left) → P.L.ι), Geo.Tor.Good P.L z J → Geo.Tor.sval σ (r ≫ (fstG I e P.A).left) z J = Geo.Tor.sval (s e) r z J := by
   intro hS R _ _ _ I _ P n hn s hs
