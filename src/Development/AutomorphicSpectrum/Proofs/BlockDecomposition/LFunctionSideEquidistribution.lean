@@ -217,48 +217,8 @@ def cnt {F : Type} [Field F] [NumberField F] (θ : ℝ →+* Ainf F) (ι : Type)
 theorem count : PositivityTheory.Rg.Mass.Equi → ∀ (F : Type) [Field F] [NumberField F], IsTotallyReal F → ∀ θ : ℝ →+* Ainf F, Continuous θ →
     ∀ (li : Measure (Ainf F)) (lam : ∀ v : HeightOneSpectrum (𝓞 F), Measure (Fv F v)), IsStdInf li → (∀ v, IsStdV v (lam v)) →
     ∀ (ι : Type) [Fintype ι] (K : Set (ι → Ainf F)), IsCompact K → ∃ B : ℝ≥0, ∀ᶠ ε : ℝ in 𝓝[>] 0,
-      ENNReal.ofReal (ε ^ (Module.finrank ℚ F * Fintype.card ι)) * cnt θ ι K ε ≤ B := by
-  intro hEq F _ _ hF θ hθ li lam hli hlam ι _ K hK
-  obtain ⟨_, _, _, _, -⟩ := _root_.GlobalTheory.CompanionTheory.SW.isLocR_Ainf F hF
-  have : BorelSpace (Ainf F) := ⟨rfl⟩
-  haveI := hli.1
-  obtain ⟨f, hf1, -, hfc, hf01⟩ := exists_continuous_one_zero_of_isCompact
-    (hK.union (isCompact_singleton (x := (0 : ι → Ainf F)))) isClosed_empty (Set.disjoint_empty _)
-  have hL := hEq F hF θ hθ li lam hli hlam ι ∅ (f : (ι → Ainf F) → ℝ) (fun _ _ => 0) f.continuous hfc (by simp)
-  simp only [Finset.prod_empty, mul_one] at hL
-  set L := ∫ y, f y ∂(Measure.pi fun _ : ι => li) with hLdef
-  have hLpos : 0 < L := by
-    refine Continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero f.continuous hfc (fun x => (hf01 x).1)
-      (x := 0) ?_
-    rw [hf1 (Or.inr rfl)]
-    exact one_ne_zero
-  refine ⟨Real.toNNReal (L + 1), ?_⟩
-  filter_upwards [hL.eventually (lt_mem_nhds (half_lt_self hLpos)), hL.eventually (gt_mem_nhds (lt_add_one L)),
-    self_mem_nhdsWithin] with ε h1 h2 h3
-  set u : {x : ι → F // ∀ v, v ∉ (∅ : Finset (HeightOneSpectrum (𝓞 F))) → ∀ i, algebraMap F (Fv F v) (x i) ∈ v.adicCompletionIntegers F} → ℝ :=
-    fun x => f fun i => θ ε * algebraMap F (Ainf F) (x.1 i) with hu
-  have hu0 : ∀ x, 0 ≤ u x := fun x => (hf01 _).1
-  have hsum : Summable u := by
-    by_contra hns
-    have e0 : ∑' x, u x = 0 := tsum_eq_zero_of_not_summable hns
-    simp only [hu] at e0
-    rw [e0, mul_zero] at h1
-    linarith
-  have hle : cnt θ ι K ε ≤ ∑' x, ENNReal.ofReal (u x) := by
-    have hinj : Function.Injective fun y : {y : ι → F // (∀ v : HeightOneSpectrum (𝓞 F), ∀ i, algebraMap F (Fv F v) (y i) ∈ v.adicCompletionIntegers F) ∧
-      (fun i => θ ε * algebraMap F (Ainf F) (y i)) ∈ K} =>
-        (⟨y.1, fun v _ i => y.2.1 v i⟩ : {x : ι → F // ∀ v, v ∉ (∅ : Finset (HeightOneSpectrum (𝓞 F))) → ∀ i, algebraMap F (Fv F v) (x i) ∈ v.adicCompletionIntegers F}) :=
-      fun y y' e => Subtype.ext (Subtype.mk.inj e)
-    refine le_trans (le_of_eq (tsum_congr fun y => ?_)) (ENNReal.tsum_comp_le_tsum_of_injective hinj fun x => ENNReal.ofReal (u x))
-    simp only [hu]
-    rw [hf1 (Or.inl y.2.2)]
-    simp
-  rw [← ENNReal.ofReal_tsum_of_nonneg hu0 hsum] at hle
-  have hpos : 0 ≤ ε ^ (Module.finrank ℚ F * Fintype.card ι) := pow_nonneg (le_of_lt h3) _
-  calc _ ≤ ENNReal.ofReal (ε ^ (Module.finrank ℚ F * Fintype.card ι)) * ENNReal.ofReal (∑' x, u x) := mul_le_mul' le_rfl hle
-    _ = ENNReal.ofReal (ε ^ (Module.finrank ℚ F * Fintype.card ι) * ∑' x, u x) := (ENNReal.ofReal_mul hpos).symm
-    _ ≤ ENNReal.ofReal (L + 1) := ENNReal.ofReal_le_ofReal (le_of_lt h2)
-    _ = _ := rfl
+      ENNReal.ofReal (ε ^ (Module.finrank ℚ F * Fintype.card ι)) * cnt θ ι K ε ≤ B :=
+  GlobalTheory.CompanionTheory.SW.LS.count
 
 def box (F : Type) [Field F] [NumberField F] (ι : Type) (ρ : ℝ) : Set (ι → Ainf F) :=
   {x | ∀ i w, ‖x i w‖ ≤ ρ}
@@ -1048,178 +1008,36 @@ theorem equi_unit : PositivityTheory.Rg.Mass.Equi → ∀ (F E : Type) [Field F]
       hv (Finset.mem_union_left _ (Finset.mem_union_right _ h')))) Y
   have hnorm : ∀ v, v ∉ S' → ‖(n : AF F).2 v‖ = 1 := fun v hv => by_contra fun h =>
     hv (Finset.mem_union_right _ (hnb.mem_toFinset.2 h))
-  obtain ⟨-, -, -, t4, -⟩ := _root_.GlobalTheory.CompanionTheory.SW.MeasProj.proj_props F E σ hcm 2 b 1 1
-  have hAco : ∀ v, IsCompact (A v) ∧ IsOpen (A v) := fun v => by
-    by_cases hv : v ∈ S
-    · exact ⟨(hAS v hv).1, (hAS v hv).2.1⟩
-    · rw [hAoff v hv]
-      exact t4 v
-  have hT2 : ∀ v, T2Space (Fin 1 → Fin 1 → Fv F v ⊗[F] E) := fun v => by
-    obtain ⟨-, -, -, _, -⟩ := _root_.GlobalTheory.CompanionTheory.SW.TopK.topTens_props F E σ hcm (Fv F v)
-    infer_instance
-  have hBv : ∀ v, BorelSpace (Fin 1 → Fin 1 → Fv F v ⊗[F] E) := fun v =>
-    (_root_.GlobalTheory.CompanionTheory.SW.TopK.topTens_props F E σ hcm (Fv F v)).2.2.2.2.2.2.2.1 1 1
-  set ψ : ∀ v : HeightOneSpectrum (𝓞 F), (Fin 1 × Fin 1 × Fin 2 → Fv F v) → ℝ := fun v => (Hv v ⁻¹' A v).indicator 1 with hψd
-  have hcl : ∀ v, IsClopen (Hv v ⁻¹' A v) := fun v =>
-    ⟨(hAco v).1.isClosed.preimage (Hv v).continuous, (hAco v).2.preimage (Hv v).continuous⟩
-  have hψ : ∀ v ∈ S', Continuous (ψ v) ∧ HasCompactSupport (ψ v) := fun v _ => by
-    refine ⟨continuous_indicator (by simp [(hcl v).frontier_eq]) continuousOn_const, ?_⟩
-    refine HasCompactSupport.intro ((Hv v).isCompact_preimage.2 (hAco v).1) fun t ht => ?_
-    exact Set.indicator_of_notMem ht _
-  have hL := hEq F hcm.1 θ hθ li lam hli hlam (Fin 1 × Fin 1 × Fin 2) S' (φ ∘ Hi) ψ (hφc.comp Hi.continuous)
-    (hφs.comp_homeomorph Hi) hψ
-
-  have hBi := (_root_.GlobalTheory.CompanionTheory.SW.TopK.topTens_props F E σ hcm (Ainf F)).2.2.2.2.2.2.2.1 1 1
-  have hHaarV : ∀ v, (coordW (Fv F v) b (lam v) 1 1).IsAddHaarMeasure := fun v =>
-    (_root_.GlobalTheory.CompanionTheory.SW.coord_measures_haar F E σ hcm (Fv F v) 2 b (lam v) inferInstance).2.1 1 1
-  have hHaarI : (coordW (Ainf F) b li 1 1).IsAddHaarMeasure := (_root_.GlobalTheory.CompanionTheory.SW.coord_measures_haar F E σ hcm (Ainf F) 2 b li inferInstance).2.1 1 1
-  have eV : ∀ v, ∫ t, ψ v t ∂(Measure.pi fun _ => lam v) = (cv v : ℝ) * (coordW (Fv F v) b (lam v) 1 1 (A v)).toReal := fun v => by
-    have e1 : (Measure.pi fun _ : Fin 1 × Fin 1 × Fin 2 => lam v) (Hv v ⁻¹' A v) =
-        ((Measure.pi fun _ : Fin 1 × Fin 1 × Fin 2 => lam v).map (Hv v)) (A v) :=
-      (Measure.map_apply (Hv v).measurable (hAco v).2.measurableSet).symm
-    rw [hψd]
-    simp only []
-    rw [integral_indicator_one ((hcl v).isOpen.measurableSet), measureReal_def, e1, mHv v, Measure.smul_apply,
-      ENNReal.toReal_smul, NNReal.smul_def, smul_eq_mul]
-  have hfinV : ∀ v, coordW (Fv F v) b (lam v) 1 1 (A v) ≠ ⊤ := fun v => by
-    have := hHaarV v
-    exact (hAco v).1.measure_lt_top.ne
   have hmdpos : 0 < md n := (IdeleGroup.ideleModule F n).2
-  have hLval : ENNReal.ofReal ((∫ t, (φ ∘ Hi) t ∂(Measure.pi fun _ => li)) * ∏ v ∈ S', ∫ t, ψ v t ∂(Measure.pi fun _ => lam v)) =
-      (ENNReal.ofReal (md n))⁻¹ * vol b li lam S φ A := by
-    have e1 : ∫ t, (φ ∘ Hi) t ∂(Measure.pi fun _ => li) = (ci : ℝ) * ∫ X, φ X ∂(coordW (Ainf F) b li 1 1) := by
-      have h1 := Hi.measurableEmbedding.integral_map (μ := Measure.pi fun _ : Fin 1 × Fin 1 × Fin 2 => li) φ
-      rw [mHi, integral_smul_nnreal_measure, NNReal.smul_def, smul_eq_mul] at h1
-      exact h1.symm
-    have e2 : ∏ v ∈ S', ∫ t, ψ v t ∂(Measure.pi fun _ => lam v) =
-        (∏ v ∈ S', (cv v : ℝ)) * ∏ v ∈ S, (coordW (Fv F v) b (lam v) 1 1 (A v)).toReal := by
-      simp only [eV]
-      rw [Finset.prod_mul_distrib]
-      congr 1
-      refine (Finset.prod_subset hSS' fun v _ hv => ?_).symm
-      rw [hAoff v hv, _root_.GlobalTheory.CompanionTheory.SW.RankOneSiegelWeil.CoordLat.coordW_latV_one F E σ hcm 2 b lam hlam v]
-      simp
-    have e3 : (ci : ℝ) * ∏ v ∈ S', (cv v : ℝ) = (md n)⁻¹ := by
-      rw [md_eq hcm.1 n S' hnorm, hci, mul_inv]
-      simp only [hcv]
-      rw [Finset.prod_inv_distrib]
-    have e4 : (∫ t, (φ ∘ Hi) t ∂(Measure.pi fun _ => li)) * ∏ v ∈ S', ∫ t, ψ v t ∂(Measure.pi fun _ => lam v) =
-        (md n)⁻¹ * ((∫ X, φ X ∂(coordW (Ainf F) b li 1 1)) * ∏ v ∈ S, (coordW (Fv F v) b (lam v) 1 1 (A v)).toReal) := by
-      rw [e1, e2, ← e3]
-      ring
-    rw [e4, vol, ENNReal.ofReal_mul (inv_nonneg.2 hmdpos.le), ENNReal.ofReal_inv_of_pos hmdpos,
-      ENNReal.ofReal_mul (integral_nonneg hφ0),
-      ofReal_integral_eq_lintegral_ofReal (hφc.integrable_of_hasCompactSupport hφs) (ae_of_all _ hφ0),
-      ENNReal.ofReal_prod_of_nonneg fun _ _ => ENNReal.toReal_nonneg]
-    simp only [ENNReal.ofReal_toReal (hfinV _)]
-
-  set U : ℝ → (Fin 1 → Fin 1 → E) → ℝ := fun ε =>
-    {X : Fin 1 → Fin 1 → E | ∀ v, (fun a i => cV v (y : AF F ⊗[F] E) * ratTup (Fv F v) X a i) ∈ A v}.indicator
-      (fun X => φ (fun a i => cI (y : AF F ⊗[F] E) * ((θ ε ⊗ₜ[F] (1 : E)) * ratTup (Ainf F) X a i))) with hU
-  have hU0 : ∀ ε X, 0 ≤ U ε X := fun ε X => Set.indicator_nonneg (fun _ _ => hφ0 _) _
-  have hφz : φ 0 = 0 := by
-    refine image_eq_zero_of_notMem_tsupport fun h => ?_
-    have h1 := hφu h
-    have : Nontrivial (Ainf F ⊗[F] E) := (Algebra.TensorProduct.basis (Ainf F) b).repr.toEquiv.nontrivial
-    have e : gramR (Ainf F) σ J (0 : Fin 1 → Fin 1 → Ainf F ⊗[F] E) = 0 := by
-      funext a c
-      simp [gramR, hR, HeckeCharacterZeroLocus.SiegelWeilU.hR, hform]
-    have h2 : IsUnit (gramR (Ainf F) σ J (0 : Fin 1 → Fin 1 → Ainf F ⊗[F] E)).det := h1
-    rw [e, Matrix.det_unique] at h2
-    exact not_isUnit_zero h2
-  have hUz : ∀ ε, U ε 0 = 0 := fun ε => by
-    have e1 : (fun a i => cI (y : AF F ⊗[F] E) * ((θ ε ⊗ₜ[F] (1 : E)) * ratTup (Ainf F) (0 : Fin 1 → Fin 1 → E) a i)) =
-        (0 : Fin 1 → Fin 1 → Ainf F ⊗[F] E) := by
-      funext a i
-      simp [ratTup]
-    simp only [hU, Set.indicator, e1, hφz, ite_self]
-  let x : (Fin 1 → Fin 1 → E) → (Fin 1 × Fin 1 × Fin 2 → F) := fun X p => b.repr (X p.1 p.2.1) p.2.2
-  have hxb : Function.Bijective x := by
-    refine ⟨fun X X' e => ?_, fun y => ?_⟩
-    · funext a i
-      exact b.repr.injective (Finsupp.ext fun k => congrFun e (a, i, k))
-    · refine ⟨fun a i => b.equivFun.symm fun k => y (a, i, k), funext fun p => ?_⟩
-      have := congrFun (b.equivFun.apply_symm_apply fun k => y (p.1, p.2.1, k)) p.2.2
-      simpa [x] using this
-  set T : ℝ → (Fin 1 × Fin 1 × Fin 2 → F) → ℝ := fun ε t => (φ ∘ Hi) (fun i => θ ε * algebraMap F (Ainf F) (t i)) *
-    ∏ v ∈ S', ψ v fun i => algebraMap F (Fv F v) (t i) with hTd
-  have erat : ∀ v X, Hv v (fun p => algebraMap F (Fv F v) (x X p)) = fun a i => cV v (y : AF F ⊗[F] E) * ratTup (Fv F v) X a i := fun v X => by
-    have e := coordinate_equiv_rational_scalar (Fv F v) (hKv v) 1 X
-    simp only [one_mul, ← Algebra.TensorProduct.one_def] at e
-    rw [hHv]
-    funext a i
-    exact congrArg (fun W : Fin 1 → Fin 1 → Fv F v ⊗[F] E => cV v (y : AF F ⊗[F] E) * W a i) e
-  have edil : ∀ ε X, Hi (fun p => θ ε * algebraMap F (Ainf F) (x X p)) =
-      fun a i => cI (y : AF F ⊗[F] E) * ((θ ε ⊗ₜ[F] (1 : E)) * ratTup (Ainf F) X a i) := fun ε X => by
-    have e := coordinate_equiv_rational_scalar (Ainf F) hKi (θ ε) X
-    rw [hHi]
-    funext a i
-    exact congrArg (fun W : Fin 1 → Fin 1 → Ainf F ⊗[F] E => cI (y : AF F ⊗[F] E) * W a i) e
-  have hlatX : ∀ v X, ratTup (Fv F v) X ∈ latV b v ↔ ∀ i, algebraMap F (Fv F v) (x X i) ∈ v.adicCompletionIntegers F := fun v X => by
-    constructor
-    · intro h p
-      have h1 := h p.1 p.2.1 p.2.2
-      change cK (Fv F v) b (ratTup (Fv F v) X p.1 p.2.1) p.2.2 ∈ _ at h1
-      rwa [ratTup, GlobalTheory.CompanionTheory.SW.LS.cK_incl] at h1
-    · intro h a i k
-      change cK (Fv F v) b (ratTup (Fv F v) X a i) k ∈ _
-      rw [ratTup, GlobalTheory.CompanionTheory.SW.LS.cK_incl]
-      exact h (a, i, k)
-  have hind : ∀ ε X, ({t : Fin 1 × Fin 1 × Fin 2 → F | ∀ v, v ∉ S' → ∀ i, algebraMap F (Fv F v) (t i) ∈ v.adicCompletionIntegers F}).indicator
-      (T ε) (x X) = U ε X := fun ε X => by
-    have hA' : ∀ v, v ∉ S' → ((fun a i => cV v (y : AF F ⊗[F] E) * ratTup (Fv F v) X a i) ∈ A v ↔
-        ∀ i, algebraMap F (Fv F v) (x X i) ∈ v.adicCompletionIntegers F) := fun v hv => by
-      rw [hAoff v (fun h => hv (hSS' h)), hoff v hv, hlatX]
-    by_cases hx : ∀ v, v ∉ S' → ∀ i, algebraMap F (Fv F v) (x X i) ∈ v.adicCompletionIntegers F
-    · rw [Set.indicator_of_mem (by exact hx)]
-      by_cases hall : ∀ v, (fun a i => cV v (y : AF F ⊗[F] E) * ratTup (Fv F v) X a i) ∈ A v
-      · have e1 : ∏ v ∈ S', ψ v (fun i => algebraMap F (Fv F v) (x X i)) = 1 := Finset.prod_eq_one fun v _ => by
-          simp only [hψd]
-          rw [Set.indicator_of_mem (by rw [Set.mem_preimage, erat]; exact hall v)]
-          rfl
-        simp only [hTd, hU]
-        rw [e1, mul_one, Set.indicator_of_mem (by exact hall), Function.comp_apply, edil]
-      · obtain ⟨v, hv⟩ := not_forall.1 hall
-        have hvS : v ∈ S' := by_contra fun h => hv ((hA' v h).2 (hx v h))
-        have e1 : ∏ v ∈ S', ψ v (fun i => algebraMap F (Fv F v) (x X i)) = 0 := Finset.prod_eq_zero hvS (by
-          simp only [hψd]
-          exact Set.indicator_of_notMem (by rw [Set.mem_preimage, erat]; exact hv) _)
-        simp only [hTd, hU]
-        rw [e1, mul_zero, Set.indicator_of_notMem (by exact hall)]
-    · rw [Set.indicator_of_notMem (by exact hx)]
-      push Not at hx
-      obtain ⟨v, hv, i, hi⟩ := hx
-      simp only [hU]
-      have hn' : X ∉ {X : Fin 1 → Fin 1 → E | ∀ v, (fun a i => cV v (y : AF F ⊗[F] E) * ratTup (Fv F v) X a i) ∈ A v} :=
-        fun h => hi ((hA' v hv).1 (h v) i)
-      exact (Set.indicator_of_notMem hn' _).symm
-  have htsum : ∀ ε, ∑' t : {t : Fin 1 × Fin 1 × Fin 2 → F // ∀ v, v ∉ S' → ∀ i, algebraMap F (Fv F v) (t i) ∈ v.adicCompletionIntegers F},
-      T ε t.1 = ∑' X, U ε X := fun ε => by
-    refine (tsum_subtype {t : Fin 1 × Fin 1 × Fin 2 → F | ∀ v, v ∉ S' → ∀ i, algebraMap F (Fv F v) (t i) ∈ v.adicCompletionIntegers F} (T ε)).trans ?_
-    rw [← (Equiv.ofBijective x hxb).tsum_eq]
-    exact tsum_congr (hind ε)
-  have e4 : Module.finrank ℚ F * Fintype.card (Fin 1 × Fin 1 × Fin 2) = 2 * Module.finrank ℚ F := by
-    rw [show Fintype.card (Fin 1 × Fin 1 × Fin 2) = 2 from rfl, mul_comm]
-  have hL' : Tendsto (fun ε : ℝ => ε ^ (2 * Module.finrank ℚ F) * ∑' X, U ε X) (𝓝[>] 0)
-      (𝓝 ((∫ t, (φ ∘ Hi) t ∂(Measure.pi fun _ => li)) * ∏ v ∈ S', ∫ t, ψ v t ∂(Measure.pi fun _ => lam v))) := by
-    refine hL.congr fun ε => ?_
-    rw [e4]
-    exact congrArg _ (htsum ε)
-  have h2 := (ENNReal.continuous_ofReal.tendsto _).comp hL'
-  rw [hLval] at h2
-  refine h2.congr' ?_
-  filter_upwards [hfin, self_mem_nhdsWithin] with ε h1 h3
-  have e1 : Th φ A (y * ofF (r ε)) = ∑' X, ENNReal.ofReal (U ε X) := by
-    simp only [Th, Psi_eq θ r hr (Set.mem_Ioi.1 h3) φ A y]
-    refine (tsum_subtype {X : Fin 1 → Fin 1 → E | X ≠ 0} fun X => ENNReal.ofReal (U ε X)).trans (tsum_congr fun X => ?_)
-    by_cases hX : X = 0
-    · rw [Set.indicator_of_notMem (by simpa using hX), hX, hUz, ENNReal.ofReal_zero]
-    · rw [Set.indicator_of_mem (by exact hX)]
-  rw [e1] at h1 ⊢
-  have hs : Summable (U ε) := by
-    have := ENNReal.summable_toReal h1
-    simpa only [ENNReal.toReal_ofReal (hU0 ε _)] using this
-  rw [Function.comp_apply, ENNReal.ofReal_mul (pow_nonneg (le_of_lt h3) _), ENNReal.ofReal_tsum_of_nonneg (hU0 ε) hs]
+  have e3 : (ci : ℝ) * ∏ v ∈ S', (cv v : ℝ) = (md n)⁻¹ := by
+    rw [md_eq hcm.1 n S' hnorm, hci, mul_inv]
+    simp only [hcv]
+    rw [Finset.prod_inv_distrib]
+  have hcore := GlobalTheory.CompanionTheory.SW.LS.pointwise_core hEq σ hcm b li lam hli hlam θ hθ S S' hSS' φ A
+    hφc hφs hφ0 (GlobalTheory.CompanionTheory.SW.LS.phi_zero_eq_zero σ J b hφu)
+    (fun v hv => ⟨(hAS v hv).1, (hAS v hv).2.1⟩) hAoff
+    (_root_.GlobalTheory.CompanionTheory.SW.RankOneSiegelWeil.CoordLat.coordW_latV_one F E σ hcm 2 b lam hlam)
+    Hi Hv ci cv mHi mHv
+    (fun ε X a i => cI (y : AF F ⊗[F] E) * ((θ ε ⊗ₜ[F] (1 : E)) * ratTup (Ainf F) X a i))
+    (fun v X a i => cV v (y : AF F ⊗[F] E) * ratTup (Fv F v) X a i)
+    (fun ε => by funext a i; simp [ratTup])
+    (fun v hv X => hoff v hv (ratTup (Fv F v) X))
+    (fun v X => by
+      have e := coordinate_equiv_rational_scalar (Fv F v) (hKv v) 1 X
+      simp only [one_mul, ← Algebra.TensorProduct.one_def] at e
+      rw [hHv]; funext a i
+      exact congrArg (fun W : Fin 1 → Fin 1 → Fv F v ⊗[F] E => cV v (y : AF F ⊗[F] E) * W a i) e)
+    (fun ε X => by
+      have e := coordinate_equiv_rational_scalar (Ainf F) hKi (θ ε) X
+      rw [hHi]; funext a i
+      exact congrArg (fun W : Fin 1 → Fin 1 → Ainf F ⊗[F] E => cI (y : AF F ⊗[F] E) * W a i) e)
+    (by
+      filter_upwards [hfin, self_mem_nhdsWithin] with ε h1 h3
+      simpa only [Th, Psi_eq θ r hr (Set.mem_Ioi.1 h3) φ A y] using h1)
+  rw [e3, ENNReal.ofReal_inv_of_pos hmdpos, mul_one] at hcore
+  refine hcore.congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with ε h3
+  simp only [Th, Psi_eq θ r hr (Set.mem_Ioi.1 h3) φ A y]
 
 end Main
 
