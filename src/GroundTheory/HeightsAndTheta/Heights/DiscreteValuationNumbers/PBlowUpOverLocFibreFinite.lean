@@ -10,6 +10,7 @@ import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PBlowUpMode
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PBlowUpOverLocInChart
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PHomLocRingDimLe
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PHomLocRingIsLocal
+import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PHomLocRingLocal
 import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PHomLocRingMem
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PHomLocRingNoetherian
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PMinimalPrimeMultiHomog
@@ -327,51 +328,11 @@ theorem BlowUpOverLocFibreFinite.proof : BlowUpOverLocFibreFinite.Statement.{u} 
   have hxW : x ∈ W := hWmin.1.2 (Ideal.mem_sup_right (Ideal.mem_span_singleton_self x))
   obtain ⟨hlocal, hunit⟩ := HomLocRingIsLocal.proof HomLocRingMem.proof O K ι P W hWp hPW
   have hNoeth := HomLocRingNoetherian.proof HomLocRingMem.proof O K ι P W hP.multiProj.multiHomog hWp hWrel hPW
-  have hDim : ringKrullDim (homLocRing P W) = 1 := by
-    refine le_antisymm ?_ ?_
-    · refine (HomLocRingDimLe.proof HomLocRingMem.proof (HomLocRingIsLocal.proof HomLocRingMem.proof)
-        O K ι P W hP.multiProj.multiHomog hWp hWrel hPW).trans ?_
-      have h1 := Ideal.map_height_le_one_of_mem_minimalPrimes hWmin
-      exact_mod_cast h1
-    · have hgexist : ∃ g : MRing ι O, IsMultiHomog g c ∧ g ∉ W := by
-        choose i hi using hWrel
-        refine ⟨∏ k, X ⟨k, i k⟩ ^ c k, ?_, ?_⟩
-        · have hc : c = ∑ k, c k • blockWeight ι ⟨k, i k⟩ := by
-            funext j
-            simp [blockWeight, Finset.sum_apply, Pi.single_apply]
-          have h := IsWeightedHomogeneous.prod Finset.univ (fun k => (X ⟨k, i k⟩ : MRing ι O) ^ c k)
-            (fun k => c k • blockWeight ι ⟨k, i k⟩)
-            fun k _ => (isWeightedHomogeneous_X O (blockWeight ι) _).pow _
-          rw [← hc] at h
-          exact h
-        · intro h
-          obtain ⟨k, -, hk⟩ := (Ideal.IsPrime.prod_mem_iff (hp := hWp)).mp h
-          exact hi k (hWp.mem_of_pow_mem _ hk)
-      obtain ⟨g, hg, hgW⟩ := hgexist
-      have hz : algebraMap (MRing ι O ⧸ P) (FractionRing (MRing ι O ⧸ P)) (Ideal.Quotient.mk P x) /
-          algebraMap (MRing ι O ⧸ P) (FractionRing (MRing ι O ⧸ P)) (Ideal.Quotient.mk P g) ∈
-            homLocRing P W :=
-        Subring.subset_closure ⟨c, x, g, hx, hg, hgW, rfl⟩
-      have hnu : ¬ IsUnit (⟨_, hz⟩ : homLocRing P W) :=
-        fun h => (hunit c x g hx hg hgW hz).mp h hxW
-      have hne : (⟨_, hz⟩ : homLocRing P W) ≠ 0 := by
-        intro h0
-        have h1 := congrArg Subtype.val h0
-        simp only [ZeroMemClass.coe_zero, div_eq_zero_iff,
-          IsFractionRing.to_map_eq_zero_iff, Ideal.Quotient.eq_zero_iff_mem] at h1
-        rcases h1 with h1 | h1
-        · exact hxP h1
-        · exact hgW (hPW h1)
-      haveI := hlocal
-      have hlt : (⊥ : Ideal (homLocRing P W)) < IsLocalRing.maximalIdeal (homLocRing P W) := by
-        refine bot_lt_iff_ne_bot.mpr fun h => hne ?_
-        have hm := (IsLocalRing.mem_maximalIdeal _).mpr hnu
-        rwa [h, Ideal.mem_bot] at hm
-      have h2 := Ideal.height_add_one_le_of_lt_of_isPrime hlt
-      rw [← IsLocalRing.maximalIdeal_height_eq_ringKrullDim]
-      have h3 : (1 : ℕ∞) ≤ (IsLocalRing.maximalIdeal (homLocRing P W)).height :=
-        le_trans le_add_self h2
-      exact_mod_cast h3
+  have hDim : ringKrullDim (homLocRing P W) = 1 :=
+    (HomLocRingLocal.proof (HomLocRingIsLocal.proof HomLocRingMem.proof)
+      (HomLocRingNoetherian.proof HomLocRingMem.proof)
+      (HomLocRingDimLe.proof HomLocRingMem.proof (HomLocRingIsLocal.proof HomLocRingMem.proof))
+      O K ι P hP.multiProj c x hx hxP W hWmin hWrel).2.2
   have hI : IsMultiHomogIdeal (blowUpOf P u ⊔ Ideal.span {liftForm (J := J) x}) :=
     SupSpanMultiHomog.proof O (Option K) (extIdx ι J) (blowUpOf P u) (liftForm x) (liftMDeg c)
       (isMultiHomogIdeal_blowUpOf hP.multiProj.multiHomog N u hu) (isMultiHomog_liftForm hx)

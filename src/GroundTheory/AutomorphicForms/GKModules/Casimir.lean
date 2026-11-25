@@ -18,6 +18,65 @@ set_option linter.unusedSectionVars false
 
 attribute [local instance 100] LieRing.ofAssociativeRing
 
+theorem exists_monic_aeval_apply_eq_zero {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (T : Module.End ℂ M) (V : Submodule ℂ M) [FiniteDimensional ℂ V] (hV : ∀ w ∈ V, T w ∈ V)
+    {v : M} (hv : v ∈ V) :
+    ∃ P : Polynomial ℂ, P.Monic ∧ 0 < P.natDegree ∧ Polynomial.aeval T P v = 0 := by
+  classical
+  by_cases hv0 : v = 0
+  · refine ⟨Polynomial.X, Polynomial.monic_X, by simp, ?_⟩
+    simp [hv0]
+  have hmemk : ∀ k : ℕ, (T ^ k) v ∈ V := by
+    intro k
+    induction k with
+    | zero => simpa using hv
+    | succ k ih => rw [pow_succ', Module.End.mul_apply]; exact hV _ ih
+  set m := Module.finrank ℂ V
+  let u : Fin (m + 1) → M := fun i => (T ^ (i : ℕ)) v
+  have hspan : Submodule.span ℂ (range u) ≤ V := by
+    rw [Submodule.span_le]
+    rintro _ ⟨i, rfl⟩
+    exact hmemk i
+  have hnot : ¬ LinearIndependent ℂ u := fun hli => by
+    have h1 := finrank_span_eq_card hli
+    have h2 := Submodule.finrank_mono hspan
+    rw [h1, Fintype.card_fin] at h2
+    omega
+  obtain ⟨c, hc, i, hi⟩ := Fintype.not_linearIndependent_iff.1 hnot
+  obtain ⟨Q, hQdef⟩ : ∃ Q : Polynomial ℂ,
+      Q = ∑ j : Fin (m + 1), Polynomial.C (c j) * Polynomial.X ^ (j : ℕ) := ⟨_, rfl⟩
+  have hQv : Polynomial.aeval T Q v = 0 := by
+    have e1 : Polynomial.aeval T Q v = ∑ j : Fin (m + 1), c j • (T ^ (j : ℕ)) v := by
+      rw [hQdef, map_sum, LinearMap.sum_apply]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [map_mul, Polynomial.aeval_C, map_pow, Polynomial.aeval_X, Module.End.mul_apply,
+        Module.algebraMap_end_apply]
+    rw [e1]
+    exact hc
+  have hQ0 : Q ≠ 0 := by
+    intro h0
+    apply hi
+    have := congrArg (fun P => P.coeff (i : ℕ)) h0
+    simp only [hQdef, Polynomial.finsetSum_coeff, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow,
+      Polynomial.coeff_zero] at this
+    rw [Finset.sum_eq_single i] at this
+    · simpa using this
+    · intro j _ hj
+      have : (i : ℕ) ≠ (j : ℕ) := fun e => hj (Fin.ext e).symm
+      simp [this]
+    · simp
+  refine ⟨Q * Polynomial.C Q.leadingCoeff⁻¹, Polynomial.monic_mul_leadingCoeff_inv hQ0, ?_, ?_⟩
+  · rw [Polynomial.natDegree_mul_C (inv_ne_zero (Polynomial.leadingCoeff_ne_zero.2 hQ0))]
+    by_contra hdeg
+    push Not at hdeg
+    have hQc := Polynomial.eq_C_of_natDegree_le_zero hdeg
+    have hc0 : Q.coeff 0 ≠ 0 := by
+      intro hc0; apply hQ0; rw [hQc, hc0, map_zero]
+    rw [hQc, Polynomial.aeval_C, Module.algebraMap_end_apply] at hQv
+    exact hv0 ((smul_eq_zero.1 hQv).resolve_left hc0)
+  · rw [map_mul, Polynomial.aeval_C, Module.End.mul_apply, Module.algebraMap_end_apply, map_smul,
+      hQv, smul_zero]
+
 section Casimir
 
 variable {L : Type*} [LieRing L] [LieAlgebra ℝ L]
@@ -254,62 +313,7 @@ theorem exists_aeval_laplacian_eq_zero [DecidableEq ι] (K : Subgroup G)
       exact h.rightDeriv_mem_of_isKStable K hVK (hK i e)
         (h.rightDeriv_mem_of_isKStable K hVK (hK i e) hw)
   have hf : f ∈ V := Submodule.subset_span ⟨(1, 1), by simp [rightTranslateEnd_one]⟩
-  by_cases hf0 : f = 0
-  · refine ⟨Polynomial.X, Polynomial.monic_X, by simp, ?_⟩
-    simp [hf0]
-  obtain ⟨Δ, hΔdef⟩ : ∃ Δ, Δ = h.laplacian (F := F) b := ⟨_, rfl⟩
-  rw [← hΔdef]
-  rw [← hΔdef] at hmapsto
-  have hmemk : ∀ k : ℕ, (Δ ^ k) f ∈ V := by
-    intro k
-    induction k with
-    | zero => simpa using hf
-    | succ k ih => rw [pow_succ', Module.End.mul_apply]; exact hmapsto _ ih
-  set n := Module.finrank ℂ V
-  let u : Fin (n + 1) → h.smoothFuns (F := F) := fun i => (Δ ^ (i : ℕ)) f
-  have hspan : Submodule.span ℂ (range u) ≤ V := by
-    rw [Submodule.span_le]
-    rintro _ ⟨i, rfl⟩
-    exact hmemk i
-  have hnot : ¬ LinearIndependent ℂ u := fun hli => by
-    have h1 := finrank_span_eq_card hli
-    have h2 := Submodule.finrank_mono hspan
-    rw [h1, Fintype.card_fin] at h2
-    omega
-  obtain ⟨g, hg, i, hi⟩ := Fintype.not_linearIndependent_iff.1 hnot
-  obtain ⟨Q, hQdef⟩ : ∃ Q : Polynomial ℂ,
-      Q = ∑ j : Fin (n + 1), Polynomial.C (g j) * Polynomial.X ^ (j : ℕ) := ⟨_, rfl⟩
-  have hQf : Polynomial.aeval Δ Q f = 0 := by
-    have e1 : Polynomial.aeval Δ Q f = ∑ j : Fin (n + 1), g j • (Δ ^ (j : ℕ)) f := by
-
-      rw [hQdef, map_sum, LinearMap.sum_apply]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      rw [map_mul, Polynomial.aeval_C, map_pow, Polynomial.aeval_X, Module.End.mul_apply,
-        Module.algebraMap_end_apply]
-    rw [e1]
-    exact hg
-  have hQ0 : Q ≠ 0 := by
-    intro h0
-    apply hi
-    have := congrArg (fun P => P.coeff (i : ℕ)) h0
-    simp only [hQdef, Polynomial.finsetSum_coeff, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow,
-      Polynomial.coeff_zero] at this
-    rw [Finset.sum_eq_single i] at this
-    · simpa using this
-    · intro j _ hj
-      have : (i : ℕ) ≠ (j : ℕ) := fun e => hj (Fin.ext e).symm
-      simp [this]
-    · simp
-  refine ⟨Q * Polynomial.C Q.leadingCoeff⁻¹, Polynomial.monic_mul_leadingCoeff_inv hQ0, ?_, ?_⟩
-  · rw [Polynomial.natDegree_mul_C (inv_ne_zero (Polynomial.leadingCoeff_ne_zero.2 hQ0))]
-    by_contra! hdeg
-    have hQc := Polynomial.eq_C_of_natDegree_le_zero hdeg
-    have hc : Q.coeff 0 ≠ 0 := by
-      intro hc; apply hQ0; rw [hQc, hc, map_zero]
-    rw [hQc, Polynomial.aeval_C, Module.algebraMap_end_apply] at hQf
-    exact hf0 ((smul_eq_zero.1 hQf).resolve_left hc)
-  · rw [map_mul, Polynomial.aeval_C, Module.End.mul_apply, Module.algebraMap_end_apply, map_smul,
-      hQf, smul_zero]
+  exact exists_monic_aeval_apply_eq_zero (h.laplacian (F := F) b) V hmapsto hf
 
 end IsExpLieAlgebra
 
