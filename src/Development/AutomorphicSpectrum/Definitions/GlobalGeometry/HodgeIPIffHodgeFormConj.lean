@@ -116,6 +116,25 @@ end Gr
 
 section Sec
 
+namespace CxVal
+
+theorem isUnit {L : Type} [Field L] {z : Spec (CommRingCat.of L) ⟶ X}
+    (x : X.presheaf.stalk (centre z)) (h : (Scheme.stalkClosedPointTo z).hom x ≠ 0) : IsUnit x :=
+  (inferInstance : IsLocalHom (Scheme.stalkClosedPointTo z).hom).map_nonunit x (IsUnit.mk0 _ h)
+
+theorem unique {L : Type} [Field L] {z : Spec (CommRingCat.of L) ⟶ X} {a : Ω} {r s : L}
+    (h : ValAt ξ z a r) (h' : ValAt ξ z a s) : r = s := by
+  obtain ⟨h, x, hx, rfl⟩ := h
+  obtain ⟨_, y, hy, rfl⟩ := h'
+  by_contra hne
+  have hu : IsUnit (x - y) := isUnit _ fun h0 =>
+    hne (sub_eq_zero.1 ((map_sub (Scheme.stalkClosedPointTo z).hom x y).symm.trans h0))
+  have := hu.map (genMap ξ ⟨centre z, h⟩)
+  rw [map_sub, hx, hy, sub_self] at this
+  exact not_isUnit_zero this
+
+end CxVal
+
 variable {z : Spec (CommRingCat.of ℂ) ⟶ X}
 
 namespace CxVal
@@ -126,9 +145,6 @@ theorem mul {a b : Ω} {r s : ℂ} (h : ValAt ξ z a r) (h' : ValAt ξ z b s) : 
   exact ⟨h, x * y, map_mul _ _ _, map_mul _ _ _⟩
 
 theorem one (h : genPt ξ ⤳ centre z) : ValAt ξ z 1 1 := ⟨h, 1, map_one _, map_one _⟩
-
-theorem isUnit (x : X.presheaf.stalk (centre z)) (h : (Scheme.stalkClosedPointTo z).hom x ≠ 0) : IsUnit x :=
-  (inferInstance : IsLocalHom (Scheme.stalkClosedPointTo z).hom).map_nonunit x (IsUnit.mk0 _ h)
 
 theorem inv {a : Ω} {r : ℂ} (h : ValAt ξ z a r) (hr : r ≠ 0) : ValAt ξ z a⁻¹ r⁻¹ := by
   obtain ⟨h, x, rfl, rfl⟩ := h
@@ -154,16 +170,6 @@ theorem aeval {σ : Type} {a : σ → Ω} {r : σ → ℂ} (hz : genPt ξ ⤳ ce
     exact ⟨hz, x + y, by rw [map_add (f := _), map_add (f := _), hx, hy],
       (map_add (Scheme.stalkClosedPointTo z).hom x y).trans (by rw [map_add (f := _), ← hx', ← hy']; rfl)⟩
   | mul_X p i hp => simpa using mul hp (h i)
-
-theorem unique {a : Ω} {r s : ℂ} (h : ValAt ξ z a r) (h' : ValAt ξ z a s) : r = s := by
-  obtain ⟨h, x, hx, rfl⟩ := h
-  obtain ⟨_, y, hy, rfl⟩ := h'
-  by_contra hne
-  have hu : IsUnit (x - y) := isUnit _ fun h0 =>
-    hne (sub_eq_zero.1 ((map_sub (Scheme.stalkClosedPointTo z).hom x y).symm.trans h0))
-  have := hu.map (genMap ξ ⟨centre z, h⟩)
-  rw [map_sub, hx, hy, sub_self] at this
-  exact not_isUnit_zero this
 
 end CxVal
 

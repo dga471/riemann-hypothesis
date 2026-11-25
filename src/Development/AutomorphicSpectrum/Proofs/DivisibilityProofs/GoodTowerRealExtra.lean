@@ -1053,7 +1053,7 @@ section -- clump:auto
 open AlgebraicGeometry CategoryTheory Limits NumberField IsDedekindDomain MvPolynomial
 open ReciprocityTheory.ChartRestriction.G ReciprocityTheory.ChartRestriction.G.Geo ReciprocityTheory.ChartRestriction.G.Geo.Tor ReciprocityTheory.ChartRestriction.G.Semi GlobalTheory.CompanionTheory.Ar GlobalTheory.CompanionTheory.Ar.Flat GlobalTheory.CompanionTheory.Ar.Fl
 open MonoidalCategory CartesianMonoidalCategory MonObj
-open GlobalTheory.CompanionTheory.Ar.Flat.HodgeFr (spec_dual_comp spec_dual_comp' frame_change coeff_of_span)
+open GlobalTheory.CompanionTheory.Ar.Flat.HodgeFr (spec_dual_comp spec_dual_comp' val_of_comb tie_val val_const' exists_point frame_change coeff_of_span)
 
 noncomputable section
 
@@ -1067,176 +1067,11 @@ variable {X : Scheme.{0}} {Ω : Type} [Field Ω] {ξ : Spec (CommRingCat.of Ω) 
 theorem isUnit (x : X.presheaf.stalk (centre z)) (h : (Scheme.stalkClosedPointTo z).hom x ≠ 0) : IsUnit x :=
   (inferInstance : IsLocalHom (Scheme.stalkClosedPointTo z).hom).map_nonunit x (IsUnit.mk0 _ h)
 
-theorem unique {a : Ω} {r s : L} (h : ValAt ξ z a r) (h' : ValAt ξ z a s) : r = s := by
-  obtain ⟨h, x, hx, rfl⟩ := h
-  obtain ⟨_, y, hy, rfl⟩ := h'
-  by_contra hne
-  have hu : IsUnit (x - y) := isUnit _ fun h0 =>
-    hne (sub_eq_zero.1 ((map_sub (Scheme.stalkClosedPointTo z).hom x y).symm.trans h0))
-  have := hu.map (genMap ξ ⟨centre z, h⟩)
-  rw [map_sub, hx, hy, sub_self] at this
-  exact not_isUnit_zero this
-
 end FV
 
 namespace VP
 
 variable {L : Type} [Field L]
-
-theorem val_of_comb {X : Scheme.{0}} {Ω : Type} [Field Ω] {G : Over X} [GrpObj G] {ξ : Spec (CommRingCat.of Ω) ⟶ X}
-    {E : Type} [AddCommGroup E] [Module Ω E] (M : LieModel G ξ E) {z : Spec (CommRingCat.of L) ⟶ X}
-    (hc : genPt ξ ⤳ centre z) {n : ℕ} (b : Fin n → E) (vb : Fin n → (epsAt z ⟶ G)) (hb : ∀ k, M.ValAt z (b k) (vb k))
-    (t : Fin n → X.presheaf.stalk (centre z)) :
-    ∃ w, M.ValAt z (∑ k, genMap ξ ⟨centre z, hc⟩ (t k) • b k) w ∧
-      IsComb (fun k => (Scheme.stalkClosedPointTo z).hom (t k)) vb w := by
-  let u : Fin n → (epsAt z ⟶ G) := fun k => LieTangent.epsScale z ((Scheme.stalkClosedPointTo z).hom (t k)) ≫ vb k
-  have hu : ∀ k, M.ValAt z (genMap ξ ⟨centre z, hc⟩ (t k) • b k) (u k) := fun k => (hb k).smul hc (t k)
-  have key : ∀ (m : ℕ) (x : Fin m → E) (w : Fin m → (epsAt z ⟶ G)), (∀ k, M.ValAt z (x k) (w k)) →
-      M.ValAt z (∑ k, x k) (List.ofFn w).prod := by
-    intro m
-    induction m with
-    | zero => intro x w _; simpa using LieModel.valAt_zero M hc
-    | succ m ih =>
-      intro x w h
-      rw [Fin.sum_univ_succ, List.ofFn_succ, List.prod_cons]
-      exact (h 0).add (ih _ _ fun k => h k.succ)
-  exact ⟨_, key n _ u hu, u, fun k => rfl, rfl⟩
-
-theorem tie_val {E : Type} [Field E] [NumberField E] [IsCMField E] {H : Host E} {D : Datum H} {l : Level H}
-    {Xo : Moduli D l} {c : Coeff l} {O : Type} [CommRing O] {β : O →+* c.F} {Y : Model Xo c β} {U : Set (Xo.XF c)}
-    {Z : CptOver Y U} {S : Finset ℕ} {Ω : Type} [Field Ω] {K : Type} [Fintype K] {J : K → Type}
-    {y : (Σ k, J k) → Ω} {𝔐 : HodgeCpt Y S y} {i : Z.Ω →+* Ω} {j : Z.V →+ 𝔐.Li} (ht : CptIn.IsTie Z 𝔐 i j)
-    {z : Spec (CommRingCat.of L) ⟶ 𝔐.X} {x : Spec (CommRingCat.of L) ⟶ Y.X} (hx : x = z ≫ 𝔐.f) {e : Z.V}
-    {v' : epsAt x ⟶ Y.t.G} {w : epsAt z ⟶ 𝔐.t.G} (h1 : Z.M.ValAt x e v') (h2 : 𝔐.M.ValAt z (j e) w) :
-    w.left ≫ 𝔐.m.φ = v'.left := by
-  subst hx
-  obtain ⟨hc1, vx₀, hvx₀, e1₀⟩ := h1
-  obtain ⟨hc2, ve, hve, e2⟩ := h2
-  have hD : Dominates 𝔐.ξ (Z.ξ₀ ≫ Y.j) 𝔐.f i := ht.1
-  have hcart := 𝔐.m.cart
-  have hc1' : genPt (Z.ξ₀ ≫ Y.j) ⤳ 𝔐.f (centre z) := hc1
-  let vx : epsAt (Y.X.fromSpecStalk (𝔐.f (centre z))) ⟶ Y.t.G := vx₀
-  have hvx : Z.M.Extends ⟨𝔐.f (centre z), hc1'⟩ e vx := hvx₀
-  have e5 : ((Scheme.stalkClosedPointTo (z ≫ 𝔐.f)).hom : Y.X.presheaf.stalk (𝔐.f (centre z)) →+* L) =
-      (Scheme.stalkClosedPointTo z).hom.comp (𝔐.f.stalkMap (centre z)).hom :=
-    congrArg (fun t => t.hom) (Scheme.stalkClosedPointTo_comp z 𝔐.f)
-  have e1 : v'.left = Spec.map (CommRingCat.ofHom (dualMap
-      ((Scheme.stalkClosedPointTo z).hom.comp (𝔐.f.stalkMap (centre z)).hom))) ≫ vx.left := by
-    refine e1₀.trans ?_
-    exact congrArg (fun g : Y.X.presheaf.stalk (𝔐.f (centre z)) →+* L =>
-      Spec.map (CommRingCat.ofHom (dualMap g)) ≫ vx.left) e5
-  have hst : Spec.map (CommRingCat.ofHom (𝔐.f.stalkMap (centre z)).hom) ≫ Y.X.fromSpecStalk (𝔐.f (centre z)) =
-      𝔐.X.fromSpecStalk (centre z) ≫ 𝔐.f := by
-    simpa using Scheme.Hom.SpecMap_stalkMap_fromSpecStalk 𝔐.f (x := centre z)
-  let A : epsAt (𝔐.X.fromSpecStalk (centre z) ≫ 𝔐.f) ⟶ Y.t.G := Over.homMk (ve.left ≫ 𝔐.m.φ) (by
-    have h0 := Over.w ve
-    change (ve.left ≫ 𝔐.m.φ) ≫ Y.t.G.hom = Spec.map _ ≫ 𝔐.X.fromSpecStalk (centre z) ≫ 𝔐.f
-    refine (Category.assoc _ _ _).trans ?_
-    refine (congrArg (ve.left ≫ ·) hcart.1.w).trans ?_
-    refine (Category.assoc _ _ _).symm.trans ?_
-    refine (congrArg (· ≫ 𝔐.f) h0).trans ?_
-    exact Category.assoc _ _ _)
-  let B : epsAt (𝔐.X.fromSpecStalk (centre z) ≫ 𝔐.f) ⟶ Y.t.G :=
-    LieTangent.epsBase (𝔐.f.stalkMap (centre z)).hom hst ≫ vx
-  have hA : IsTanAt Y.t.G _ A := by
-    have h1 : _ ≫ ve.left = (1 : Over.mk (𝔐.X.fromSpecStalk (centre z)) ⟶ 𝔐.t.G).left := hve.1
-    have h2 := congrArg (fun q => q.left) (map_one (pushHom hcart (Over.mk (𝔐.X.fromSpecStalk (centre z)))))
-    change Spec.map _ ≫ ve.left ≫ 𝔐.m.φ = _
-    exact (Category.assoc _ _ _).symm.trans ((congrArg (· ≫ 𝔐.m.φ) h1).trans h2)
-  have hB : IsTanAt Y.t.G _ B := LieTangent.isTanAt_base _ hst hvx.1
-  have hAB : A = B := by
-    refine LieTangent.tan_ext (𝔐.tie.gen.inj ⟨centre z, hc2⟩) hA hB ?_
-    change _ ≫ ve.left ≫ 𝔐.m.φ = _ ≫ Spec.map _ ≫ vx.left
-    refine (Category.assoc _ _ _).symm.trans ?_
-    refine (congrArg (· ≫ 𝔐.m.φ) hve.2.symm).trans ?_
-    refine (ht.2.2.2 e).trans ?_
-    refine (congrArg (_ ≫ ·) hvx.2).trans ?_
-    refine (Category.assoc _ _ _).symm.trans ?_
-    refine Eq.trans ?_ (Category.assoc _ _ _)
-    exact congrArg (· ≫ vx.left) (spec_dual_comp i (genMap (Z.ξ₀ ≫ Y.j) ⟨𝔐.f (centre z), hc1'⟩)
-      (genMap 𝔐.ξ ⟨centre z, hc2⟩) (𝔐.f.stalkMap (centre z)).hom
-      fun s => (PullReg.stalkMap_comp_genMap hD ⟨centre z, hc2⟩ hc1' s).symm)
-  have hAB' : ve.left ≫ 𝔐.m.φ = Spec.map (CommRingCat.ofHom (dualMap (𝔐.f.stalkMap (centre z)).hom)) ≫ vx.left :=
-    congrArg (fun q => q.left) hAB
-  refine (congrArg (· ≫ 𝔐.m.φ) e2).trans ?_
-  refine (Category.assoc _ _ _).trans ?_
-  refine (congrArg (_ ≫ ·) hAB').trans ?_
-  refine (Category.assoc _ _ _).symm.trans ?_
-  refine Eq.trans ?_ e1.symm
-  refine congrArg (· ≫ vx.left) ?_
-  exact spec_dual_comp' _ _
-
-theorem val_const' {X : Scheme.{0}} {Ω : Type} [Field Ω] {O : Type} [CommRing O] {ξ : Spec (CommRingCat.of Ω) ⟶ X}
-    (g : X ⟶ Sp O) {σ₀ : O →+* Ω} (hs : ξ ≫ g = spMap σ₀) {σ : O →+* L} (z : Spec (CommRingCat.of L) ⟶ X)
-    (hz : z ≫ g = spMap σ) (h : genPt ξ ⤳ centre z) (c : O) : ValAt ξ z (σ₀ c) (σ c) := by
-  refine ⟨h, GagaRat.cst g (centre z) c, ?_, ?_⟩
-  · have hg : genPt (ξ ≫ g) ⤳ g (centre z) := h.map g.continuous
-    rw [GagaRat.cst, GagaRat.genMap_stalkMap' ξ g ⟨centre z, h⟩ hg]
-    have e : ((Sp O).presheaf.stalkSpecializes hg).hom (GagaRat.cgerm (g (centre z)) c) =
-        GagaRat.cgerm (genPt (ξ ≫ g)) c :=
-      congrArg (fun t => t.hom ((Scheme.ΓSpecIso (CommRingCat.of O)).inv.hom c))
-        (TopCat.Presheaf.germ_stalkSpecializes (Sp O).presheaf (U := ⊤) trivial hg)
-    show (Scheme.stalkClosedPointTo (ξ ≫ g)).hom (((Sp O).presheaf.stalkSpecializes hg).hom (GagaRat.cgerm (g (centre z)) c)) = _
-    rw [e]
-    exact GagaRat.closedPointTo_cgerm (ξ ≫ g) σ₀ hs c
-  · have e := congrArg (fun t => t.hom (GagaRat.cgerm (g (centre z)) c)) (Scheme.stalkClosedPointTo_comp z g)
-    exact e.symm.trans (GagaRat.closedPointTo_cgerm (z ≫ g) σ hz c)
-
-theorem exists_point : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (D : Datum H) (l : Level H) (Xo : Moduli D l) (c : Coeff l) [NumberField c.F] (Y : Model Xo c (algebraMap (𝓞 c.F) c.F)) (U : Set (Xo.XF c)) (Z : CptOver Y U) (S : Finset ℕ) (Ω : Type) [Field Ω] (K : Type) [Fintype K] (J : K → Type) (y : (Σ k, J k) → Ω) (𝔐 : HodgeCpt Y S y) (i : Z.Ω →+* Ω) (j : Z.V →+ 𝔐.Li) (s : c.F →+* L) (z : Spec (CommRingCat.of L) ⟶ 𝔐.X), genPt 𝔐.ξ ⤳ centre z → CptIn.IsTie Z 𝔐 i j → 𝔐.Interior z → (∀ a : c.F, ValAt 𝔐.ξ z (𝔐.cst a) (s a)) → ∃ y₀ : Sp L ⟶ Xo.XF c, z ≫ 𝔐.f = y₀ ≫ Y.j ∧ Set.range y₀ ⊆ U ∧ y₀ ≫ pullback.snd _ _ = spMap s ∧ ∃ h : genPt (Z.ξ₀ ≫ Y.j) ⤳ centre (y₀ ≫ Y.j), (⟨_, h⟩ : Cpt (Z.ξ₀ ≫ Y.j)) ∈ Z.genFib := by
-
-  intro E _ _ _ H D l Xo c _ Y U Z S Ω _ K _ J y 𝔐 i j s z hc ht hint hcst
-  have hD : Dominates 𝔐.ξ (Z.ξ₀ ≫ Y.j) 𝔐.f i := ht.1
-  have hz₀ : z ≫ 𝔐.f ≫ Y.s = spMap (s.comp (algebraMap (𝓞 c.F) c.F)) := by
-    have hp : z ≫ 𝔐.f ≫ Y.s = spMap (Spec.preimage (z ≫ 𝔐.f ≫ Y.s)).hom := by
-      unfold spMap
-      rw [CommRingCat.ofHom_hom, Spec.map_preimage]
-    have hv := val_const' (𝔐.f ≫ Y.s) 𝔐.cst_over z hp hc
-    have e : (Spec.preimage (z ≫ 𝔐.f ≫ Y.s)).hom = s.comp (algebraMap (𝓞 c.F) c.F) :=
-      RingHom.ext fun a => FV.unique (hv a) (hcst _)
-    rw [hp, e]
-  have hsq : (z ≫ 𝔐.f) ≫ Y.s = spMap s ≫ spMap (algebraMap (𝓞 c.F) c.F) := by
-    rw [Category.assoc, hz₀]
-    unfold spMap
-    rw [← Spec.map_comp, ← CommRingCat.ofHom_comp]
-  let w := pullback.lift (z ≫ 𝔐.f) (spMap s) hsq
-  have hw1 : w ≫ pullback.fst _ _ = z ≫ 𝔐.f := pullback.lift_fst _ _ _
-  have hw2 : w ≫ pullback.snd _ _ = spMap s := pullback.lift_snd _ _ _
-  have hab : 𝔐.f (centre z) ∈ abLocus Y.t.G := (abLocus_pullback abLocusOne Y.t.semi 𝔐.m.cart.1 (centre z)).2 hint
-  have hrange : Set.range w ⊆ Set.range Y.jQ := by
-    rintro _ ⟨p, rfl⟩
-    rw [← Y.ab_gen]
-    have hp : p = IsLocalRing.closedPoint L := Subsingleton.elim _ _
-    subst hp
-    have e : (pullback.fst Y.s (spMap (algebraMap (𝓞 c.F) c.F))) (w (IsLocalRing.closedPoint L)) = 𝔐.f (centre z) :=
-      congrArg (fun t : Spec (CommRingCat.of L) ⟶ Y.X => t (IsLocalRing.closedPoint L)) hw1
-    show _ ∈ abLocus Y.t.G
-    rw [e]
-    exact hab
-  haveI := Y.jQ_open
-  let y₀ : Sp L ⟶ Xo.XF c := IsOpenImmersion.lift Y.jQ w hrange
-  have hy : y₀ ≫ Y.jQ = w := IsOpenImmersion.lift_fac _ _ _
-  have hj : y₀ ≫ Y.j = z ≫ 𝔐.f := by
-    show y₀ ≫ Y.jQ ≫ pullback.fst _ _ = _
-    rw [← Category.assoc, hy, hw1]
-  have hs : y₀ ≫ pullback.snd _ _ = spMap s := by
-    rw [← Y.jQ_over, ← Category.assoc, hy, hw2]
-  have hcen : centre (y₀ ≫ Y.j) = 𝔐.f (centre z) := by rw [hj]; rfl
-  have h : genPt (Z.ξ₀ ≫ Y.j) ⤳ centre (y₀ ≫ Y.j) := by
-    rw [hcen, ← hD.map_genPt]
-    exact hc.map 𝔐.f.continuous
-  refine ⟨y₀, hj.symm, ?_, hs, h, ?_⟩
-  · rintro _ ⟨p, rfl⟩
-    have hp : p = IsLocalRing.closedPoint L := Subsingleton.elim _ _
-    subst hp
-    refine (Z.closure _).2 ?_
-    haveI : IsPreimmersion (spMap (algebraMap (𝓞 c.F) c.F)) :=
-      IsPreimmersion.of_isLocalization (nonZeroDivisors (𝓞 c.F)) (S := c.F)
-    haveI : IsPreimmersion Y.j := by
-      show IsPreimmersion (Y.jQ ≫ pullback.fst _ _)
-      infer_instance
-    have hind : Topology.IsInducing Y.j := Y.j.isEmbedding.isInducing
-    exact hind.specializes_iff.1 h
-  · exact ⟨Y.jQ (y₀ (IsLocalRing.closedPoint L)), rfl⟩
 
 theorem val_pull₀ {X X' : Scheme.{0}} {Ω Ω' : Type} [Field Ω] [Field Ω'] {ξ : Spec (CommRingCat.of Ω) ⟶ X}
     {ξ' : Spec (CommRingCat.of Ω') ⟶ X'} {f : X' ⟶ X} {i : Ω →+* Ω'} (hD : Dominates ξ' ξ f i)
@@ -1395,7 +1230,7 @@ theorem valuePhi : ValuePhi := by
   rw [← hαk] at hval
   have hchg := hl.chg L s y₀ v w v' w' A B hfr hfr' hA hB
   refine ⟨y₀, v', w', hz, hfr', ?_, ht₁, ht₂⟩
-  rw [FV.unique hu hval, ← eq_inv_of_mul_eq_one_right hr₂]
+  rw [CxVal.unique hu hval, ← eq_inv_of_mul_eq_one_right hr₂]
   linear_combination r₁ * hchg - φ L y₀ v' w' * hr₁
 
 end RootFieldNumerics.RF

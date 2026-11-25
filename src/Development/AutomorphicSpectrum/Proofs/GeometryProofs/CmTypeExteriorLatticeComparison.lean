@@ -55,10 +55,10 @@ theorem spec_dual_comp' {A B C : Type} [CommRing A] [CommRing B] [CommRing C] (g
   refine RingHom.ext fun a => ?_
   ext <;> simp
 
-theorem val_of_comb {X : Scheme.{0}} {Ω : Type} [Field Ω] {G : Over X} [GrpObj G] {ξ : Spec (CommRingCat.of Ω) ⟶ X}
-    {E : Type} [AddCommGroup E] [Module Ω E] (M : LieModel G ξ E) {z : Spec (CommRingCat.of ℂ) ⟶ X}
-    (hc : genPt ξ ⤳ centre z) {n : ℕ} (b : Fin n → E) (vb : Fin n → (epsAt z ⟶ G)) (hb : ∀ k, M.ValAt z (b k) (vb k))
-    (t : Fin n → X.presheaf.stalk (centre z)) :
+theorem val_of_comb {L : Type} [Field L] {X : Scheme.{0}} {Ω : Type} [Field Ω] {G : Over X} [GrpObj G]
+    {ξ : Spec (CommRingCat.of Ω) ⟶ X} {E : Type} [AddCommGroup E] [Module Ω E] (M : LieModel G ξ E)
+    {z : Spec (CommRingCat.of L) ⟶ X} (hc : genPt ξ ⤳ centre z) {n : ℕ} (b : Fin n → E)
+    (vb : Fin n → (epsAt z ⟶ G)) (hb : ∀ k, M.ValAt z (b k) (vb k)) (t : Fin n → X.presheaf.stalk (centre z)) :
     ∃ w, M.ValAt z (∑ k, genMap ξ ⟨centre z, hc⟩ (t k) • b k) w ∧
       IsComb (fun k => (Scheme.stalkClosedPointTo z).hom (t k)) vb w := by
   let u : Fin n → (epsAt z ⟶ G) := fun k => LieTangent.epsScale z ((Scheme.stalkClosedPointTo z).hom (t k)) ≫ vb k
@@ -74,11 +74,12 @@ theorem val_of_comb {X : Scheme.{0}} {Ω : Type} [Field Ω] {G : Over X} [GrpObj
       exact (h 0).add (ih _ _ fun k => h k.succ)
   exact ⟨_, key n _ u hu, u, fun k => rfl, rfl⟩
 
-theorem tie_val {E : Type} [Field E] [NumberField E] [IsCMField E] {H : Host E} {D : Datum H} {l : Level H}
-    {Xo : Moduli D l} {c : Coeff l} {O : Type} [CommRing O] {β : O →+* c.F} {Y : Model Xo c β} {U : Set (Xo.XF c)}
-    {Z : CptOver Y U} {S : Finset ℕ} {Ω : Type} [Field Ω] {K : Type} [Fintype K] {J : K → Type}
-    {y : (Σ k, J k) → Ω} {𝔐 : HodgeCpt Y S y} {i : Z.Ω →+* Ω} {j : Z.V →+ 𝔐.Li} (ht : CptIn.IsTie Z 𝔐 i j)
-    {z : Spec (CommRingCat.of ℂ) ⟶ 𝔐.X} {x : Spec (CommRingCat.of ℂ) ⟶ Y.X} (hx : x = z ≫ 𝔐.f) {e : Z.V}
+theorem tie_val {L : Type} [Field L] {E : Type} [Field E] [NumberField E] [IsCMField E] {H : Host E}
+    {D : Datum H} {l : Level H} {Xo : Moduli D l} {c : Coeff l} {O : Type} [CommRing O] {β : O →+* c.F}
+    {Y : Model Xo c β} {U : Set (Xo.XF c)} {Z : CptOver Y U} {S : Finset ℕ} {Ω : Type} [Field Ω]
+    {K : Type} [Fintype K] {J : K → Type} {y : (Σ k, J k) → Ω} {𝔐 : HodgeCpt Y S y}
+    {i : Z.Ω →+* Ω} {j : Z.V →+ 𝔐.Li} (ht : CptIn.IsTie Z 𝔐 i j)
+    {z : Spec (CommRingCat.of L) ⟶ 𝔐.X} {x : Spec (CommRingCat.of L) ⟶ Y.X} (hx : x = z ≫ 𝔐.f) {e : Z.V}
     {v' : epsAt x ⟶ Y.t.G} {w : epsAt z ⟶ 𝔐.t.G} (h1 : Z.M.ValAt x e v') (h2 : 𝔐.M.ValAt z (j e) w) :
     w.left ≫ 𝔐.m.φ = v'.left := by
   subst hx
@@ -89,13 +90,13 @@ theorem tie_val {E : Type} [Field E] [NumberField E] [IsCMField E] {H : Host E} 
   have hc1' : genPt (Z.ξ₀ ≫ Y.j) ⤳ 𝔐.f (centre z) := hc1
   let vx : epsAt (Y.X.fromSpecStalk (𝔐.f (centre z))) ⟶ Y.t.G := vx₀
   have hvx : Z.M.Extends ⟨𝔐.f (centre z), hc1'⟩ e vx := hvx₀
-  have e5 : ((Scheme.stalkClosedPointTo (z ≫ 𝔐.f)).hom : Y.X.presheaf.stalk (𝔐.f (centre z)) →+* ℂ) =
+  have e5 : ((Scheme.stalkClosedPointTo (z ≫ 𝔐.f)).hom : Y.X.presheaf.stalk (𝔐.f (centre z)) →+* L) =
       (Scheme.stalkClosedPointTo z).hom.comp (𝔐.f.stalkMap (centre z)).hom :=
     congrArg (fun t => t.hom) (Scheme.stalkClosedPointTo_comp z 𝔐.f)
   have e1 : v'.left = Spec.map (CommRingCat.ofHom (dualMap
       ((Scheme.stalkClosedPointTo z).hom.comp (𝔐.f.stalkMap (centre z)).hom))) ≫ vx.left := by
     refine e1₀.trans ?_
-    exact congrArg (fun g : Y.X.presheaf.stalk (𝔐.f (centre z)) →+* ℂ =>
+    exact congrArg (fun g : Y.X.presheaf.stalk (𝔐.f (centre z)) →+* L =>
       Spec.map (CommRingCat.ofHom (dualMap g)) ≫ vx.left) e5
   have hst : Spec.map (CommRingCat.ofHom (𝔐.f.stalkMap (centre z)).hom) ≫ Y.X.fromSpecStalk (𝔐.f (centre z)) =
       𝔐.X.fromSpecStalk (centre z) ≫ 𝔐.f := by
@@ -232,9 +233,10 @@ theorem frame_change : ∀ (X X' : Scheme.{0}) (Ω Ω' : Type) [Field Ω] [Field
   have h4 := Fintype.linearIndependent_iff.1 hjb _ h3 c
   exact hξ.inj p' (sub_eq_zero.1 h4)
 
-theorem val_const' {X : Scheme.{0}} {Ω : Type} [Field Ω] {O : Type} [CommRing O] {ξ : Spec (CommRingCat.of Ω) ⟶ X}
-    (g : X ⟶ Sp O) {σ₀ : O →+* Ω} (hs : ξ ≫ g = spMap σ₀) {σ : O →+* ℂ} (z : Spec (CommRingCat.of ℂ) ⟶ X)
-    (hz : z ≫ g = spMap σ) (h : genPt ξ ⤳ centre z) (c : O) : ValAt ξ z (σ₀ c) (σ c) := by
+theorem val_const' {L : Type} [Field L] {X : Scheme.{0}} {Ω : Type} [Field Ω] {O : Type} [CommRing O]
+    {ξ : Spec (CommRingCat.of Ω) ⟶ X} (g : X ⟶ Sp O) {σ₀ : O →+* Ω} (hs : ξ ≫ g = spMap σ₀) {σ : O →+* L}
+    (z : Spec (CommRingCat.of L) ⟶ X) (hz : z ≫ g = spMap σ) (h : genPt ξ ⤳ centre z) (c : O) :
+    ValAt ξ z (σ₀ c) (σ c) := by
   refine ⟨h, GagaRat.cst g (centre z) c, ?_, ?_⟩
   · have hg : genPt (ξ ≫ g) ⤳ g (centre z) := h.map g.continuous
     rw [GagaRat.cst, GagaRat.genMap_stalkMap' ξ g ⟨centre z, h⟩ hg]
@@ -248,8 +250,7 @@ theorem val_const' {X : Scheme.{0}} {Ω : Type} [Field Ω] {O : Type} [CommRing 
   · have e := congrArg (fun t => t.hom (GagaRat.cgerm (g (centre z)) c)) (Scheme.stalkClosedPointTo_comp z g)
     exact e.symm.trans (GagaRat.closedPointTo_cgerm (z ≫ g) σ hz c)
 
-theorem exists_point : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (D : Datum H) (l : Level H) (Xo : Moduli D l) (c : Coeff l) [NumberField c.F] (Y : Model Xo c (algebraMap (𝓞 c.F) c.F)) (U : Set (Xo.XF c)) (Z : CptOver Y U) (S : Finset ℕ) (Ω : Type) [Field Ω] (K : Type) [Fintype K] (J : K → Type) (y : (Σ k, J k) → Ω) (𝔐 : HodgeCpt Y S y) (i : Z.Ω →+* Ω) (j : Z.V →+ 𝔐.Li) (s : c.F →+* ℂ) (z : Spec (CommRingCat.of ℂ) ⟶ 𝔐.X), genPt 𝔐.ξ ⤳ centre z → CptIn.IsTie Z 𝔐 i j → 𝔐.Interior z → (∀ a : c.F, ValAt 𝔐.ξ z (𝔐.cst a) (s a)) → ∃ y₀ : Sp ℂ ⟶ Xo.XF c, z ≫ 𝔐.f = y₀ ≫ Y.j ∧ Set.range y₀ ⊆ U ∧ y₀ ≫ pullback.snd _ _ = spMap s ∧ ∃ h : genPt (Z.ξ₀ ≫ Y.j) ⤳ centre (y₀ ≫ Y.j), (⟨_, h⟩ : Cpt (Z.ξ₀ ≫ Y.j)) ∈ Z.genFib := by
-
+theorem exists_point {L : Type} [Field L] : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H : Host E) (D : Datum H) (l : Level H) (Xo : Moduli D l) (c : Coeff l) [NumberField c.F] (Y : Model Xo c (algebraMap (𝓞 c.F) c.F)) (U : Set (Xo.XF c)) (Z : CptOver Y U) (S : Finset ℕ) (Ω : Type) [Field Ω] (K : Type) [Fintype K] (J : K → Type) (y : (Σ k, J k) → Ω) (𝔐 : HodgeCpt Y S y) (i : Z.Ω →+* Ω) (j : Z.V →+ 𝔐.Li) (s : c.F →+* L) (z : Spec (CommRingCat.of L) ⟶ 𝔐.X), genPt 𝔐.ξ ⤳ centre z → CptIn.IsTie Z 𝔐 i j → 𝔐.Interior z → (∀ a : c.F, ValAt 𝔐.ξ z (𝔐.cst a) (s a)) → ∃ y₀ : Sp L ⟶ Xo.XF c, z ≫ 𝔐.f = y₀ ≫ Y.j ∧ Set.range y₀ ⊆ U ∧ y₀ ≫ pullback.snd _ _ = spMap s ∧ ∃ h : genPt (Z.ξ₀ ≫ Y.j) ⤳ centre (y₀ ≫ Y.j), (⟨_, h⟩ : Cpt (Z.ξ₀ ≫ Y.j)) ∈ Z.genFib := by
   intro E _ _ _ H D l Xo c _ Y U Z S Ω _ K _ J y 𝔐 i j s z hc ht hint hcst
   have hD : Dominates 𝔐.ξ (Z.ξ₀ ≫ Y.j) 𝔐.f i := ht.1
   have hz₀ : z ≫ 𝔐.f ≫ Y.s = spMap (s.comp (algebraMap (𝓞 c.F) c.F)) := by
@@ -271,15 +272,15 @@ theorem exists_point : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H
   have hrange : Set.range w ⊆ Set.range Y.jQ := by
     rintro _ ⟨p, rfl⟩
     rw [← Y.ab_gen]
-    have hp : p = IsLocalRing.closedPoint ℂ := Subsingleton.elim _ _
+    have hp : p = IsLocalRing.closedPoint L := Subsingleton.elim _ _
     subst hp
-    have e : (pullback.fst Y.s (spMap (algebraMap (𝓞 c.F) c.F))) (w (IsLocalRing.closedPoint ℂ)) = 𝔐.f (centre z) :=
-      congrArg (fun t : Spec (CommRingCat.of ℂ) ⟶ Y.X => t (IsLocalRing.closedPoint ℂ)) hw1
+    have e : (pullback.fst Y.s (spMap (algebraMap (𝓞 c.F) c.F))) (w (IsLocalRing.closedPoint L)) = 𝔐.f (centre z) :=
+      congrArg (fun t : Spec (CommRingCat.of L) ⟶ Y.X => t (IsLocalRing.closedPoint L)) hw1
     show _ ∈ abLocus Y.t.G
     rw [e]
     exact hab
   haveI := Y.jQ_open
-  let y₀ : Sp ℂ ⟶ Xo.XF c := IsOpenImmersion.lift Y.jQ w hrange
+  let y₀ : Sp L ⟶ Xo.XF c := IsOpenImmersion.lift Y.jQ w hrange
   have hy : y₀ ≫ Y.jQ = w := IsOpenImmersion.lift_fac _ _ _
   have hj : y₀ ≫ Y.j = z ≫ 𝔐.f := by
     show y₀ ≫ Y.jQ ≫ pullback.fst _ _ = _
@@ -292,7 +293,7 @@ theorem exists_point : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H
     exact hc.map 𝔐.f.continuous
   refine ⟨y₀, hj.symm, ?_, hs, h, ?_⟩
   · rintro _ ⟨p, rfl⟩
-    have hp : p = IsLocalRing.closedPoint ℂ := Subsingleton.elim _ _
+    have hp : p = IsLocalRing.closedPoint L := Subsingleton.elim _ _
     subst hp
     refine (Z.closure _).2 ?_
     haveI : IsPreimmersion (spMap (algebraMap (𝓞 c.F) c.F)) :=
@@ -302,7 +303,7 @@ theorem exists_point : ∀ (E : Type) [Field E] [NumberField E] [IsCMField E] (H
       infer_instance
     have hind : Topology.IsInducing Y.j := Y.j.isEmbedding.isInducing
     exact hind.specializes_iff.1 h
-  · exact ⟨Y.jQ (y₀ (IsLocalRing.closedPoint ℂ)), rfl⟩
+  · exact ⟨Y.jQ (y₀ (IsLocalRing.closedPoint L)), rfl⟩
 
 theorem frame_gram {E : Type} [Field E] [NumberField E] [IsCMField E] {H : Host E} {D : Datum H} {l : Level H}
     {Xo : Moduli D l} {c : Coeff l} {O : Type} [CommRing O] {β : O →+* c.F} {Y : Model Xo c β} {U : Set (Xo.XF c)}
