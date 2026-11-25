@@ -15,16 +15,10 @@ public import Mathlib.Geometry.Convex.Cone.Pointed
 public import Mathlib.Analysis.Convex.Cone.Extension
 public import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.WeakApproximationFinitePlace
 
--- This file was produced by scripts/clump.py from the modules listed below.
--- Members: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtA, Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtB, Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtD, Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtE, Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExt
-
--- ===== clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtA =====
--- clump-header: {"m": "Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtA", "h": "module\n\npublic import Mathlib.Analysis.Complex.Basic\npublic import Mathlib.Topology.ContinuousMap.Star\nimport Mathlib.MeasureTheory.Integral.Bochner.Basic\npublic import Mathlib.Topology.ContinuousMap.StoneWeierstrass\npublic import Mathlib.Topology.Algebra.StarSubalgebra\npublic import Mathlib.Topology.ContinuousMap.Compact\n\n"}
-section -- clump:auto
 @[expose] public section
-
 noncomputable section
 
+section
 open scoped ComplexConjugate
 open Set MeasureTheory
 
@@ -111,18 +105,9 @@ theorem zero_of_le (d : ℂ) (C : ℝ) (h : ∀ ε : ℝ, 0 < ε → ‖d‖ ≤
   exact eq_of_forall_dist_le this
 
 end PositivityTheory.Rg.Rsw.L.LPosExt
-end -- clump:auto
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtA =====
+end
 
--- ===== clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtB =====
--- clump-header: {"m": "Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtB", "h": "module\n\npublic import Mathlib.MeasureTheory.Integral.Bochner.Basic\npublic import Mathlib.Topology.ContinuousMap.CompactlySupported\npublic import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtA\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\npublic import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap\npublic import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real\nimport Mathlib.Topology.Metrizable.Urysohn\npublic import Mathlib.MeasureTheory.Function.LocallyIntegrable\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
+section
 open Set MeasureTheory CompactlySupported
 
 namespace PositivityTheory.Rg.Rsw.L.LPosExt
@@ -196,18 +181,9 @@ theorem uniq' [T2Space X] [LocallyCompactSpace X] [SecondCountableTopology X] (A
   Measure.ext_of_integral_eq_on_compactlySupported (uniq A hA hmul hstar hsep hbump ν ν' heq)
 
 end PositivityTheory.Rg.Rsw.L.LPosExt
-end -- clump:auto
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtB =====
+end
 
--- ===== clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtD =====
--- clump-header: {"m": "Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtD", "h": "module\n\npublic import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtC\npublic import Mathlib.Geometry.Convex.Cone.Pointed\npublic import Mathlib.Analysis.Convex.Cone.Extension\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.MeasureTheory.Integral.Bochner.Basic\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
+section
 open Set MeasureTheory CompactlySupported
 
 namespace PositivityTheory.Rg.Rsw.L.LPosExt
@@ -272,18 +248,9 @@ theorem extend (A : Submodule ℂ (X → ℂ)) (hA : ∀ f ∈ A, Continuous f �
   rfl
 
 end PositivityTheory.Rg.Rsw.L.LPosExt
-end -- clump:auto
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtD =====
+end
 
--- ===== clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtE =====
--- clump-header: {"m": "Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtE", "h": "module\n\npublic import Mathlib.MeasureTheory.Integral.Bochner.Basic\npublic import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtD\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\npublic import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap\npublic import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real\npublic import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtC\npublic import Mathlib.MeasureTheory.Function.LocallyIntegrable\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
+section
 open Set MeasureTheory CompactlySupported
 
 namespace PositivityTheory.Rg.Rsw.L.LPosExt
@@ -330,18 +297,9 @@ theorem exist (A : Submodule ℂ (X → ℂ)) (hA : ∀ f ∈ A, Continuous f �
   · rw [him, Complex.add_im, smul_eq_mul, Complex.mul_im, Complex.I_re, Complex.I_im, iu, rv]; ring
 
 end PositivityTheory.Rg.Rsw.L.LPosExt
-end -- clump:auto
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtE =====
+end
 
--- ===== clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExt =====
--- clump-header: {"m": "Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExt", "h": "module\n\npublic import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.WeakApproximationFinitePlace\npublic import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtB\npublic import Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExtE\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\n\n"}
-section -- clump:auto
-@[expose] public section
-
-noncomputable section
-
+section
 open scoped Matrix NNReal ENNReal ComplexConjugate TensorProduct Topology
 open Formalism.BasicNotions Formalism.BasicNotions.TH Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes Formalism.L2.Theta Formalism.L2.Pj Formalism.IndefR.Datum MeasureTheory Filter
 open GlobalTheory.AutomorphicL2Unitary GlobalTheory.AdelicU GlobalTheory.Doubling GlobalTheory.Cont GlobalTheory.MixModel
@@ -358,8 +316,4 @@ theorem posExt : PosExt := by
   exact ⟨fun L hL => LPosExt.exist A hc hstar hone L hL, LPosExt.uniq' A hc hmul hstar hsep hone⟩
 
 end PositivityTheory.Rg.Rsw.L
-
 end
-end -- clump:auto
-end -- clump:auto
--- ===== end clump member: Development.WeilBound.RepresentationTheoryGL.RegularisedSiegelWeil.SingularNullSets.LPosExt =====
