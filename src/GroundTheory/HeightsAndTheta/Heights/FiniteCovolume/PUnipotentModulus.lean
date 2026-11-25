@@ -202,6 +202,30 @@ theorem heisForm_heisConjLin (g : archUnitary h v)
   refine Finset.sum_congr rfl fun w _ => ?_
   rw [heisConjLin_apply, heisConjLin_apply, hForm_mulVec_of_unitary _ (archUnitary_at_place g w)]
 
+theorem measurePreserving_heis_mul (hp : IsHyperbolicPair h x₀ w₀) (n : unipRadical h v x₀) :
+    MeasurePreserving (fun x => (heisHomeo (v := v) hp).symm (n * heisHomeo (v := v) hp x))
+      ((Measure.addHaar : Measure (heisY h v x₀ w₀)).prod volume)
+      ((Measure.addHaar : Measure (heisY h v x₀ w₀)).prod volume) := by
+  set φ := heisHomeo (v := v) hp with hφ
+  obtain ⟨p, rfl⟩ := φ.surjective n
+  set f : heisY h v x₀ w₀ → InfinitePlace E → ℝ := fun y w =>
+    (hForm (gramAt h v w) ((p.1 : InfinitePlace E → ι → ℂ) w)
+      ((y : InfinitePlace E → ι → ℂ) w)).im with hf
+  have e : (fun x => φ.symm (φ p * φ x)) = fun x => (p.1 + x.1, (p.2 - f x.1) + x.2) := by
+    funext x
+    rw [hφ, heisHomeo_apply, heisHomeo_apply, heisPoint_mul, ← heisHomeo_apply,
+      Homeomorph.symm_apply_apply]
+    refine Prod.ext rfl ?_
+    simp only [hf]
+    abel
+  rw [e]
+  have hfc : Continuous f := continuous_pi fun w => Complex.continuous_im.comp
+    (continuous_hForm_right _ _ ((continuous_apply w).comp continuous_subtype_val))
+  refine MeasurePreserving.skew_product (f := fun y => p.1 + y)
+    (g := fun y t => (p.2 - f y) + t) (measurePreserving_add_left _ p.1) ?_
+    (Filter.Eventually.of_forall fun y => (measurePreserving_add_left volume _).map_eq)
+  exact ((continuous_const.sub (hfc.comp continuous_fst)).add continuous_snd).measurable
+
 end Form
 
 theorem UnipotentModulus.proof (h : HermitianForm F E W) (v : Basis ι E W) :
@@ -236,26 +260,8 @@ theorem UnipotentModulus.proof (h : HermitianForm F E W) (v : Basis ι E W) :
       simp only [hcdef, Homeomorph.symm_apply_apply, Prod.map, id]
     rw [e]
     exact hGm.prod (MeasurePreserving.id volume)
-  have hL : ∀ n, MeasurePreserving (fun x => φ.symm (n * φ x)) lam lam := by
-    intro n
-    obtain ⟨p, rfl⟩ := φ.surjective n
-    set f : heisY h v x₀ w₀ → InfinitePlace E → ℝ := fun y w =>
-      (hForm (gramAt h v w) ((p.1 : InfinitePlace E → ι → ℂ) w)
-        ((y : InfinitePlace E → ι → ℂ) w)).im with hf
-    have e : (fun x => φ.symm (φ p * φ x)) = fun x => (p.1 + x.1, (p.2 - f x.1) + x.2) := by
-      funext x
-      rw [hφ, heisHomeo_apply, heisHomeo_apply, heisPoint_mul, ← heisHomeo_apply,
-        Homeomorph.symm_apply_apply]
-      refine Prod.ext rfl ?_
-      simp only [hf]
-      abel
-    rw [e]
-    have hfc : Continuous f := continuous_pi fun w => Complex.continuous_im.comp
-      (continuous_hForm_right _ _ ((continuous_apply w).comp continuous_subtype_val))
-    refine MeasurePreserving.skew_product (f := fun y => p.1 + y)
-      (g := fun y t => (p.2 - f y) + t) (measurePreserving_add_left _ p.1) ?_
-      (Filter.Eventually.of_forall fun y => (measurePreserving_add_left volume _).map_eq)
-    exact ((continuous_const.sub (hfc.comp continuous_fst)).add continuous_snd).measurable
+  have hL : ∀ n, MeasurePreserving (fun x => φ.symm (n * φ x)) lam lam :=
+    measurePreserving_heis_mul hp
   rw [hmap, ← Measure.map_map continuous_subtype_val.measurable hcm,
     map_eq_of_measurePreserving_coordinates lam φ hL c hC μ]
 

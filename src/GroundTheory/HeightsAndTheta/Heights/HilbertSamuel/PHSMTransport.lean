@@ -17,6 +17,7 @@ public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeome
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterBridgeB
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.LemSec
 import Mathlib.RingTheory.Localization.Integer
+import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PChangeOfLattice
 
 @[expose] public section
 
@@ -150,27 +151,8 @@ theorem intAct_eqC {B' : Matrix J J ℚ} {c : ℕ} {M : J → J → ℤ}
   intAct_eq hM z
 
 theorem coordIdeal_const_mul {Ω : Type} [Field Ω] {c : Ω} (hc : c ≠ 0) (x : J → Ω) :
-    coordIdeal ℤ (fun i => c * x i) = coordIdeal ℤ x := by
-  have key : ((Polynomial.aeval (Polynomial.C c * Polynomial.X : Polynomial Ω)).restrictScalars ℤ).comp
-      (coneMap ℤ x) = coneMap ℤ (fun i => c * x i) := by
-    apply MvPolynomial.algHom_ext
-    intro i
-    simp [coneMap, Polynomial.C_mul]
-    ring
-  have back : ∀ p : Polynomial Ω,
-      (Polynomial.aeval (Polynomial.C c * Polynomial.X) p).comp (Polynomial.C c⁻¹ * Polynomial.X) = p := by
-    intro p
-    rw [← Polynomial.comp_eq_aeval, Polynomial.comp_assoc, Polynomial.mul_comp, Polynomial.C_comp,
-      Polynomial.X_comp, ← mul_assoc, ← Polynomial.C_mul, mul_inv_cancel₀ hc, Polynomial.C_1, one_mul,
-      Polynomial.comp_X]
-  ext f
-  show f ∈ RingHom.ker (coneMap ℤ _) ↔ f ∈ RingHom.ker (coneMap ℤ x)
-  rw [RingHom.mem_ker, RingHom.mem_ker, ← key, AlgHom.comp_apply, AlgHom.restrictScalars_apply]
-  constructor
-  · intro h0
-    rw [← back (coneMap ℤ x f), h0, Polynomial.zero_comp]
-  · intro h0
-    rw [h0, map_zero]
+    coordIdeal ℤ (fun i => c * x i) = coordIdeal ℤ x :=
+  ChangeOfLattice.coordIdeal_const_mul hc x
 
 theorem subZ_mem_coordIdeal_iff {Ω : Type} [Field Ω] [CharZero Ω] [DecidableEq J] {B B' : Matrix J J ℚ}
     (hB'B : B' * B = 1) {c : ℕ} (hc : c ≠ 0) {M : J → J → ℤ} (hM : ∀ i j, (c : ℚ) * B' i j = M i j)

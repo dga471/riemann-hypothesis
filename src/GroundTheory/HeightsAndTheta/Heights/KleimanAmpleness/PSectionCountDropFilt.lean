@@ -8,6 +8,7 @@ public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.PPrimeFiltra
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.PSubvarDrop
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.QuotGraded
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.TwistAlg
+import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.PSectionCountDropFiltFinite
 import Mathlib.Algebra.Order.Star.Int
 import Mathlib.RingTheory.Henselian
 import Mathlib.RingTheory.KrullDimension.NonZeroDivisors
@@ -113,28 +114,7 @@ variable {k : Type u} [Field k] {Ω : Type w} [Field Ω] [Algebra k Ω] {N : ℕ
 theorem finrank_quotH_irrelevant (F : SubSystem k x Ω) (pp : Ideal (Poly k N))
     (hpp : ∀ i, (X i : Poly k N) ∈ pp) :
     Module.finrank k (SubSystem.quotH F (F.twist (idealSys x pp)) 0) = 0 := by
-  have hsub : ∀ I : Chart x,
-      Subsingleton (F.sub I ⧸ SubSystem.quotSub F (F.twist (idealSys x pp)) I) := by
-    intro I
-    obtain ⟨i, hi⟩ := I.2.1
-    have hxi : x i ≠ 0 := (mem_support x).mp (I.2.2 hi)
-    refine ⟨fun a b => ?_⟩
-    obtain ⟨a, rfl⟩ := Submodule.Quotient.mk_surjective _ a
-    obtain ⟨b, rfl⟩ := Submodule.Quotient.mk_surjective _ b
-    rw [Submodule.Quotient.eq]
-    change ((a - b : F.sub I) : Ω) ∈ (F.twist (idealSys x pp)).sub I
-    rw [SubSystem.twist_sub_eq_mul_of_line]
-    have h1 : (1 : Ω) ∈ (idealSys x pp).sub I :=
-      Submodule.subset_span ⟨X i, X i, 1, hpp i, X_mem_monos hi, isHomogeneous_X _ _,
-        isHomogeneous_X _ _, by rw [aeval_X, div_self hxi]⟩
-    simpa using Submodule.mul_mem_mul h1 (a - b).2
-  have hC : Subsingleton (Cech.Cochain (fun I : Chart x =>
-      F.sub I ⧸ SubSystem.quotSub F (F.twist (idealSys x pp)) I) 0) := by
-    unfold Cech.Cochain
-    exact ⟨fun a b => funext fun I => (hsub I.1).elim _ _⟩
-  have hH : Subsingleton (SubSystem.quotH F (F.twist (idealSys x pp)) 0) := by
-    unfold SubSystem.quotH Cech.H
-    infer_instance
+  have := quotH_zero_subsingleton_of_irrelevant F pp hpp
   exact Module.finrank_zero_of_subsingleton
 
 end FieldCharts

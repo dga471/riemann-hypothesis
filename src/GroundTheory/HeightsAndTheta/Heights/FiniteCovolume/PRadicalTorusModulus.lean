@@ -4,6 +4,7 @@ public import GroundTheory.HeightsAndTheta.Heights.FiniteCovolume.PRadicalTorusM
 public import Mathlib.RingTheory.Complex
 public import GroundTheory.HeightsAndTheta.Heights.FiniteCovolume.StatementsRadicalTorusModulus
 public import GroundTheory.HeightsAndTheta.Heights.FiniteCovolume.PUnipotentModulusHomeo
+import GroundTheory.HeightsAndTheta.Heights.FiniteCovolume.PUnipotentModulus
 import Mathlib.Algebra.Module.StablyFree.Basic
 import Mathlib.RingTheory.Coalgebra.CoassocSimps
 import Mathlib.RingTheory.Coalgebra.IsFrobenius
@@ -225,26 +226,8 @@ theorem RadicalTorusModulus.proof (h : HermitianForm F E W) (v : Basis ι E W) :
     exact Measure.prod.instIsAddHaarMeasure _ _
   have hLm : lam.map L = ENNReal.ofReal |(LinearMap.det L)⁻¹| • lam :=
     Measure.map_linearMap_addHaar_eq_smul_addHaar lam hpos.ne'
-  have hL : ∀ n, MeasurePreserving (fun x => φ.symm (n * φ x)) lam lam := by
-    intro n
-    obtain ⟨p, rfl⟩ := φ.surjective n
-    set f : heisY h v x₀ w₀ → InfinitePlace E → ℝ := fun y w =>
-      (hForm (gramAt h v w) ((p.1 : InfinitePlace E → ι → ℂ) w)
-        ((y : InfinitePlace E → ι → ℂ) w)).im with hf
-    have e : (fun x => φ.symm (φ p * φ x)) = fun x => (p.1 + x.1, (p.2 - f x.1) + x.2) := by
-      funext x
-      rw [hφ, heisHomeo_apply, heisHomeo_apply, heisPoint_mul, ← heisHomeo_apply,
-        Homeomorph.symm_apply_apply]
-      refine Prod.ext rfl ?_
-      simp only [hf]
-      abel
-    rw [e]
-    have hfc : Continuous f := continuous_pi fun w => Complex.continuous_im.comp
-      (continuous_hForm_right _ _ ((continuous_apply w).comp continuous_subtype_val))
-    refine MeasurePreserving.skew_product (f := fun y => p.1 + y)
-      (g := fun y t => (p.2 - f y) + t) (measurePreserving_add_left _ p.1) ?_
-      (Filter.Eventually.of_forall fun y => (measurePreserving_add_left volume _).map_eq)
-    exact ((continuous_const.sub (hfc.comp continuous_fst)).add continuous_snd).measurable
+  have hL : ∀ n, MeasurePreserving (fun x => φ.symm (n * φ x)) lam lam :=
+    measurePreserving_heis_mul hp
   have hmap := map_eq_smul_of_coordinates lam φ hL L hLc _ hLm μ
   have hc : ∀ n, (((φ ∘ L ∘ φ.symm) n : unipRadical h v x₀) : archUnitary h v) = g * n * g⁻¹ := by
     intro n

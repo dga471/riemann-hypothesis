@@ -172,7 +172,9 @@ theorem log_relIndex_cocycle {M L L' : AddSubgroup Ω} (hL : M ≤ L) (hL' : M �
   rw [Real.log_mul ha hb, Real.log_mul ha hb']
   ring
 
-theorem coordIdeal_const_mul {c : Ω} (hc : c ≠ 0) (x : J → Ω) :
+end Lattices
+
+theorem coordIdeal_const_mul {Ω : Type} [Field Ω] {J : Type} {c : Ω} (hc : c ≠ 0) (x : J → Ω) :
     coordIdeal ℤ (fun i => c * x i) = coordIdeal ℤ x := by
   have key : ((Polynomial.aeval (Polynomial.C c * Polynomial.X : Polynomial Ω)).restrictScalars ℤ).comp
       (coneMap ℤ x) = coneMap ℤ (fun i => c * x i) := by
@@ -195,11 +197,10 @@ theorem coordIdeal_const_mul {c : Ω} (hc : c ≠ 0) (x : J → Ω) :
   · intro h0
     rw [h0, map_zero]
 
-theorem linearIndependent_const_mul {c : Ω} (hc : c ≠ 0) {x : J → Ω} (hx : LinearIndependent ℤ x) :
+theorem linearIndependent_const_mul {Ω : Type} [Field Ω] {J : Type} {c : Ω} (hc : c ≠ 0)
+    {x : J → Ω} (hx : LinearIndependent ℤ x) :
     LinearIndependent ℤ (fun i => c * x i) :=
   hx.map' (LinearMap.mulLeft ℤ c) (LinearMap.ker_eq_bot.2 (mul_right_injective₀ hc))
-
-end Lattices
 
 def pullMetric {J : Type} [Fintype J] (m : ConeMetric ℂ J) (A : Matrix J J ℚ)
     (hA : ∀ z, z ≠ 0 → matActC A z ≠ 0) : ConeMetric ℂ J where

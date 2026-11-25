@@ -22,22 +22,8 @@ variable {K : Type} [Fintype K] {ι : K → Type} [∀ k, Fintype (ι k)] {Ω : 
 
 def chartMon (c : ∀ k, ι k) (d : K → ℕ) : MRing ι := ∏ k, (X ⟨k, c k⟩ : MRing ι) ^ d k
 
-theorem homog_chartMon (c : ∀ k, ι k) (d : K → ℕ) : IsMultiHomog (chartMon c d) d := by
-  classical
-  have key : ∀ s : Finset K, IsMultiHomog (∏ k ∈ s, (X ⟨k, c k⟩ : MRing ι) ^ d k)
-      (∑ k ∈ s, d k • Pi.single k 1) := by
-    intro s
-    induction s using Finset.induction_on with
-    | empty => simpa using (GroundTheory.Heights₂.Heights.HilbertSamuel.SectionBounded.homog_one (ι := ι))
-    | insert k s hk ih =>
-      rw [Finset.prod_insert hk, Finset.sum_insert hk]
-      exact GroundTheory.Heights₂.Heights.HilbertSamuel.SectionBounded.homog_mul (GroundTheory.Heights₂.Heights.HilbertSamuel.SectionBounded.homog_pow (GroundTheory.Heights₂.Heights.HilbertSamuel.SectionBounded.homog_X ⟨k, c k⟩) _) ih
-  have e : (∑ k, d k • (Pi.single k 1 : K → ℕ)) = d := by
-    ext k
-    simp [Finset.sum_apply, Pi.single_apply]
-  have := key Finset.univ
-  rw [e] at this
-  exact this
+theorem homog_chartMon (c : ∀ k, ι k) (d : K → ℕ) : IsMultiHomog (chartMon c d) d :=
+  SectionBounded.homog_chartMon c d
 
 theorem aeval_chartMon (y : (Σ k, ι k) → Ω) (c : ∀ k, ι k) (d : K → ℕ) :
     aeval y (chartMon c d) = ∏ k, y ⟨k, c k⟩ ^ d k := by
