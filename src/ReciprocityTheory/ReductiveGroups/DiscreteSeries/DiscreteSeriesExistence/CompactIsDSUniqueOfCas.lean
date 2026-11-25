@@ -83,7 +83,7 @@ variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteS
   {lam : Fin n → ℝ} {σ : Matrix (Fin n) (Fin n) ℂ → (H →L[ℂ] H)} {D : Submodule ℂ H}
   {E : Fin n → Fin n → Module.End ℂ D} {V : Submodule ℂ D}
 
-theorem cfa_no_of_vogan (hgap : StdGap ε lam) (hσ : IsURepOn (UJset ε) σ) (hD : IsDerivedOn ε σ D E)
+theorem cfa_no_of_vogan_of_mono (hmono : StrictAnti lam) (hσ : IsURepOn (UJset ε) σ) (hD : IsDerivedOn ε σ D E)
     (hV : IsKIrrHW ε E (lowK ε lam) V) (hVK : ∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v)
     (hvog : ∀ (μ : Fin n → ℝ) (S : Submodule ℂ H), Formalism.MainNotions.S.IsKTypeOf ε σ μ S →
       Formalism.MainNotions.S.vNormSq ε (Formalism.QuantumDeterminants.lowK ε lam) ≤ Formalism.MainNotions.S.vNormSq ε μ) :
@@ -100,9 +100,17 @@ theorem cfa_no_of_vogan (hgap : StdGap ε lam) (hσ : IsURepOn (UJset ε) σ) (h
   have hKT := isKTypeOf_of_isKIrrHW hσ hD hS' hK'
     (fun μ x hx hx0 hμ => weights_le_of_irr_hw hE hU hS' hx hx0 hμ)
   have h1 := hvog _ _ hKT
-  have h2 := vNormSq_lowK_sub_root_lt hgap.1 hab hne
+  have h2 := vNormSq_lowK_sub_root_lt hmono hab hne
   rw [mir_lowK_eq] at h1 h2
   linarith
+
+theorem cfa_no_of_vogan (hgap : StdGap ε lam) (hσ : IsURepOn (UJset ε) σ) (hD : IsDerivedOn ε σ D E)
+    (hV : IsKIrrHW ε E (lowK ε lam) V) (hVK : ∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v)
+    (hvog : ∀ (μ : Fin n → ℝ) (S : Submodule ℂ H), Formalism.MainNotions.S.IsKTypeOf ε σ μ S →
+      Formalism.MainNotions.S.vNormSq ε (Formalism.QuantumDeterminants.lowK ε lam) ≤ Formalism.MainNotions.S.vNormSq ε μ) :
+    ∀ a b : Fin n, a < b → ε a ≠ ε b → ∀ w ∈ layer ε E V 1,
+      IsKHWVec ε E (lowK ε lam - root a b) w → w = 0 :=
+  cfa_no_of_vogan_of_mono hgap.1 hσ hD hV hVK hvog
 
 end Datum
 
@@ -118,23 +126,30 @@ def CasOnCopies (σ : Matrix (Fin n) (Fin n) ℂ → (H →L[ℂ] H)) : Prop :=
     (∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v) →
     ∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v
 
-theorem cf_datum_of_copies (hDS : Formalism.MainNotions.S.IsDS ε lam σ) (hgap : StdGap ε lam) (hcV : CasOnCopies ε lam σ) :
+theorem cf_datum_of_copies_of (hDS : Formalism.MainNotions.S.IsDS ε lam σ) (hcV : CasOnCopies ε lam σ)
+    (hclos : ∀ {V : Submodule ℂ (smD ε σ)}, IsKIrrHW ε (smE ε σ) (lowK ε lam) V →
+      (∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v) →
+      (∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v) → V ≠ ⊥ → closGen (smE ε σ) V = ⊤) :
     ∃ V : Submodule ℂ (smD ε σ), IsKIrrHW ε (smE ε σ) (lowK ε lam) V ∧ V ≠ ⊥ ∧
       (∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v) ∧
       (∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v) ∧ closGen (smE ε σ) V = ⊤ := by
   have hσ : IsURepOn (UJset ε) σ := hDS.2.2.1
   obtain ⟨S, hS⟩ := hDS.2.2.2.2.2.1
   obtain ⟨V, hV, hV0, hVK, -⟩ := exists_datum_of_isKTypeOf hσ hS
-  have hD := isDerivedOn_smE hσ
   have hc := hcV V hV hVK
-  exact ⟨V, hV, hV0, hVK, hc, data_closGen_eq_top hgap hσ hD hV hc hVK hDS.2.2.2.1 hV0⟩
+  exact ⟨V, hV, hV0, hVK, hc, hclos hV hc hVK hV0⟩
 
-theorem casOnSmooth_of_datum (hgap : StdGap ε lam) (hσ : IsURepOn (UJset ε) σ)
-    (hirr : Formalism.MainNotions.S.IsIrredOn (UJset ε) σ) {V : Submodule ℂ (smD ε σ)}
-    (hV : IsKIrrHW ε (smE ε σ) (lowK ε lam) V) (hV0 : V ≠ ⊥)
-    (hVK : ∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v)
-    (hc : ∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v) : CasOnSmooth ε lam σ := by
-  have htop := data_closGen_eq_top hgap hσ (isDerivedOn_smE hσ) hV hc hVK hirr hV0
+theorem cf_datum_of_copies (hDS : Formalism.MainNotions.S.IsDS ε lam σ) (hgap : StdGap ε lam) (hcV : CasOnCopies ε lam σ) :
+    ∃ V : Submodule ℂ (smD ε σ), IsKIrrHW ε (smE ε σ) (lowK ε lam) V ∧ V ≠ ⊥ ∧
+      (∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v) ∧
+      (∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v) ∧ closGen (smE ε σ) V = ⊤ :=
+  cf_datum_of_copies_of hDS hcV fun hV hc hVK hV0 =>
+    data_closGen_eq_top hgap hDS.2.2.1 (isDerivedOn_smE hDS.2.2.1) hV hc hVK hDS.2.2.2.1 hV0
+
+theorem casOnSmooth_of_datum (hσ : IsURepOn (UJset ε) σ) {V : Submodule ℂ (smD ε σ)}
+    (htop : closGen (smE ε σ) V = ⊤)
+    (hcasU : ∀ x ∈ genSub (smE ε σ) V, casU ε σ (x : H) = ((casVal lam : ℝ) : ℂ) • (x : H)) :
+    CasOnSmooth ε lam σ := by
   have hD := isDerivedOn_smE hσ
   have hU := isInfUnitary_of_isDerivedOn hσ hD
   intro v hv
@@ -148,7 +163,7 @@ theorem casOnSmooth_of_datum (hgap : StdGap ε lam) (hσ : IsURepOn (UJset ε) �
     obtain ⟨x, hx, rfl⟩ := Submodule.mem_map.1 hu
     have hcx : ((casimir (smE ε σ) x : smD ε σ) : H) = ((casVal lam : ℝ) : ℂ) • (x : H) := by
       rw [← casU_eq_casimir hD x]
-      exact data_casU hgap hσ hD hV hc hVK x hx
+      exact hcasU x hx
     have hsym := cf_inner_casimir hU x v'
     rw [Submodule.coe_inner, Submodule.coe_inner, hcx] at hsym
     rw [Submodule.subtype_apply, inner_sub_right, ← hsym, inner_smul_left, inner_smul_right,
@@ -157,10 +172,23 @@ theorem casOnSmooth_of_datum (hgap : StdGap ε lam) (hσ : IsURepOn (UJset ε) �
   rw [Submodule.topologicalClosure_eq_top_iff.1 htop'] at hperp
   exact (Submodule.mem_bot ℂ).1 hperp
 
-theorem casOnSmooth_of_copies (hDS : Formalism.MainNotions.S.IsDS ε lam σ) (hgap : StdGap ε lam) (hcV : CasOnCopies ε lam σ) :
+theorem casOnSmooth_of_copies_of (hDS : Formalism.MainNotions.S.IsDS ε lam σ) (hcV : CasOnCopies ε lam σ)
+    (hclos : ∀ {V : Submodule ℂ (smD ε σ)}, IsKIrrHW ε (smE ε σ) (lowK ε lam) V →
+      (∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v) →
+      (∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v) → V ≠ ⊥ → closGen (smE ε σ) V = ⊤)
+    (hcasU : ∀ {V : Submodule ℂ (smD ε σ)}, IsKIrrHW ε (smE ε σ) (lowK ε lam) V →
+      (∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v) →
+      (∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v) →
+      ∀ x ∈ genSub (smE ε σ) V, casU ε σ (x : H) = ((casVal lam : ℝ) : ℂ) • (x : H)) :
     CasOnSmooth ε lam σ := by
-  obtain ⟨V, hV, hV0, hVK, hc, -⟩ := cf_datum_of_copies hDS hgap hcV
-  exact casOnSmooth_of_datum hgap hDS.2.2.1 hDS.2.2.2.1 hV hV0 hVK hc
+  obtain ⟨V, hV, -, hVK, hc, htop⟩ := cf_datum_of_copies_of hDS hcV hclos
+  exact casOnSmooth_of_datum hDS.2.2.1 htop (hcasU hV hc hVK)
+
+theorem casOnSmooth_of_copies (hDS : Formalism.MainNotions.S.IsDS ε lam σ) (hgap : StdGap ε lam) (hcV : CasOnCopies ε lam σ) :
+    CasOnSmooth ε lam σ :=
+  casOnSmooth_of_copies_of hDS hcV
+    (fun hV hc hVK hV0 => data_closGen_eq_top hgap hDS.2.2.1 (isDerivedOn_smE hDS.2.2.1) hV hc hVK hDS.2.2.2.1 hV0)
+    (fun hV hc hVK => data_casU hgap hDS.2.2.1 (isDerivedOn_smE hDS.2.2.1) hV hc hVK)
 
 theorem compact_isDS_unique_of_cas (hpq : pOf ε = 0 ∨ qOf ε = 0) (hlam : S7.IsHCParam lam)
     (hDS : Formalism.MainNotions.S.IsDS ε lam σ) (hcas : CasOnSmooth ε lam σ) (T : S7.KType ε (lowK ε lam)) :
@@ -196,6 +224,44 @@ theorem compact_isDS_unique_of_cas (hpq : pOf ε = 0 ∨ qOf ε = 0) (hlam : S7.
 
 end Arbitrary
 
+theorem isDS_props_of_copies_of {ε : Fin n → Bool} {lam : Fin n → ℝ}
+    (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    (σ : Matrix (Fin n) (Fin n) ℂ → (H →L[ℂ] H)) (hDS : Formalism.MainNotions.S.IsDS ε lam σ)
+    (hcas : CasOnSmooth ε lam σ)
+    {V : Submodule ℂ (smD ε σ)} (hV : IsKIrrHW ε (smE ε σ) (lowK ε lam) V)
+    (hVK : ∀ k ∈ Kset ε, ∀ v ∈ V, ∃ w ∈ V, (w : H) = σ k v)
+    (hc : ∀ v ∈ V, casimir (smE ε σ) v = (casVal lam : ℂ) • v) (htop : closGen (smE ε σ) V = ⊤)
+    (hmult : ∀ S S' : Submodule ℂ H, Formalism.MainNotions.S.IsKTypeOf ε σ (Formalism.QuantumDeterminants.lowK ε lam) S →
+      Formalism.MainNotions.S.IsKTypeOf ε σ (Formalism.QuantumDeterminants.lowK ε lam) S' → S = S')
+    (hadm : ∀ μ : Fin n → ℝ, FiniteDimensional ℂ
+      (sSup {S : Submodule ℂ H | S ≤ closGen (smE ε σ) V ∧ Formalism.MainNotions.S.IsKTypeOf ε σ μ S} : Submodule ℂ H))
+    (hkfin : ∀ S : Submodule ℂ H, S ≤ closGen (smE ε σ) V → FiniteDimensional ℂ S →
+      Formalism.MainNotions.S.IsKStableOn ε σ S → S ≤ (genSub (smE ε σ) V).map (smD ε σ).subtype)
+    (huniq : ∀ (H' : Type) [NormedAddCommGroup H'] [InnerProductSpace ℂ H'] [CompleteSpace H']
+      (σ' : Matrix (Fin n) (Fin n) ℂ → (H' →L[ℂ] H')), Formalism.MainNotions.S.IsDS ε lam σ' →
+      ∃ U : H ≃ₗᵢ[ℂ] H', ∀ g ∈ Formalism.MainNotions.S.UJset ε, ∀ x : H, U (σ g x) = σ' g (U x)) :
+    CasOnSmooth ε lam σ ∧
+      (∀ S S' : Submodule ℂ H, Formalism.MainNotions.S.IsKTypeOf ε σ (Formalism.QuantumDeterminants.lowK ε lam) S →
+        Formalism.MainNotions.S.IsKTypeOf ε σ (Formalism.QuantumDeterminants.lowK ε lam) S' → S = S') ∧
+      (∀ μ : Fin n → ℝ, FiniteDimensional ℂ (sSup {S : Submodule ℂ H | Formalism.MainNotions.S.IsKTypeOf ε σ μ S} :
+        Submodule ℂ H)) ∧
+      (∀ S : Submodule ℂ H, FiniteDimensional ℂ S → Formalism.MainNotions.S.IsKStableOn ε σ S →
+        ∀ v ∈ S, IsSmoothVecU ε σ v) ∧
+      ∀ (H' : Type) [NormedAddCommGroup H'] [InnerProductSpace ℂ H'] [CompleteSpace H']
+        (σ' : Matrix (Fin n) (Fin n) ℂ → (H' →L[ℂ] H')), Formalism.MainNotions.S.IsDS ε lam σ' →
+        ∃ U : H ≃ₗᵢ[ℂ] H', ∀ g ∈ Formalism.MainNotions.S.UJset ε, ∀ x : H, U (σ g x) = σ' g (U x) := by
+  refine ⟨hcas, hmult, fun μ => ?_, fun S hSf hSK v hv => ?_, huniq⟩
+  · have h1 := hadm μ
+    rw [htop] at h1
+    have hset : {S : Submodule ℂ H | S ≤ ⊤ ∧ Formalism.MainNotions.S.IsKTypeOf ε σ μ S} =
+        {S : Submodule ℂ H | Formalism.MainNotions.S.IsKTypeOf ε σ μ S} := by
+      ext S
+      simp
+    rwa [hset] at h1
+  · have hle : S ≤ closGen (smE ε σ) V := by rw [htop]; exact le_top
+    obtain ⟨x, -, rfl⟩ := Submodule.mem_map.1 (hkfin S hle hSf hSK hv)
+    exact (mem_smD_iff ε σ _).1 x.2
+
 theorem isDS_props_of_copies {ε : Fin n → Bool} {lam : Fin n → ℝ} (hlam : Formalism.QuantumDeterminants.IsHCParam lam) {h : ℝ}
     (hh : Formalism.QuantumDeterminants.GapAtLeast ε lam h) (hbig : (n : ℝ) * (pOf ε : ℝ) * (qOf ε : ℝ) + 1 < h)
     (hall : ∀ (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
@@ -214,24 +280,14 @@ theorem isDS_props_of_copies {ε : Fin n → Bool} {lam : Fin n → ℝ} (hlam :
         ∃ U : H ≃ₗᵢ[ℂ] H', ∀ g ∈ Formalism.MainNotions.S.UJset ε, ∀ x : H, U (σ g x) = σ' g (U x) := by
   have hgap : StdGap ε lam := ⟨hlam.1, h, hh, hbig⟩
   have hcas := casOnSmooth_of_copies hDS hgap (hall H σ hDS)
-  have hσ : IsURepOn (UJset ε) σ := hDS.2.2.1
   obtain ⟨V, hV, -, hVK, hc, htop⟩ := cf_datum_of_copies hDS hgap (hall H σ hDS)
+  have hσ : IsURepOn (UJset ε) σ := hDS.2.2.1
   have hD := isDerivedOn_smE hσ
-  refine ⟨hcas, fun S S' hS hS' => lowKMultOne_of_cas hDS hgap hcas S S' hS hS', fun μ => ?_,
-    fun S hSf hSK v hv => ?_, fun H' _ _ _ σ' hDS' => ?_⟩
-  · have hadm := data_admissible hgap hσ hD hV hc hVK μ
-    rw [htop] at hadm
-    have hset : {S : Submodule ℂ H | S ≤ ⊤ ∧ Formalism.MainNotions.S.IsKTypeOf ε σ μ S} =
-        {S : Submodule ℂ H | Formalism.MainNotions.S.IsKTypeOf ε σ μ S} := by
-      ext S
-      simp
-    rw [hset] at hadm
-    exact hadm
-  · have hle : S ≤ closGen (smE ε σ) V := by rw [htop]; exact le_top
-    have hmem := data_kfin_le hgap hσ hD hV hc hVK S hle hSf hSK hv
-    obtain ⟨x, -, rfl⟩ := Submodule.mem_map.1 hmem
-    exact (mem_smD_iff ε σ _).1 x.2
-  · exact dsUnique_of_cas hgap hDS hcas hDS' (casOnSmooth_of_copies hDS' hgap (hall H' σ' hDS'))
+  exact isDS_props_of_copies_of H σ hDS hcas hV hVK hc htop
+    (fun S S' hS hS' => lowKMultOne_of_cas hDS hgap hcas S S' hS hS')
+    (data_admissible hgap hσ hD hV hc hVK)
+    (data_kfin_le hgap hσ hD hV hc hVK)
+    (fun H' _ _ _ σ' hDS' => dsUnique_of_cas hgap hDS hcas hDS' (casOnSmooth_of_copies hDS' hgap (hall H' σ' hDS')))
 
 end ReciprocityTheory.ChartRestriction.DS
 end -- clump:auto
