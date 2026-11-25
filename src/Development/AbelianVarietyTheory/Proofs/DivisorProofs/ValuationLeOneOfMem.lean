@@ -64,7 +64,6 @@ open GlobalTheory.ChiGrid GlobalTheory.SplitFlip GlobalTheory.SplitWeil GlobalTh
 open GlobalTheory.HalfCompare (badInt exists_prime_under mem_of_dvd not_mem_of_coprime)
 open ReciprocityTheory.ChartRestriction.G.PullbackSections.PfModelLatA (Dinv xi_mem_Dinv int_of_xi normCc_mem_AA int_of_mem_b)
 
-attribute [local instance] Formalism.BasicNotions.Host.cmStar
   GlobalTheory.FunObj.borelKw GlobalTheory.FunObj.borelSpaceKw
 
 variable {D : D7}

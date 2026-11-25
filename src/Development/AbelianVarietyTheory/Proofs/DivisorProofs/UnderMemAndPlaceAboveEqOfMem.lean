@@ -297,7 +297,6 @@ end Path
 
 section Global
 
-attribute [local instance] Formalism.BasicNotions.Host.cmStar
   GlobalTheory.FunObj.borelSpaceKw
 
 variable {D : D7} {T : Type} {L : LevCh D T} {sc : Consts} {μ₀ : T}

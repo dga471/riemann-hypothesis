@@ -48,7 +48,6 @@ section
 noncomputable section
 namespace GlobalTheory.Mem.Top.Bl
 open Formalism.BasicNotions Formalism.MainNotions Formalism.MainNotions.Inhab Formalism.L2.Host GlobalTheory.EX GlobalTheory.EX.OB GlobalTheory.Mem GlobalTheory.Mem.Col2 GlobalTheory.Mem.Top.GroupRetwisting NumberField IsDedekindDomain
-attribute [local instance] Formalism.BasicNotions.Host.cmStar
 structure Parameters (hL : _root_.UpperTheory.Zero.LLC.RecTExists) : Type 2 where
   R : RPosition
   N : _root_.GlobalTheory.Mem.Top.Bl.NormChoiceExtension hL
