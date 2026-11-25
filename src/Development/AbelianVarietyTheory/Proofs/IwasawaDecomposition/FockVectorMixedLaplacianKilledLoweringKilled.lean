@@ -325,23 +325,22 @@ theorem pMinus_laws {Z : Matrix (Fin T.rank) (Fin T.rank) ℂ} (hZ : Z ∈ Globa
       Matrix.mul_nonsing_inv_cancel_left _ _ hu, ← Matrix.mul_assoc, Matrix.mul_assoc _ ζ, z2]
   exact ⟨h1, h2⟩
 
-theorem exists_coef {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ}
-    (hB : ∀ τ, (BS τ)ᴴ * gramAt D S τ * BS τ = 1) {p : ℕ} (hp : ∀ a, M.ε τ a = decide ((a : ℕ) < p))
+theorem exists_coef_basis {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ}
+    (hB : ∀ τ, (BS τ)ᴴ * gramAt D S τ * BS τ = 1) {p : ℕ} {B' : Matrix (Fin T.rank) (Fin T.rank) ℂ}
+    (hBT : ∃ ε : Fin T.rank → ℝ, (∀ a, (ε a = 1 ∧ (a : ℕ) < p) ∨ (ε a = -1 ∧ p ≤ (a : ℕ))) ∧
+      cart M τ * B' = B' * diagonal fun a => (ε a : ℂ))
     {X : Matrix (Fin T.rank) (Fin T.rank) ℂ}
     (lX : X ∈ lieAt T τ) (lY : Complex.I • (cart M τ * X) ∈ lieAt T τ) (ha : cart M τ * X = -(X * cart M τ)) :
     ∃ ν : Fin T.rank → Fin T.rank → ℂ, (∀ a b : Fin T.rank, ¬ (p ≤ (a : ℕ) ∧ (b : ℕ) < p) → ν a b = 0) ∧
-      ∀ a c b d, ∀ u, u = unitMap (BS τ) (onb M τ) a c → ∀ u', u' = unitMap (BS τ) (onb M τ) b d →
+      ∀ a c b d, ∀ u, u = unitMap (BS τ) B' a c → ∀ u', u' = unitMap (BS τ) B' b d →
         ((omDir S T τ (X * u) τ u' : ℝ) + Complex.I * (omDir S T τ (cplxO 1 (cart M τ) (X * u)) τ u' : ℝ)) +
           (-Complex.I) * ((omDir S T τ (X * cplxO 1 (cart M τ) u) τ u' : ℝ) +
             Complex.I * (omDir S T τ (cplxO 1 (cart M τ) (X * cplxO 1 (cart M τ) u)) τ u' : ℝ)) =
         (if c = d then ν a b else 0) + (if d = c then ν b a else 0) := by
   have hT := GlobalTheory.Chain.VacVec.cart_isCartanInv M
-  have hu := (Matrix.isUnit_iff_isUnit_det _).1 (M.fr_unit τ)
-  have ht : cart M τ * onb M τ = onb M τ * diagonal fun a => if M.ε τ a then (1 : ℂ) else -1 := by
-    rw [cart, onb, Matrix.mul_nonsing_inv_cancel_right _ _ hu]
-    rfl
+  obtain ⟨ε, hε, ht⟩ := hBT
   let o : Matrix (Fin T.rank) (Fin T.rank) ℂ → Fin T.rank → Fin T.rank → ℝ := fun W a b =>
-    2 * (tauE D τ D.host.xi0 * ((onb M τ)ᴴ * gramAt D T τ * W * onb M τ) a b).re
+    2 * (tauE D τ D.host.xi0 * (B'ᴴ * gramAt D T τ * W * B') a b).re
   have hre := GlobalTheory.RealSymplForm.realPlace_imaginaryGenerator_re_eq_zero D τ
   have osym : ∀ W ∈ lieAt T τ, ∀ a b, o W a b = o W b a := fun W hW a b =>
     congrArg (2 * ·) (skew_entry (GlobalTheory.SmoothAutCheck.gramAt_herm T τ) hW hre a b)
@@ -349,9 +348,12 @@ theorem exists_coef {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ
       o W a b = 0 := fun W hW a b hab => by
     simp only [o]
     rw [zero_entry (hT τ) ht hW, mul_zero, Complex.zero_re, mul_zero]
-    simp only [hp, decide_eq_true_eq, hab]
-    split_ifs <;> norm_num
-  have hom1 : ∀ W a c b d, omDir S T τ (W * unitMap (BS τ) (onb M τ) a c) τ (unitMap (BS τ) (onb M τ) b d) =
+    rcases hε a with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hε b with ⟨h3, h4⟩ | ⟨h3, h4⟩
+    · simp only [h1, h3, Complex.ofReal_one, star_one]; norm_num
+    · exact absurd (hab.1 h2) (by omega)
+    · exact absurd (hab.2 h4) (by omega)
+    · simp only [h1, h3, Complex.ofReal_neg, Complex.ofReal_one, star_neg, star_one]; norm_num
+  have hom1 : ∀ W a c b d, omDir S T τ (W * unitMap (BS τ) B' a c) τ (unitMap (BS τ) B' b d) =
       if c = d then o W b a else 0 := fun W a c b d => by
     rw [omDir, ite_eq_left rfl, trace_unitMap (hB τ)]
     split_ifs <;> simp [o]
@@ -393,8 +395,34 @@ theorem exists_coef {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ
   · rw [ite_eq_left (by omega), ite_eq_right (by omega), add_zero]
   · simp [z1 b a (by simp [ha', hb']), z2 b a (by simp [ha', hb'])]
 
-theorem gen_kill (hψ : IsStdChar D ψ (-1)) (hθ : IsInfFam θ) {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ}
+private theorem onb_cart_diag {p : ℕ} (hp : ∀ a, M.ε τ a = decide ((a : ℕ) < p)) :
+    ∃ ε : Fin T.rank → ℝ, (∀ a, (ε a = 1 ∧ (a : ℕ) < p) ∨ (ε a = -1 ∧ p ≤ (a : ℕ))) ∧
+      cart M τ * onb M τ = onb M τ * diagonal fun a => (ε a : ℂ) := by
+  have hu := (Matrix.isUnit_iff_isUnit_det _).1 (M.fr_unit τ)
+  refine ⟨fun a => if M.ε τ a then 1 else -1, fun a => ?_, ?_⟩
+  · by_cases h : (a : ℕ) < p
+    · exact Or.inl ⟨by simp [hp a, h], h⟩
+    · exact Or.inr ⟨by simp [hp a, h], by omega⟩
+  · rw [cart, onb, Matrix.mul_nonsing_inv_cancel_right _ _ hu]
+    unfold Formalism.REAL.Jm
+    congr 2; funext a; cases h : M.ε τ a <;> simp [h]
+
+theorem exists_coef {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ}
     (hB : ∀ τ, (BS τ)ᴴ * gramAt D S τ * BS τ = 1) {p : ℕ} (hp : ∀ a, M.ε τ a = decide ((a : ℕ) < p))
+    {X : Matrix (Fin T.rank) (Fin T.rank) ℂ}
+    (lX : X ∈ lieAt T τ) (lY : Complex.I • (cart M τ * X) ∈ lieAt T τ) (ha : cart M τ * X = -(X * cart M τ)) :
+    ∃ ν : Fin T.rank → Fin T.rank → ℂ, (∀ a b : Fin T.rank, ¬ (p ≤ (a : ℕ) ∧ (b : ℕ) < p) → ν a b = 0) ∧
+      ∀ a c b d, ∀ u, u = unitMap (BS τ) (onb M τ) a c → ∀ u', u' = unitMap (BS τ) (onb M τ) b d →
+        ((omDir S T τ (X * u) τ u' : ℝ) + Complex.I * (omDir S T τ (cplxO 1 (cart M τ) (X * u)) τ u' : ℝ)) +
+          (-Complex.I) * ((omDir S T τ (X * cplxO 1 (cart M τ) u) τ u' : ℝ) +
+            Complex.I * (omDir S T τ (cplxO 1 (cart M τ) (X * cplxO 1 (cart M τ) u)) τ u' : ℝ)) =
+        (if c = d then ν a b else 0) + (if d = c then ν b a else 0) :=
+  exists_coef_basis hB (onb_cart_diag hp) lX lY ha
+
+theorem gen_kill_basis (hψ : IsStdChar D ψ (-1)) (hθ : IsInfFam θ) {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ}
+    (hB : ∀ τ, (BS τ)ᴴ * gramAt D S τ * BS τ = 1) {p : ℕ} {BT : D.what₂.Tau → Matrix (Fin T.rank) (Fin T.rank) ℂ}
+    (hBT : ∃ ε : Fin T.rank → ℝ, (∀ a, (ε a = 1 ∧ (a : ℕ) < p) ∨ (ε a = -1 ∧ p ≤ (a : ℕ))) ∧
+      cart M τ * BT τ = BT τ * diagonal fun a => (ε a : ℂ))
     {X : Matrix (Fin T.rank) (Fin T.rank) ℂ} {GX GY : Module.End ℂ (WO S T → ℂ)}
     (hX : IsGen ψ om θ τ X GX) (hY : IsGen ψ om θ τ (Complex.I • (cart M τ * X)) GY)
     (lX : X ∈ lieAt T τ) (lY : Complex.I • (cart M τ * X) ∈ lieAt T τ) (ha : cart M τ * X = -(X * cart M τ))
@@ -402,16 +430,16 @@ theorem gen_kill (hψ : IsStdChar D ψ (-1)) (hθ : IsInfFam θ) {BS : D.what₂
     (h0 : (GX + Complex.I • GY) f = 0) {P : MvPolynomial (FVar D T.rank S.rank) ℂ}
     (hP : ∀ a b : Fin T.rank, p ≤ (a : ℕ) → (b : ℕ) < p →
       ∑ c : Fin S.rank, MvPolynomial.pderiv (τ, a, c) (MvPolynomial.pderiv (τ, b, c) P) = 0) :
-    (GX + Complex.I • GY) (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS (onb M) f P) = 0 := by
+    (GX + Complex.I • GY) (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS BT f P) = 0 := by
   have hT := GlobalTheory.Chain.VacVec.cart_isCartanInv M
   have hS := fun τ => isCartanInv_one (hB τ)
-  obtain ⟨ν, n0, hν⟩ := exists_coef hB hp lX lY ha
+  obtain ⟨ν, n0, hν⟩ := exists_coef_basis hB hBT lX lY ha
   unfold pureTensorO aPlusAll
   refine (quad_pure (P := IsThetaFunO ψ S T) (G := GX + Complex.I • GY)
     (B := fun k g => ((fockScale D k.1 : ℂ)⁻¹ * (if k.1 = τ then (1 : ℂ) else 0)) •
-      (annih (heisO ψ S T) θ τ (cplxO 1 (cart M τ)) (X * unitMap (BS k.1) (onb M k.1) k.2.1 k.2.2) g +
+      (annih (heisO ψ S T) θ τ (cplxO 1 (cart M τ)) (X * unitMap (BS k.1) (BT k.1) k.2.1 k.2.2) g +
         (-Complex.I) • annih (heisO ψ S T) θ τ (cplxO 1 (cart M τ))
-          (X * cplxO 1 (cart M k.1) (unitMap (BS k.1) (onb M k.1) k.2.1 k.2.2)) g))
+          (X * cplxO 1 (cart M k.1) (unitMap (BS k.1) (BT k.1) k.2.1 k.2.2)) g))
     (μ := fun i j => if i.1 = τ then if j.1 = τ then if i.2.2 = j.2.2 then
       ((fockScale D τ : ℂ)⁻¹ * (fockScale D τ : ℂ)⁻¹ * (-(4 * π * Complex.I))) * ν i.2.1 j.2.1 else 0 else 0 else 0)
     (fun _ _ => OrientedHeis.theta_add) (fun a _ => OrientedHeis.theta_smul a) ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ hf ?_ h0 P).trans ?_
@@ -427,7 +455,7 @@ theorem gen_kill (hψ : IsStdChar D ψ (-1)) (hθ : IsInfFam θ) {BS : D.what₂
     rw [annih_smul hψ hθ _ _ _ _ hg, annih_smul hψ hθ _ _ _ _ hg, smul_comm _ a, ← smul_add, smul_comm _ a]
   · rintro ⟨τ₁, a, c⟩ ⟨τ₂, b, d⟩ g hg
     have ta := fun z => annih_theta hψ hθ τ (cplxO 1 (cart M τ)) z hg
-    have aa := fun z => annih_aPlus (sS := fun _ => 1) hψ hθ τ z hS hT τ₂ (unitMap (BS τ₂) (onb M τ₂) b d) hg
+    have aa := fun z => annih_aPlus (sS := fun _ => 1) hψ hθ τ z hS hT τ₂ (unitMap (BS τ₂) (BT τ₂) b d) hg
     dsimp only at aa ⊢
     rw [aa, aa, aPlus_smul hψ hθ _ _ _ _ (OrientedHeis.theta_add (ta _) (OrientedHeis.theta_smul _ (ta _))),
       aPlus_add hψ hθ _ _ _ (ta _) (OrientedHeis.theta_smul _ (ta _)), aPlus_smul hψ hθ _ _ _ _ (ta _), smul_add (-Complex.I),
@@ -462,10 +490,36 @@ theorem gen_kill (hψ : IsStdChar D ψ (-1)) (hθ : IsInfFam θ) {BS : D.what₂
     · rw [hP a b hab.1 hab.2, smul_zero]
     · rw [n0 a b hab, mul_zero, zero_smul]
 
+theorem gen_kill (hψ : IsStdChar D ψ (-1)) (hθ : IsInfFam θ) {BS : D.what₂.Tau → Matrix (Fin S.rank) (Fin S.rank) ℂ}
+    (hB : ∀ τ, (BS τ)ᴴ * gramAt D S τ * BS τ = 1) {p : ℕ} (hp : ∀ a, M.ε τ a = decide ((a : ℕ) < p))
+    {X : Matrix (Fin T.rank) (Fin T.rank) ℂ} {GX GY : Module.End ℂ (WO S T → ℂ)}
+    (hX : IsGen ψ om θ τ X GX) (hY : IsGen ψ om θ τ (Complex.I • (cart M τ * X)) GY)
+    (lX : X ∈ lieAt T τ) (lY : Complex.I • (cart M τ * X) ∈ lieAt T τ) (ha : cart M τ * X = -(X * cart M τ))
+    {f : WO S T → ℂ} (hf : IsThetaFunO ψ S T f) (hv : IsFockVacAt (heisO ψ S T) θ τ (cplxO 1 (cart M τ)) f)
+    (h0 : (GX + Complex.I • GY) f = 0) {P : MvPolynomial (FVar D T.rank S.rank) ℂ}
+    (hP : ∀ a b : Fin T.rank, p ≤ (a : ℕ) → (b : ℕ) < p →
+      ∑ c : Fin S.rank, MvPolynomial.pderiv (τ, a, c) (MvPolynomial.pderiv (τ, b, c) P) = 0) :
+    (GX + Complex.I • GY) (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS (onb M) f P) = 0 :=
+  gen_kill_basis hψ hθ hB (onb_cart_diag hp) hX hY lX lY ha hf hv h0 hP
+
 end Model
 
-theorem rderC_theta_eq_zero : ∀ (D : D7) (ψ : AddChar (AF D.host.F) ℂ) (S T : HSp D) (χS χT : (AE D)ˣ →* Circle) (om : GA D S × GA D T →* Module.End ℂ (WO S T → ℂ)), IsWeilDatumO ψ S T χS χT om → ∀ θ : InfFam D, IsInfFam θ → S.SigOK → T.SigOK → ∀ (BS : D.what₂.Tau → Mt S.rank), (∀ τ, IsONBasis (gramAt D S τ) 1 (BS τ) S.rank) → ∀ (Sp : D.what₂.Tau → SPar) (M : DSModel T Sp) (p : D.what₂.Tau → ℕ), (∀ τ a, M.ε τ a = decide ((a : ℕ) < p τ)) → ∀ f, IsThetaFunO ψ S T f → (∀ τ, IsFockVacAt (heisO ψ S T) θ τ (cplxO 1 (cart M τ)) f) → ∀ (P : PolF D T.rank S.rank) τ, (∀ a b : Fin T.rank, p τ ≤ (a : ℕ) → (b : ℕ) < p τ → ∑ c : Fin S.rank, MvPolynomial.pderiv (τ, a, c) (MvPolynomial.pderiv (τ, b, c) P) = 0) → ∀ Z ∈ GlobalTheory.IndefiniteRowSideFullHecke.HolomorphicParabolicSmoothFunctions.pMinus M τ, ∀ h, RderC θ T τ Z (fun g => thetaKO om h g (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS (onb M) f P)) = 0 := by
-  intro D ψ S T χS χT om hom θ hθ kS kT BS hBS Sp M p hp f hf hv P τ hP Z hZ h
+theorem rderC_theta_eq_zero_basis (D : D7) (ψ : AddChar (AF D.host.F) ℂ) (S T : HSp D) (χS χT : (AE D)ˣ →* Circle)
+    (om : GA D S × GA D T →* Module.End ℂ (WO S T → ℂ)) (hom : IsWeilDatumO ψ S T χS χT om)
+    (θ : InfFam D) (hθ : IsInfFam θ) (kS : S.SigOK) (kT : T.SigOK)
+    (BS : D.what₂.Tau → Mt S.rank) (hBS : ∀ τ, IsONBasis (gramAt D S τ) 1 (BS τ) S.rank)
+    (Sp : D.what₂.Tau → SPar) (M : DSModel T Sp) (p : D.what₂.Tau → ℕ)
+    (BT : D.what₂.Tau → Matrix (Fin T.rank) (Fin T.rank) ℂ)
+    (hBT : ∀ τ, ∃ ε : Fin T.rank → ℝ, (∀ a, (ε a = 1 ∧ (a : ℕ) < p τ) ∨ (ε a = -1 ∧ p τ ≤ (a : ℕ))) ∧
+      cart M τ * BT τ = BT τ * diagonal fun a => (ε a : ℂ))
+    (f : WO S T → ℂ) (hf : IsThetaFunO ψ S T f) (hv : ∀ τ, IsFockVacAt (heisO ψ S T) θ τ (cplxO 1 (cart M τ)) f)
+    (P : PolF D T.rank S.rank) (τ : D.what₂.Tau)
+    (hP : ∀ a b : Fin T.rank, p τ ≤ (a : ℕ) → (b : ℕ) < p τ →
+      ∑ c : Fin S.rank, MvPolynomial.pderiv (τ, a, c) (MvPolynomial.pderiv (τ, b, c) P) = 0)
+    (Z : Matrix (Fin T.rank) (Fin T.rank) ℂ)
+    (hZ : Z ∈ GlobalTheory.IndefiniteRowSideFullHecke.HolomorphicParabolicSmoothFunctions.pMinus M τ)
+    (h : GA D S) (w : WO S T) :
+    RderC θ T τ Z (fun g => om (h, g) (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS BT f P) w) = 0 := by
   have hψ := hom.std
   have hT := GlobalTheory.Chain.VacVec.cart_isCartanInv M
   have hB : ∀ τ, (BS τ)ᴴ * gramAt D S τ * BS τ = 1 := fun τ => by
@@ -480,34 +534,6 @@ theorem rderC_theta_eq_zero : ∀ (D : D7) (ψ : AddChar (AF D.host.F) ℂ) (S T
   obtain ⟨h1, h2⟩ := pMinus_laws hZ
   obtain ⟨ha, eY⟩ := parts (GlobalTheory.SmoothAutCheck.gramAt_unit T τ) (hT τ) h1 h2
   obtain ⟨lX, lY⟩ := GlobalTheory.SmoothAutCheck.parts_mem T τ Z
-  have theta_add : ∀ {f g : WO S T → ℂ}, IsThetaFunO ψ S T f → IsThetaFunO ψ S T g → IsThetaFunO ψ S T (f + g) := by
-    intro f g hf hg
-    exact {
-      quasi := by intro γ w; simp only [Pi.add_apply, hf.quasi, hg.quasi, mul_add]
-      level := by
-        obtain ⟨U, hU, h1⟩ := hf.level
-        obtain ⟨V, hV, h2⟩ := hg.level
-        refine ⟨U ⊓ V, hU.inter hV, fun u hu h0 => ?_⟩
-        funext w
-        have e1 := congrFun (h1 u hu.1 h0) w
-        have e2 := congrFun (h2 u hu.2 h0) w
-        unfold heisO at e1 e2 ⊢
-        rw [Pi.add_apply, Pi.add_apply, mul_add, e1, e2]
-      cont := hf.cont.add hg.cont
-      smooth := fun k L h1 h2 w => (hf.smooth k L h1 h2 w).add (hg.smooth k L h1 h2 w) }
-  have theta_smul : ∀ (c : ℂ) {f : WO S T → ℂ}, IsThetaFunO ψ S T f → IsThetaFunO ψ S T (c • f) := by
-    intro c f hf
-    exact {
-      quasi := by intro γ w; rw [Pi.smul_apply, Pi.smul_apply, hf.quasi, smul_eq_mul, smul_eq_mul, mul_left_comm]
-      level := by
-        obtain ⟨U, hU, h1⟩ := hf.level
-        refine ⟨U, hU, fun u hu h0 => ?_⟩
-        funext w
-        have e1 := congrFun (h1 u hu h0) w
-        unfold heisO at e1 ⊢
-        rw [Pi.smul_apply, Pi.smul_apply, smul_eq_mul, smul_eq_mul, mul_left_comm, e1]
-      cont := hf.cont.const_smul c
-      smooth := fun k L h1 h2 w => contDiff_const.mul (hf.smooth k L h1 h2 w) }
   unfold RderC
   unfold conjAt at lX lY ⊢
   rw [eY] at lY ⊢
@@ -515,20 +541,25 @@ theorem rderC_theta_eq_zero : ∀ (D : D7) (ψ : AddChar (AF D.host.F) ℂ) (S T
   obtain ⟨GX, hX⟩ : ∃ G, IsGen ψ om θ τ X G := GlobalTheory.T.exists_weilDatum_generator_realOneParamGroup D ψ S T χS χT om hom θ hθ τ _ lX
   obtain ⟨GY, hY⟩ : ∃ G, IsGen ψ om θ τ (Complex.I • (cart M τ * X)) G :=
     GlobalTheory.T.exists_weilDatum_generator_realOneParamGroup D ψ S T χS χT om hom θ hθ τ _ lY
-  have hφ : IsThetaFunO ψ S T (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS (onb M) f P) :=
-    pure_mem (P := IsThetaFunO ψ S T) (fun _ _ => theta_add) (fun a _ => theta_smul a)
+  have hφ : IsThetaFunO ψ S T (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS BT f P) :=
+    pure_mem (P := IsThetaFunO ψ S T) (fun _ _ => OrientedHeis.theta_add) (fun a _ => OrientedHeis.theta_smul a)
       (fun _ _ h => aPlus_theta hψ hθ _ _ _ h) hf _
-  have key := gen_kill hψ hθ hB (hp τ) hX hY lX lY ha hf (hv τ)
+  have key := gen_kill_basis hψ hθ hB (hBT τ) hX hY lX lY ha hf (hv τ)
     (gen_kill_vac hom hθ kS kT hS hT hX hY lX lY ha hf hv) hP
-  generalize pureTensorO ψ θ S T (fun _ => 1) (cart M) BS (onb M) f P = φ at key hφ
+  generalize pureTensorO ψ θ S T (fun _ => 1) (cart M) BS BT f P = φ at key hφ
   funext g
-  have a1 := ((hX φ hφ).2.2.2 (h, g) 0).deriv
-  have a2 := ((hY φ hφ).2.2.2 (h, g) 0).deriv
+  have a1 := ((hX φ hφ).2.2.2 (h, g) w).deriv
+  have a2 := ((hY φ hφ).2.2.2 (h, g) w).deriv
   simp only [Prod.mk_mul_mk, mul_one] at a1 a2
-  have a3 := congrFun (congrArg (om (h, g)) key) 0
+  have a3 := congrFun (congrArg (om (h, g)) key) w
   rw [LinearMap.add_apply, LinearMap.smul_apply, map_add (f := _), map_smul, map_zero] at a3
-  simp only [Pi.add_apply, Pi.smul_apply, Rder, thetaKO]
+  simp only [Pi.add_apply, Pi.smul_apply, Rder]
   rw [a1, a2]
   exact a3
+
+theorem rderC_theta_eq_zero : ∀ (D : D7) (ψ : AddChar (AF D.host.F) ℂ) (S T : HSp D) (χS χT : (AE D)ˣ →* Circle) (om : GA D S × GA D T →* Module.End ℂ (WO S T → ℂ)), IsWeilDatumO ψ S T χS χT om → ∀ θ : InfFam D, IsInfFam θ → S.SigOK → T.SigOK → ∀ (BS : D.what₂.Tau → Mt S.rank), (∀ τ, IsONBasis (gramAt D S τ) 1 (BS τ) S.rank) → ∀ (Sp : D.what₂.Tau → SPar) (M : DSModel T Sp) (p : D.what₂.Tau → ℕ), (∀ τ a, M.ε τ a = decide ((a : ℕ) < p τ)) → ∀ f, IsThetaFunO ψ S T f → (∀ τ, IsFockVacAt (heisO ψ S T) θ τ (cplxO 1 (cart M τ)) f) → ∀ (P : PolF D T.rank S.rank) τ, (∀ a b : Fin T.rank, p τ ≤ (a : ℕ) → (b : ℕ) < p τ → ∑ c : Fin S.rank, MvPolynomial.pderiv (τ, a, c) (MvPolynomial.pderiv (τ, b, c) P) = 0) → ∀ Z ∈ GlobalTheory.IndefiniteRowSideFullHecke.HolomorphicParabolicSmoothFunctions.pMinus M τ, ∀ h, RderC θ T τ Z (fun g => thetaKO om h g (pureTensorO ψ θ S T (fun _ => 1) (cart M) BS (onb M) f P)) = 0 :=
+  fun D ψ S T χS χT om hom θ hθ kS kT BS hBS Sp M p hp f hf hv P τ hP Z hZ h =>
+    rderC_theta_eq_zero_basis D ψ S T χS χT om hom θ hθ kS kT BS hBS Sp M p (onb M)
+      (fun τ => onb_cart_diag (hp τ)) f hf hv P τ hP Z hZ h 0
 
 end GlobalTheory.FockKill
