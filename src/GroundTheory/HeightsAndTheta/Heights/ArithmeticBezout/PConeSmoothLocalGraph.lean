@@ -5,6 +5,7 @@ public import GroundTheory.HeightsAndTheta.Heights.ArithmeticBezout.StatementsPo
 public import GroundTheory.HeightsAndTheta.Heights.ArithmeticBezout.StatementsHolomorphicImplicitGraph
 public import GroundTheory.HeightsAndTheta.Heights.ArithmeticBezout.PConeLocalMass
 import GroundTheory.HeightsAndTheta.Heights.ArithmeticBezout.PConeIntegralLine
+import GroundTheory.HeightsAndTheta.Heights.ComplexAnalyticSets.PNormalModelGoodPointChart
 public import Mathlib.Analysis.Analytic.Polynomial
 import Mathlib.RingTheory.Coalgebra.IsFrobenius
 import Mathlib.RingTheory.HopfAlgebra.Basic
@@ -26,39 +27,8 @@ variable {n : ℕ}
 
 theorem hasFDerivAt_eval_mvPolynomial (q : MvPolynomial (Fin n) ℂ) (x : Fin n → ℂ) :
     HasFDerivAt (fun z : Fin n → ℂ => eval z q)
-      (∑ j, eval x (pderiv j q) • ContinuousLinearMap.proj j : (Fin n → ℂ) →L[ℂ] ℂ) x := by
-  induction q using MvPolynomial.induction_on with
-  | C a =>
-    have e1 : (fun z : Fin n → ℂ => eval z (C a)) = fun _ => a := by
-      funext z
-      simp
-    rw [e1]
-    convert hasFDerivAt_const (𝕜 := ℂ) a x
-    ext v
-    simp
-  | add p q hp hq =>
-    have e1 : (fun z : Fin n → ℂ => eval z (p + q)) = fun z => eval z p + eval z q := by
-      funext z
-      simp
-    rw [e1]
-    refine (hp.add hq).congr_fderiv ?_
-    ext v
-    simp [Finset.sum_add_distrib, add_mul]
-  | mul_X p i hp =>
-    have hfun : (fun z : Fin n → ℂ => eval z (p * X i)) = (fun z => eval z p) * (fun z => z i) := by
-      funext z
-      simp
-    rw [hfun]
-    refine (hp.mul (hasFDerivAt_apply i x)).congr_fderiv ?_
-    refine ContinuousLinearMap.ext fun v => ?_
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-      ContinuousLinearMap.coe_sum', Finset.sum_apply, ContinuousLinearMap.proj_apply, smul_eq_mul, pderiv_mul,
-      pderiv_X, map_add, map_mul, eval_X, Pi.single_apply, add_mul, Finset.sum_add_distrib]
-    simp only [apply_ite, map_one, map_zero, mul_one, mul_zero, Finset.mul_sum]
-    rw [add_comm]
-    congr 1
-    · exact Finset.sum_congr rfl fun j _ => by ring
-    · by_cases hij : i = i <;> simp [mul_comm]
+      (∑ j, eval x (pderiv j q) • ContinuousLinearMap.proj j : (Fin n → ℂ) →L[ℂ] ℂ) x :=
+  NormalModelGoodPointChart.hasFDerivAt_eval q x
 
 def HermNorm.pointOfE (h : HermNorm n) : EuclideanSpace ℂ (Fin n) ≃ₗ[ℂ] (Fin n → ℂ) :=
   h.pointOfL.toLinearEquiv.trans (WithLp.linearEquiv 2 ℂ (Fin n → ℂ))

@@ -1,6 +1,7 @@
 module
 
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.ArithRes
+import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PPowerBlockMeasure
 public import Mathlib.Topology.Algebra.MvPolynomial
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.ABridgeStA
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.CNormSt
@@ -349,33 +350,8 @@ theorem integral_symMeasure (d : HSMDatum D Ω κ) {E : Type*} [NormedAddCommGro
   rw [e2, ENNReal.toReal_inv, ENNReal.toReal_ofNat]
 
 theorem dV_pos_of_isOpen (d : HSMDatum D Ω κ) {S : Set d.R.X} (hS : IsOpen S) (hne : S.Nonempty) :
-    0 < d.dV S := by
-  obtain ⟨y, hy⟩ := hne
-  obtain ⟨j, hj⟩ := d.R.A.cover y
-  obtain ⟨ν, hνc, hνp, hν⟩ := d.vol.2 j
-  set S' := S ∩ (d.R.A.chart j).source with hS'
-  have hS'o : IsOpen S' := hS.inter (d.R.A.chart j).open_source
-  set T := (d.R.A.chart j).target ∩ (d.R.A.chart j).symm ⁻¹' S' with hT
-  have hTo : IsOpen T := (d.R.A.chart j).isOpen_inter_preimage_symm hS'o
-  have hTy : d.R.A.chart j y ∈ T :=
-    ⟨(d.R.A.chart j).map_source hj, by simp [(d.R.A.chart j).left_inv hj, hS', hy, hj]⟩
-  have hvol : 0 < volume T := hTo.measure_pos volume ⟨_, hTy⟩
-  have hmono : d.dV S' ≤ d.dV S := measure_mono Set.inter_subset_left
-  refine lt_of_lt_of_le ?_ hmono
-  rw [hν S' hS'o.measurableSet Set.inter_subset_right]
-  have hae : AEMeasurable (fun w => ENNReal.ofReal (ν w)) (volume.restrict T) :=
-    ENNReal.measurable_ofReal.comp_aemeasurable
-      ((hνc.continuousOn.mono Set.inter_subset_left).aemeasurable hTo.measurableSet)
-  refine pos_iff_ne_zero.2 fun h0 => ?_
-  rw [lintegral_eq_zero_iff' hae] at h0
-  have h0' : ∀ᵐ w ∂(volume.restrict T), ENNReal.ofReal (ν w) = 0 := h0
-  rw [ae_iff] at h0'
-  have : volume.restrict T T = 0 := by
-    refine measure_mono_null (fun w hw => ?_) h0'
-    simp only [Set.mem_ofPred_eq, ENNReal.ofReal_eq_zero, not_le]
-    exact hνp w hw.1
-  rw [Measure.restrict_apply_self] at this
-  exact hvol.ne' this
+    0 < d.dV S :=
+  PowerBlockMeasure.dV_pos_of_isOpen d.R d.vol hS hne
 
 end Resolution
 

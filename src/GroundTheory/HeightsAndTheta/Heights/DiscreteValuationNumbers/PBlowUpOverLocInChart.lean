@@ -107,25 +107,13 @@ theorem component_liftForm (g : MRing ι R) (c : K → ℕ) :
     weightedHomogeneousComponent (blockWeight (extIdx ι J)) (liftMDeg c) (liftForm g) =
       liftForm (weightedHomogeneousComponent (blockWeight ι) c g) := by
   classical
-  have key : ∀ a : (Σ k, ι k) →₀ ℕ,
-      Finsupp.weight (blockWeight (extIdx ι J))
-        (a.mapDomain fun v : Σ k, ι k => (⟨some v.1, v.2⟩ : Σ o, extIdx ι J o)) =
-      liftMDeg (Finsupp.weight (blockWeight ι) a) := by
-    intro a
-    induction a using Finsupp.induction_linear with
-    | zero => funext o; cases o <;> simp [liftMDeg]
-    | add x y hx hy =>
-      rw [Finsupp.mapDomain_add, map_add (f := _), map_add (f := _), hx, hy]
-      funext o; cases o <;> simp [liftMDeg]
-    | single v n =>
-      rw [Finsupp.mapDomain_single, Finsupp.weight_single, Finsupp.weight_single]
-      funext o; cases o <;> simp [liftMDeg, blockWeight, Pi.single_apply]
   have inj : ∀ y z : K → ℕ, liftMDeg y = liftMDeg z ↔ y = z :=
     fun y z => ⟨fun h => funext fun k => congrFun h (some k), fun h => h ▸ rfl⟩
   induction g using MvPolynomial.induction_on' with
   | monomial d r =>
     simp only [liftForm, rename_monomial]
-    rw [weightedHomogeneousComponent_monomial', weightedHomogeneousComponent_monomial', key, inj]
+    rw [weightedHomogeneousComponent_monomial', weightedHomogeneousComponent_monomial',
+      weight_mapDomain_liftForm, inj]
     split_ifs
     · simp [rename_monomial]
     · simp

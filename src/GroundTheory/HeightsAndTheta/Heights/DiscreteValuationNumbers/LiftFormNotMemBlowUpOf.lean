@@ -20,26 +20,27 @@ section Helpers
 
 set_option linter.unusedSectionVars false
 
+theorem weight_mapDomain_liftForm {K : Type} [DecidableEq K] {ι : K → Type} {J : Type}
+    (a : (Σ k, ι k) →₀ ℕ) :
+    Finsupp.weight (blockWeight (extIdx ι J))
+        (a.mapDomain fun v : Σ k, ι k => (⟨some v.1, v.2⟩ : Σ o, extIdx ι J o)) =
+      liftMDeg (Finsupp.weight (blockWeight ι) a) := by
+  induction a using Finsupp.induction_linear with
+  | zero => funext o; cases o <;> simp [liftMDeg]
+  | add x y hx hy =>
+    rw [Finsupp.mapDomain_add, map_add (f := _), map_add (f := _), hx, hy]
+    funext o; cases o <;> simp [liftMDeg]
+  | single v n =>
+    rw [Finsupp.mapDomain_single, Finsupp.weight_single, Finsupp.weight_single]
+    funext o; cases o <;> simp [liftMDeg, blockWeight, Pi.single_apply]
+
 variable {K : Type} [Fintype K] [DecidableEq K] {ι : K → Type} {R : Type*} [CommRing R]
 
 theorem isMultiHomog_liftForm {J : Type} {p : MRing ι R} {c : K → ℕ} (h : IsMultiHomog p c) :
     IsMultiHomog (liftForm (J := J) p) (liftMDeg c) := by
-  have key : ∀ a : (Σ k, ι k) →₀ ℕ,
-      Finsupp.weight (blockWeight (extIdx ι J))
-        (a.mapDomain fun v : Σ k, ι k => (⟨some v.1, v.2⟩ : Σ o, extIdx ι J o)) =
-      liftMDeg (Finsupp.weight (blockWeight ι) a) := by
-    intro a
-    induction a using Finsupp.induction_linear with
-    | zero => funext o; cases o <;> simp [liftMDeg]
-    | add x y hx hy =>
-      rw [Finsupp.mapDomain_add, map_add (f := _), map_add (f := _), hx, hy]
-      funext o; cases o <;> simp [liftMDeg]
-    | single v n =>
-      rw [Finsupp.mapDomain_single, Finsupp.weight_single, Finsupp.weight_single]
-      funext o; cases o <;> simp [liftMDeg, blockWeight, Pi.single_apply]
   intro a ha
   obtain ⟨a', rfl, ha'⟩ := coeff_rename_ne_zero _ _ _ ha
-  rw [key, h ha']
+  rw [weight_mapDomain_liftForm, h ha']
 
 theorem isMultiHomog_powMonomial (e : K → ℕ) (i : ∀ k, ι k) :
     IsMultiHomog (powMonomial e i : MRing ι R) e := by
