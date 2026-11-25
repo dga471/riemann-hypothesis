@@ -288,19 +288,8 @@ theorem exists_phi (hR : GlobalTheory.RealGeo.PreChar R) (hV : VStd D i) (t : T0
       ∀ J : Ideal (𝓞 D.host.E),
         (∀ PP, PP ∈ R.Pg ∨ PP ∈ R.Q t → ∀ c ∈ J, ∃ c' ∈ PP.asIdeal, (c' : D.host.E) = D.sp.cm.sig (c : D.host.E)) →
         ∃ φ : (Fin (Vc D i).rank → La ⧸ (J • ⊤ : Submodule (𝓞 D.host.E) La)) → M',
-          PhiIs R i M'.val.toRingHom t ι (J • ⊤) φ := by
-  obtain ⟨M, hM, hv⟩ := GlobalTheory.LevelDatum.exists_omega_field R.Pg (R.Q t)
-  refine ⟨M, hM, fun M' hle hP J hJ => ?_⟩
-  obtain ⟨-, e, he, -⟩ := hR.thP.vP i t
-  have hβ := GlobalTheory.T.inverse_selfDual_frame_standard_space_integral D i _ _ hV (hR.lev.βV i)
-  have hi : ∀ x a, rowP (Wc D i) (R.βW i) e (ι x) a ∈ Formalism.L2.Herm.intAf D.host.F D.host.E := fun x a =>
-    rowP_int _ _ _ (hR.lev.βW i) e _ he (fun PP h => hP PP (by simpa using h)) _
-      (hι.2.le (LinearMap.mem_range_self ι x)) a
-  refine ⟨fun q => ⟨_, hle (hv (Wc D i).rank (R.xiR t) (-1) fun PP => redM PP
-    (FWT.uMat (Vc D i) (Wc D i) (R.βV i) (R.βW i) e fun b => ι (q b).out))⟩, e, he, fun x =>
-    ⟨(redM_uMat (Vc D i) (Wc D i) hV.1 _ hβ (R.βW i) e (fun b => ι (x b)) fun b a => hi (x b) a).1, ?_⟩⟩
-  exact GlobalTheory.LevelDatum.omega_congr _ _ _ _ _ _ _ fun PP hPP => exists_datum (Vc D i) (Wc D i) hV.1 _ hβ (R.βW i) e ι hi J PP (hJ PP hPP) x _
-    fun b => (Submodule.Quotient.eq _).1 (Quotient.out_eq _)
+          PhiIs R i M'.val.toRingHom t ι (J • ⊤) φ :=
+  GlobalTheory.LevelDatum.exists_phi D G Pl0 T0 A Ks R hR.lev hR.thP.vP i hV t La ι hι
 
 
 
