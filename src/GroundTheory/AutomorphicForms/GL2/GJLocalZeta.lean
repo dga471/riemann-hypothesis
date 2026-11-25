@@ -100,19 +100,26 @@ variable {π : Representation ℂ (GL (Fin n) F) V}
 theorem re_shift (s : ℂ) : (s + ((n : ℂ) - 1) / 2).re = s.re + ((n : ℝ) - 1) / 2 := by
   simp [Complex.add_re, Complex.sub_re]
 
-theorem exists_zeta_rat [π.IsIrreducible] (hπ : IsAdmissible π) (μ : Measure (GL (Fin n) F))
-    [μ.IsHaarMeasure] :
-    ∃ s₀ : ℝ, ∃ D : ℂ[X], D.eval 0 = 1 ∧ (∀ s : ℂ, s₀ < s.re → D.eval (qs F s) ≠ 0) ∧
+theorem zeta_rat_of_core (μ : Measure (GL (Fin n) F))
+    {s₀ : ℝ} {D : ℂ[X]} (hD0 : D.eval 0 = 1)
+    (hcore : ∀ Φ : Matrix (Fin n) (Fin n) F → ℂ, IsSchwartzBruhat Φ → ∀ (v : V) (ℓ : Module.Dual ℂ V),
+      ℓ ∈ smoothVectors (Representation.dual π) →
+      (∀ s : ℂ, s₀ < s.re → Integrable (fun g : GL (Fin n) F =>
+        Φ (g : Matrix (Fin n) (Fin n) F) * matrixCoeff π v ℓ g * detPow g s) μ) ∧
+      ∃ (N : ℕ) (P : ℂ[X]), ∀ s : ℂ, s₀ < s.re →
+        D.eval (qs F s) * ∫ g, Φ (g : Matrix (Fin n) (Fin n) F) * matrixCoeff π v ℓ g *
+          detPow g s ∂μ = P.eval (qs F s) / qs F s ^ N) :
+    let D' : ℂ[X] := D.comp (C (qs F (((n : ℂ) - 1) / 2)) * X)
+    ∃ s₀' : ℝ, D'.eval 0 = 1 ∧ (∀ s : ℂ, s₀' < s.re → D'.eval (qs F s) ≠ 0) ∧
       ∀ Φ : Matrix (Fin n) (Fin n) F → ℂ, IsSchwartzBruhat Φ → ∀ (v : V) (ℓ : Module.Dual ℂ V),
         ℓ ∈ smoothVectors (Representation.dual π) →
-        (∀ s : ℂ, s₀ < s.re → Integrable (fun g : GL (Fin n) F =>
+        (∀ s : ℂ, s₀' < s.re → Integrable (fun g : GL (Fin n) F =>
           Φ (g : Matrix (Fin n) (Fin n) F) * matrixCoeff π v ℓ g *
             detPow g (s + ((n : ℂ) - 1) / 2)) μ) ∧
-        ∃ (N : ℕ) (P : ℂ[X]), ∀ s : ℂ, s₀ < s.re →
+        ∃ (N : ℕ) (P : ℂ[X]), ∀ s : ℂ, s₀' < s.re →
           zetaIntegral μ Φ (matrixCoeff π v ℓ) s =
-            (algebraMap ℂ[X] (RatFunc ℂ) P / algebraMap ℂ[X] (RatFunc ℂ) (X ^ N * D)).eval
+            (algebraMap ℂ[X] (RatFunc ℂ) P / algebraMap ℂ[X] (RatFunc ℂ) (X ^ N * D')).eval
               (RingHom.id ℂ) (qs F s) := by
-  obtain ⟨s₀, D, hD0, hcore⟩ := exists_zeta_core hπ μ
   set c : ℂ := qs F (((n : ℂ) - 1) / 2) with hcdef
   have hc : c ≠ 0 := qs_ne_zero _
   set D' : ℂ[X] := D.comp (C c * X) with hD'def
@@ -127,7 +134,7 @@ theorem exists_zeta_rat [π.IsIrreducible] (hπ : IsAdmissible π) (μ : Measure
     linarith
   have hDs : ∀ s : ℂ, max (s₀ - ((n : ℝ) - 1) / 2) s₁ < s.re → D'.eval (qs F s) ≠ 0 :=
     fun s hs => hεD _ (qs_ne_zero s) (hs₁ s ((le_max_right _ _).trans_lt hs))
-  refine ⟨max (s₀ - ((n : ℝ) - 1) / 2) s₁, D', hD'0, hDs, fun Φ hΦ v ℓ hℓ => ?_⟩
+  refine ⟨max (s₀ - ((n : ℝ) - 1) / 2) s₁, hD'0, hDs, fun Φ hΦ v ℓ hℓ => ?_⟩
   obtain ⟨hint, N, P, hP⟩ := hcore Φ hΦ v ℓ hℓ
   refine ⟨fun s hs => hint _ (hre s hs), N, C (c ^ N)⁻¹ * P.comp (C c * X), fun s hs => ?_⟩
   have hx : qs F s ≠ 0 := qs_ne_zero s
@@ -147,6 +154,22 @@ theorem exists_zeta_rat [π.IsIrreducible] (hπ : IsAdmissible π) (μ : Measure
   simp only [D', eval_mul, eval_comp, eval_C, eval_X, eval_pow]
   rw [mul_comm c (qs F s), mul_pow]
   field_simp
+
+theorem exists_zeta_rat [π.IsIrreducible] (hπ : IsAdmissible π) (μ : Measure (GL (Fin n) F))
+    [μ.IsHaarMeasure] :
+    ∃ s₀ : ℝ, ∃ D : ℂ[X], D.eval 0 = 1 ∧ (∀ s : ℂ, s₀ < s.re → D.eval (qs F s) ≠ 0) ∧
+      ∀ Φ : Matrix (Fin n) (Fin n) F → ℂ, IsSchwartzBruhat Φ → ∀ (v : V) (ℓ : Module.Dual ℂ V),
+        ℓ ∈ smoothVectors (Representation.dual π) →
+        (∀ s : ℂ, s₀ < s.re → Integrable (fun g : GL (Fin n) F =>
+          Φ (g : Matrix (Fin n) (Fin n) F) * matrixCoeff π v ℓ g *
+            detPow g (s + ((n : ℂ) - 1) / 2)) μ) ∧
+        ∃ (N : ℕ) (P : ℂ[X]), ∀ s : ℂ, s₀ < s.re →
+          zetaIntegral μ Φ (matrixCoeff π v ℓ) s =
+            (algebraMap ℂ[X] (RatFunc ℂ) P / algebraMap ℂ[X] (RatFunc ℂ) (X ^ N * D)).eval
+              (RingHom.id ℂ) (qs F s) := by
+  obtain ⟨s₀, D, hD0, hcore⟩ := exists_zeta_core hπ μ
+  obtain ⟨s₀', hD'0, hDs, h⟩ := zeta_rat_of_core μ hD0 hcore
+  exact ⟨s₀', _, hD'0, hDs, h⟩
 
 theorem exists_integrable_zetaIntegral [π.IsIrreducible] (hπ : IsAdmissible π)
     (μ : Measure (GL (Fin n) F)) [μ.IsHaarMeasure] :

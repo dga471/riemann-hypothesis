@@ -763,18 +763,25 @@ variable {α : Type*} [LinearOrder α] {β : Fin n → α}
   {W : Type*} [AddCommGroup W] [Module ℂ W] {σ : Representation ℂ (levi F n β) W}
   [MeasurableSpace (GL (Fin n) F)] [BorelSpace (GL (Fin n) F)]
 
-theorem exists_inducedZeta (hσ : IsSmooth σ) [σ.IsIrreducible] (hc : IsCuspidal σ)
-    (μG : Measure (GL (Fin n) F)) [μG.IsHaarMeasure] :
-    ∃ s₀ : ℝ, ∃ D : ℂ[X], D.eval 0 = 1 ∧
-      ∀ Φ : Matrix (Fin n) (Fin n) F → ℂ, IsSchwartzBruhat Φ →
-        ∀ φ ∈ parabolicIndSpace F n β σ, ∀ ℓ ∈ smoothVectors (Representation.dual σ),
-          (∀ s : ℂ, s₀ < s.re → Integrable (fun g : GL (Fin n) F =>
-            Φ (g : Matrix (Fin n) (Fin n) F) * detPow g s * ℓ (φ g)) μG) ∧
+theorem inducedZeta_of_leviZeta [MeasurableSpace F] [BorelSpace F] (hσ : IsSmooth σ)
+    (μG : Measure (GL (Fin n) F)) [μG.IsHaarMeasure] (s₀ : ℝ) (D : ℂ[X])
+    (hM : letI : BorelSpace (levi F n β) := Subtype.borelSpace _
+      ∀ Ψ : Matrix (Fin n) (Fin n) F → ℂ, IsLeviSchwartz β Ψ →
+        ∀ (v : W) (ℓ : Module.Dual ℂ W), ℓ ∈ smoothVectors (Representation.dual σ) →
+          (∀ s : ℂ, s₀ < s.re → Integrable (leviIntegrand σ (leviRatio β * leviSqrtModular β) Ψ v ℓ s)
+            (haarLevi β (Measure.addHaar : Measure (LeviIndex n β → F)))) ∧
           ∃ (N : ℕ) (P : ℂ[X]), ∀ s : ℂ, s₀ < s.re →
-            D.eval (qs F s) * ∫ g, Φ (g : Matrix (Fin n) (Fin n) F) * detPow g s * ℓ (φ g) ∂μG =
-              P.eval (qs F s) / qs F s ^ N := by
+            D.eval (qs F s) * ∫ m, leviIntegrand σ (leviRatio β * leviSqrtModular β) Ψ v ℓ s m
+              ∂(haarLevi β (Measure.addHaar : Measure (LeviIndex n β → F))) =
+              P.eval (qs F s) / qs F s ^ N) :
+    ∀ Φ : Matrix (Fin n) (Fin n) F → ℂ, IsSchwartzBruhat Φ →
+      ∀ φ ∈ parabolicIndSpace F n β σ, ∀ ℓ ∈ smoothVectors (Representation.dual σ),
+        (∀ s : ℂ, s₀ < s.re → Integrable (fun g : GL (Fin n) F =>
+          Φ (g : Matrix (Fin n) (Fin n) F) * detPow g s * ℓ (φ g)) μG) ∧
+        ∃ (N : ℕ) (P : ℂ[X]), ∀ s : ℂ, s₀ < s.re →
+          D.eval (qs F s) * ∫ g, Φ (g : Matrix (Fin n) (Fin n) F) * detPow g s * ℓ (φ g) ∂μG =
+            P.eval (qs F s) / qs F s ^ N := by
   classical
-  borelize F
   have : BorelSpace (levi F n β) := Subtype.borelSpace _
   have : BorelSpace (integralGL F n) := Subtype.borelSpace _
   have : CompactSpace (integralGL F n) :=
@@ -783,9 +790,7 @@ theorem exists_inducedZeta (hσ : IsSmooth σ) [σ.IsIrreducible] (hc : IsCuspid
   let μ𝔫 : Measure (UnipotentIndex n β → F) := Measure.addHaar
   let μK : Measure (integralGL F n) := Measure.haar
   let θ : levi F n β →* ℝ≥0 := leviRatio β * leviSqrtModular β
-  have hθ : Continuous θ := continuous_leviRatio.mul continuous_leviSqrtModular
-  obtain ⟨s₀, D, hD0, hM⟩ := exists_leviZeta hσ hc θ hθ (haarLevi β μ𝔪)
-  refine ⟨s₀, D, hD0, fun Φ hΦ φ hφ ℓ hℓ => ?_⟩
+  intro Φ hΦ φ hφ ℓ hℓ
 
   obtain ⟨r₁, hr₁⟩ := hΦ.exists_mul_congruenceSubgroup
   obtain ⟨K', hK'o, hK'⟩ := hφ.2
@@ -884,6 +889,22 @@ theorem exists_inducedZeta (hσ : IsSmooth σ) [σ.IsIrreducible] (hc : IsCuspid
   rw [hformula s hs, mul_left_comm, Finset.mul_sum,
     Finset.sum_congr rfl fun q _ => hNP q s hs]
   exact sum_eval_div_pow N Pq _ (qs_ne_zero s)
+
+theorem exists_inducedZeta (hσ : IsSmooth σ) [σ.IsIrreducible] (hc : IsCuspidal σ)
+    (μG : Measure (GL (Fin n) F)) [μG.IsHaarMeasure] :
+    ∃ s₀ : ℝ, ∃ D : ℂ[X], D.eval 0 = 1 ∧
+      ∀ Φ : Matrix (Fin n) (Fin n) F → ℂ, IsSchwartzBruhat Φ →
+        ∀ φ ∈ parabolicIndSpace F n β σ, ∀ ℓ ∈ smoothVectors (Representation.dual σ),
+          (∀ s : ℂ, s₀ < s.re → Integrable (fun g : GL (Fin n) F =>
+            Φ (g : Matrix (Fin n) (Fin n) F) * detPow g s * ℓ (φ g)) μG) ∧
+          ∃ (N : ℕ) (P : ℂ[X]), ∀ s : ℂ, s₀ < s.re →
+            D.eval (qs F s) * ∫ g, Φ (g : Matrix (Fin n) (Fin n) F) * detPow g s * ℓ (φ g) ∂μG =
+              P.eval (qs F s) / qs F s ^ N := by
+  borelize F
+  have : BorelSpace (levi F n β) := Subtype.borelSpace _
+  obtain ⟨s₀, D, hD0, hM⟩ := exists_leviZeta hσ hc (leviRatio β * leviSqrtModular β)
+    (continuous_leviRatio.mul continuous_leviSqrtModular) (haarLevi β (Measure.addHaar : Measure (LeviIndex n β → F)))
+  exact ⟨s₀, D, hD0, inducedZeta_of_leviZeta hσ μG s₀ D hM⟩
 
 end GodementJacquet
 
