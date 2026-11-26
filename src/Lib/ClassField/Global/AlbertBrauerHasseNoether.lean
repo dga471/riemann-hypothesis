@@ -1,6 +1,8 @@
 import Lib.ClassField.Global.ArtinMap
-import Lib.ClassField.HeckeL.ContinuationAtOne
+import Lib.ClassField.HeckeL.EulerProduct
 import Lib.General.NumberTheory.SUnitsAndClassNumber
+import TauCeti.NumberTheory.NumberField.Global.Approximation.Weak
+import TauCeti.NumberTheory.NumberField.Global.RayClass.Character.Cancellation
 
 /-!
 # Real place symbols, the second inequality and Albert–Brauer–Hasse–Noether
@@ -217,38 +219,462 @@ lemma New.exists_hasPrimeDensity_addChar_uniformizer (f : AddChar (Additive ((�
     ∃ m : ℕ,
       HasPrimeDensity (fun v : FinPlace K ↦ f (Additive.ofMul ⟦locIdele v (uniformizer v)⟧))
         ((if f = 0 then 1 else 0) - m) := by
+  classical
   split_ifs with hf
-  · -- The trivial character is `1` everywhere, with mean `1`.
-    exact ⟨0, by simp_all [hasPrimeDensity_const]⟩
-  let ψ : (𝔸f K)ˣ →* ℂ := f.toMonoidHom.comp (mk' W)
-  have hW : W ≤ ψ.ker := le_comap_mk' W f.toMonoidHom.ker
-  -- Let `Φ w` be the embedding into `ℂ` at the infinite place `w`. On `Kˣ`, `ψ` is trivial where no
-  -- `Φ w x / |Φ w x|` is `-1`, so it is the inverse of a product of some of these characters: `ψ`
-  -- is a Hecke character of a type with entries 0 and 1.
-  let sgn (w : NumberField.InfinitePlace K) : Kˣ →* ℂ :=
-    { toFun x := Φ w x.val / ‖Φ w x‖
-      map_one' := by simp
-      map_mul' := by simp [field] }
-  have h_pos (x : Kˣ) (hx : ∀ w : NumberField.InfinitePlace K, sgn w x ≠ -1) :
-      IsTotallyPositive x.val := by
-    intro φ
-    refine lt_of_not_ge fun h_neg ↦ hx (.mk (ofRealHom.comp φ)) ?_
-    simp [sgn, Φ, abs_of_nonpos h_neg, IsSelfAdjoint, ext_iff]
-  obtain ⟨T, hT⟩ :
-      ∃ T : Finset (NumberField.InfinitePlace K), ψ.comp principalIdele * T.prod sgn = 1 :=
-    exists_mul_prod_eq_one _ sgn fun x hx ↦ hW (hW_pos x (h_pos x hx))
-  have h_hecke : IsHeckeOfType ψ.toHomUnits (piecewise T 1 0) := by
-    -- The kernel of `ψ` contains the open subgroup `W`, and on `Kˣ` the product of `ψ` and the
-    -- `sgn w` with `w ∈ T` is `1` (`hT`).
-    refine ⟨by simpa [ψ.ker_toHomUnits] using isOpen_mono hW hW_open, ?_⟩
-    simp_all [sgn, piecewise, ext_iff, Finset.univ_inter]
-  have h_ne : ψ.toHomUnits ≠ 1 := by
-    refine fun h_one ↦ hf (AddChar.ext _ _ (Quot.ind fun a ↦ ?_))
-    exact congrArg Units.val (DFunLike.congr_fun h_one a)
-  -- A non-trivial Hecke character has mean `-m` at the uniformisers, for some `m : ℕ`.
-  obtain ⟨m, -, hm⟩ := h_hecke.exists_hasPrimeDensity_neg_natCast Set.finite_empty h_ne
-  have hψ_apply (a : (𝔸f K)ˣ) : ψ a = f (Additive.ofMul ⟦a⟧) := rfl
-  exact ⟨m, by simpa [heckeCoeff, hψ_apply] using hm⟩
+  · exact ⟨0, by simp_all [hasPrimeDensity_const]⟩
+  open scoped NumberField nonZeroDivisors WithZero in
+  open TauCeti TauCeti.GlobalNumberFields IsDedekindDomain in
+  have h_res : ∃ m : ℕ,
+      HasPrimeDensity (fun v : FinPlace K ↦ f (Additive.ofMul ⟦locIdele v (uniformizer v)⟧))
+        (-(m : ℂ)) := by
+    let ψ : (𝔸f K)ˣ →* ℂˣ := (f.toMonoidHom.comp (mk' W)).toHomUnits
+    have hψ_val (a : (𝔸f K)ˣ) : (ψ a : ℂ) = f (Additive.ofMul ⟦a⟧) := rfl
+    have hW_le : W ≤ ψ.ker := fun a ha ↦ Units.ext (by simp [hψ_val, (eq_one_iff a).mpr ha])
+    have hψ_ne : ψ ≠ 1 := fun h1 ↦ hf <| AddChar.ext _ _ <| Quot.ind fun a ↦
+      congrArg Units.val (DFunLike.congr_fun h1 a)
+    -- Choose a finite set `T` of places outside which local units lie in `W`, and a level `e v`
+    -- at each `v ∈ T` so that `1 + v ^ (e v) 𝒪_v ⊆ W`.
+    obtain ⟨T, hT⟩ := exists_finset_cover_mulSupport_ideleAt hW_open W.one_mem
+    have hW_unram (v : FinPlace K) (hv : v ∉ T) (u : (LocField v)ˣ) (hu : Valued.v u.val = 1) :
+        locIdele v u ∈ W := by
+      by_contra hnot
+      obtain ⟨w, hw, hw_ne⟩ : ∃ w ∈ T, ideleAt w (locIdele v u) ≠ 1 := by
+        simpa using hT ⟨locIdele_mem_idelesUnitOff hu, hnot⟩
+      exact hw_ne (ideleAt_locIdele_of_ne (ne_of_mem_of_not_mem hw hv) u)
+    have h_level (v : FinPlace K) : ∃ e : ℕ, 1 ≤ e ∧
+        ∀ u : (LocField v)ˣ, Valued.v (u.val - 1) ≤ WithZero.exp (-(e : ℤ)) →
+          locIdele v u ∈ W := by
+      have hcont : Continuous (locIdele v) := by
+        have hval : Continuous (fun u : (LocField v)ˣ ↦ ((locIdele v u : (𝔸f K)ˣ) : 𝔸f K)) := by
+          have : (fun u : (LocField v)ˣ ↦ ((locIdele v u : (𝔸f K)ˣ) : 𝔸f K)) =
+              fun u ↦ 1 + singleAdele v (u.val - 1) := by
+            funext u
+            ext w
+            by_cases hw : w = v
+            · subst hw; simp [locIdele, singleAdele]
+            · simp [locIdele, singleAdele]
+          rw [this]
+          exact continuous_const.add ((continuous_singleAdele v).comp
+            (Units.continuous_val.sub continuous_const))
+        refine continuous_induced_rng.mpr (continuous_prodMk.mpr ⟨hval, ?_⟩)
+        exact MulOpposite.continuous_op.comp (show Continuous fun u : (LocField v)ˣ ↦
+            ((locIdele v u⁻¹ : (𝔸f K)ˣ) : 𝔸f K) from hval.comp continuous_inv)
+      have hnhds : (locIdele v) ⁻¹' (W : Set (𝔸f K)ˣ) ∈ nhds (1 : (LocField v)ˣ) :=
+        (hW_open.preimage hcont).mem_nhds (by simp [W.one_mem])
+      rw [nhds_induced, Filter.mem_comap] at hnhds
+      obtain ⟨U, hU, hUW⟩ := hnhds
+      rw [nhds_prod_eq, Filter.mem_prod_iff] at hU
+      obtain ⟨U₁, hU₁, U₂, hU₂, hU12⟩ := hU
+      have hU₁' : {y : LocField v | y + 1 ∈ U₁} ∈ nhds (0 : LocField v) :=
+        (continuous_id.add continuous_const).continuousAt.preimage_mem_nhds (by simpa using hU₁)
+      have hU₂' : {y : LocField v | MulOpposite.op (y + 1)⁻¹ ∈ U₂} ∈ nhds (0 : LocField v) := by
+        have h2 : ContinuousAt (fun y : LocField v ↦ MulOpposite.op (y + 1)⁻¹) 0 := by
+          fun_prop (disch := simp)
+        exact h2.preimage_mem_nhds (by simpa using hU₂)
+      obtain ⟨γ₁, hγ₁⟩ := Valued.mem_nhds_zero.mp hU₁'
+      obtain ⟨γ₂, hγ₂⟩ := Valued.mem_nhds_zero.mp hU₂'
+      obtain ⟨k₁, hk₁⟩ := WithZero.ne_zero_iff_exists.mp
+        (show MonoidWithZeroHom.ValueGroup₀.embedding γ₁.val ≠ 0 from
+          (map_ne_zero_iff _ MonoidWithZeroHom.ValueGroup₀.embedding_strictMono.injective).mpr
+            γ₁.ne_zero)
+      obtain ⟨k₂, hk₂⟩ := WithZero.ne_zero_iff_exists.mp
+        (show MonoidWithZeroHom.ValueGroup₀.embedding γ₂.val ≠ 0 from
+          (map_ne_zero_iff _ MonoidWithZeroHom.ValueGroup₀.embedding_strictMono.injective).mpr
+            γ₂.ne_zero)
+      let n₁ : ℤ := Multiplicative.toAdd k₁
+      let n₂ : ℤ := Multiplicative.toAdd k₂
+      let e : ℕ := max 1 (max (-n₁).toNat (-n₂).toNat + 1)
+      refine ⟨e, le_max_left _ _, fun u hu ↦ hUW (hU12 ⟨?_, ?_⟩)⟩
+      · have hlt : Valued.v.restrict (u.val - 1) < γ₁.val := by
+          rw [Valuation.restrict_lt_iff_lt_embedding]
+          refine hu.trans_lt ?_
+          rw [← hk₁]
+          change WithZero.exp (-(e : ℤ)) < WithZero.exp n₁
+          exact WithZero.exp_lt_exp.mpr (by omega)
+        simpa using hγ₁ hlt
+      · have hlt : Valued.v.restrict (u.val - 1) < γ₂.val := by
+          rw [Valuation.restrict_lt_iff_lt_embedding]
+          refine hu.trans_lt ?_
+          rw [← hk₂]
+          change WithZero.exp (-(e : ℤ)) < WithZero.exp n₂
+          exact WithZero.exp_lt_exp.mpr (by omega)
+        simpa [u.inv_eq_val_inv] using hγ₂ hlt
+    choose e he1 heW using h_level
+    -- Build the modulus `𝔪` with finite part `∏ v ∈ T, v ^ (e v)` and all real places.
+    let 𝔪 : Modulus K :=
+      ⟨∏ v ∈ T, v.asIdeal ^ e v,
+        Finset.prod_ne_zero_iff.mpr fun v _ ↦ pow_ne_zero (e v) v.ne_bot,
+        (narrowModulus K).infinitePart⟩
+    have h𝔪_supp (v : FinPlace K) : v ∈ 𝔪.support ↔ v ∈ T := by
+      rw [Modulus.mem_support_iff]
+      simp only [𝔪, Ideal.dvd_iff_le]
+      constructor
+      · intro hle
+        rw [v.isPrime.prod_le] at hle
+        obtain ⟨w, hwT, hw⟩ := hle
+        have := v.isPrime.le_of_pow_le hw
+        have : w = v := HeightOneSpectrum.ext (w.isMaximal.eq_of_le v.isPrime.ne_top this)
+        exact this ▸ hwT
+      · intro hvT
+        exact (Ideal.dvd_iff_le.mp (Finset.dvd_prod_of_mem _ hvT)).trans
+          (Ideal.pow_le_self (by have := he1 v; omega))
+    have he_le (v : FinPlace K) (hv : v ∈ T) : e v ≤ 𝔪.exponent v := by
+      have hdvd : v.asIdeal ^ e v ∣ 𝔪.finitePart := Finset.dvd_prod_of_mem _ hv
+      rw [Modulus.exponent_def]
+      have h1 : (Associates.mk v.asIdeal).count (Associates.mk (v.asIdeal ^ e v)).factors ≤
+          (Associates.mk v.asIdeal).count (Associates.mk 𝔪.finitePart).factors :=
+        Associates.count_le_count_of_le (Associates.mk_ne_zero.mpr 𝔪.finitePart_ne_zero)
+          v.associates_irreducible (Associates.mk_le_mk_of_dvd hdvd)
+      rwa [Associates.mk_pow, Associates.count_pow (Associates.mk_ne_zero.mpr v.ne_bot)
+        v.associates_irreducible, Associates.count_self v.associates_irreducible, mul_one] at h1
+    -- Divisor homomorphism from finite ideles to fractional ideals.
+    obtain ⟨d, hd_int, hd_ker, hd_unif, hd_prin⟩ := exists_idele_divisor_hom (K := K)
+    -- Map `idealsPrimeTo 𝔪` into `(𝔸f K)ˣ` by taking `uniformizer v ^ count_v(I)`.
+    have h_supp_fin (I : (FractionalIdeal (nonZeroDivisors (𝓞 K)) K)ˣ) :
+        (Function.mulSupport fun v : FinPlace K ↦
+          locIdele v (uniformizer v ^ FractionalIdeal.count K v I.val)).Finite := by
+      have hfin : (Function.support fun v : FinPlace K ↦ FractionalIdeal.count K v I.val).Finite := by
+        obtain ⟨a, J, ha0, hI⟩ := FractionalIdeal.exists_eq_spanSingleton_mul I.val
+        have hJ0 : J ≠ ⊥ := by
+          intro hbot
+          exact I.ne_zero (by simp [hI, hbot])
+        have ha : a ∈ (𝓞 K)⁰ := mem_nonZeroDivisors_of_ne_zero ha0
+        have hmem_nf (L : Ideal (𝓞 K)) (hL0 : L ≠ ⊥) (v : FinPlace K)
+            (h : (Associates.mk v.asIdeal).count (Associates.mk L).factors ≠ 0) :
+            v.asIdeal ∈ (UniqueFactorizationMonoid.normalizedFactors L).toFinset := by
+          have hdvd : v.asIdeal ∣ L :=
+            (Associates.count_ne_zero_iff_dvd hL0
+              (Associates.irreducible_mk.mp v.associates_irreducible)).mp h
+          obtain ⟨q, hq, hass⟩ := UniqueFactorizationMonoid.exists_mem_normalizedFactors_of_dvd
+            hL0 (Associates.irreducible_mk.mp v.associates_irreducible) hdvd
+          exact Multiset.mem_toFinset.mpr (associated_iff_eq.mp hass ▸ hq)
+        have hsub : (Function.support fun v : FinPlace K ↦ FractionalIdeal.count K v I.val) ⊆
+            (fun v : FinPlace K ↦ v.asIdeal) ⁻¹'
+              (((UniqueFactorizationMonoid.normalizedFactors J).toFinset ∪
+                (UniqueFactorizationMonoid.normalizedFactors (Ideal.span {a})).toFinset :
+                  Finset (Ideal (𝓞 K))) : Set (Ideal (𝓞 K))) := by
+          intro v hv
+          simp only [Function.mem_support] at hv
+          have haK : algebraMap (𝓞 K) K a ≠ 0 :=
+            map_ne_zero_of_mem_nonZeroDivisors _ (FaithfulSMul.algebraMap_injective (𝓞 K) K) ha
+          have hsp : FractionalIdeal.spanSingleton (𝓞 K)⁰ (algebraMap (𝓞 K) K a)⁻¹ =
+              (FractionalIdeal.spanSingleton (𝓞 K)⁰ (algebraMap (𝓞 K) K a))⁻¹ := by
+            refine eq_inv_of_mul_eq_one_left ?_
+            rw [← map_mul, inv_mul_cancel₀ haK, map_one]
+          have hcnt : FractionalIdeal.count K v I.val =
+              ((Associates.mk v.asIdeal).count (Associates.mk J).factors : ℤ) -
+                ((Associates.mk v.asIdeal).count (Associates.mk (Ideal.span {a})).factors : ℤ) := by
+            rw [hI, hsp, FractionalIdeal.count_mul K v
+              (inv_ne_zero (FractionalIdeal.spanSingleton_ne_zero_iff.mpr haK))
+              (FractionalIdeal.coeIdeal_ne_zero.mpr hJ0),
+              FractionalIdeal.count_inv, FractionalIdeal.count_coeIdeal K v hJ0,
+              ← FractionalIdeal.coeIdeal_span_singleton,
+              FractionalIdeal.count_coeIdeal K v (by simp [ha0])]
+            ring
+          rw [hcnt] at hv
+          have hne : (Associates.mk v.asIdeal).count (Associates.mk J).factors ≠ 0 ∨
+              (Associates.mk v.asIdeal).count (Associates.mk (Ideal.span {a})).factors ≠ 0 := by
+            by_contra! h0
+            exact hv (by simp [h0.1, h0.2])
+          simp only [Set.mem_preimage, Finset.mem_coe, Finset.mem_union]
+          exact hne.imp (hmem_nf J hJ0 v) (hmem_nf (Ideal.span {a}) (by simp [ha0]) v)
+        exact ((Finset.finite_toSet _).preimage
+          (fun _ _ _ _ h ↦ HeightOneSpectrum.ext h)).subset hsub
+      exact hfin.subset fun v hv ↦ by
+        simp only [Function.mem_mulSupport, Function.mem_support] at hv ⊢
+        intro h0
+        exact hv (by simp [h0])
+    let ideleOfIdeal : idealsPrimeTo 𝔪 →* (𝔸f K)ˣ :=
+      { toFun I := ∏ᶠ v : FinPlace K,
+          locIdele v (uniformizer v ^ FractionalIdeal.count K v (I.1 : FractionalIdeal _ K))
+        map_one' := by simp [FractionalIdeal.count_one]
+        map_mul' I J := by
+          simp only [Subgroup.coe_mul, Units.val_mul,
+            FractionalIdeal.count_mul K _ I.1.ne_zero J.1.ne_zero, zpow_add, map_mul]
+          exact finprod_mul_distrib (h_supp_fin I.1) (h_supp_fin J.1) }
+    have h_d_ideleOfIdeal (I : idealsPrimeTo 𝔪) : d (ideleOfIdeal I) = I.1 := by
+      apply Units.ext
+      change ((Units.coeHom _).comp d) (∏ᶠ v : FinPlace K, _) = _
+      rw [map_finprod ((Units.coeHom _).comp d) (h_supp_fin I.1)]
+      have hterm (v : FinPlace K) :
+          ((Units.coeHom _).comp d)
+            (locIdele v (uniformizer v ^ FractionalIdeal.count K v (I.1 : FractionalIdeal _ K))) =
+          (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ^
+            FractionalIdeal.count K v (I.1 : FractionalIdeal _ K) := by
+        simp only [MonoidHom.comp_apply, Units.coeHom_apply, map_zpow, hd_unif,
+          FractionalIdeal.coe_mk0]
+      simp_rw [hterm]
+      exact FractionalIdeal.finprod_heightOneSpectrum_factorization' K I.1.ne_zero
+    have h_at_ideleOfIdeal (I : idealsPrimeTo 𝔪) (w : FinPlace K) :
+        ideleAt w (ideleOfIdeal I) =
+          uniformizer w ^ FractionalIdeal.count K w (I.1 : FractionalIdeal _ K) := by
+      change ideleAt w (∏ᶠ v : FinPlace K, _) = _
+      rw [map_finprod (ideleAt w) (h_supp_fin I.1),
+        finprod_eq_single _ w fun v hv ↦ ideleAt_locIdele_of_ne hv.symm _, ideleAt_locIdele]
+    -- Show `ψ.comp ideleOfIdeal` kills `ray 𝔪`.
+    have h_ray : ray 𝔪 ≤ (ψ.comp ideleOfIdeal).ker := by
+      intro I hI
+      rw [mem_ray_iff] at hI
+      obtain ⟨x, hx_congr, hxI⟩ := hI
+      have hx_pos : IsTotallyPositive x.val := by
+        intro φ
+        let w : NumberField.InfinitePlace K := .mk (ofRealHom.comp φ)
+        have hw : w.IsReal := NumberField.InfinitePlace.isReal_mk_iff.mpr
+          (by ext a; simp)
+        have hpos := hx_congr.2 ⟨w, hw⟩ (mem_narrowModulus_infinitePart _)
+        have hemb : NumberField.InfinitePlace.embedding_of_isReal hw x.val = φ x.val := by
+          apply Complex.ofReal_injective
+          rw [NumberField.InfinitePlace.embedding_of_isReal_apply,
+            NumberField.InfinitePlace.embedding_mk_eq_of_isReal (by ext a; simp)]
+          rfl
+        rwa [hemb] at hpos
+      have h_prin_mem : principalIdele x ∈ W := hW_pos x hx_pos
+      let u : (𝔸f K)ˣ := ideleOfIdeal I * (principalIdele x)⁻¹
+      have hu_unit : u ∈ idelesUnitOff ∅ := by
+        rw [← hd_ker, MonoidHom.mem_ker, map_mul, map_inv, h_d_ideleOfIdeal, hd_prin, hxI,
+          mul_inv_cancel]
+      have hu_W : u ∈ W := by
+        refine mem_of_locIdele_mem (Subgroup.isClosed_of_isOpen W hW_open) fun v ↦ ?_
+        by_cases hv : v ∈ T
+        · have hv_supp : v ∈ 𝔪.support := (h𝔪_supp v).mpr hv
+          have hv_dvd : v.asIdeal ∣ 𝔪.finitePart := (Modulus.mem_support_iff 𝔪 v).mp hv_supp
+          have hcnt : FractionalIdeal.count K v (I.1 : FractionalIdeal _ K) = 0 :=
+            I.2 v hv_supp
+          have hu_at : ideleAt v u = (ideleAt v (principalIdele x))⁻¹ := by
+            simp [u, h_at_ideleOfIdeal, hcnt]
+          rw [hu_at, map_inv]
+          refine W.inv_mem (heW v _ ?_)
+          have hval := hx_congr.1 v hv_dvd
+          have h_exp : WithZero.exp (-(𝔪.exponent v : ℤ)) ≤ WithZero.exp (-(e v : ℤ)) :=
+            WithZero.exp_le_exp.mpr (by have := he_le v hv; omega)
+          have hcoe : ((ideleAt v (principalIdele x) : (LocField v)ˣ) : LocField v) - 1 =
+              algebraMap K (LocField v) (x.val - 1) := by
+            simp [ideleAt, principalIdele, map_sub]
+            rfl
+          rw [hcoe, v_algebraMap_eq_valuation]
+          exact hval.trans h_exp
+        · exact hW_unram v hv _ (mem_idelesUnitOff.mp hu_unit v (Set.notMem_empty v))
+      have h_mem : ideleOfIdeal I ∈ W := by
+        simpa [u] using W.mul_mem hu_W h_prin_mem
+      exact hW_le h_mem
+    let χ : RayClassCharacter 𝔪 := rayClassLift (ψ.comp ideleOfIdeal) h_ray
+    -- `χ` is nontrivial because weak approximation shows `ideleOfIdeal` + `W` + `Kˣ₊` generate `(𝔸f K)ˣ`.
+    have hχ_ne : χ ≠ 1 := by
+      intro hχ1
+      apply hψ_ne
+      ext1 a
+      suffices ha : a ∈ ψ.ker from ha
+      have hker_open : ψ.ker.IsOpen := isOpen_mono hW_le hW_open
+      -- Approximate `a.val v` by a rational `t v : K` at each `v ∈ T`.
+      have h_rat (v : FinPlace K) : ∃ t : K,
+          Valued.v (a.val v - algebraMap K (LocField v) t) <
+            Valued.v (a.val v) * WithZero.exp (-(e v : ℤ)) := by
+        let r : (Valued.v : Valuation (LocField v) ℤᵐ⁰).ValueGroup₀ :=
+          Valued.v.restrict (a.val v * (uniformizer v : LocField v) ^ e v)
+        have hr_emb : MonoidWithZeroHom.ValueGroup₀.embedding r =
+            Valued.v (a.val v) * WithZero.exp (-(e v : ℤ)) := by
+          simp [r, map_mul, map_pow, v_uniformizer, ← WithZero.exp_nsmul]
+        have hpos : Valued.v (a.val v) * WithZero.exp (-(e v : ℤ)) ≠ 0 :=
+          mul_ne_zero (Valued.v.ne_zero_iff.mpr (Units.ne_zero (ideleAt v a))) WithZero.exp_ne_zero
+        have hopen : IsOpen {y : LocField v | Valued.v (a.val v - y) <
+            Valued.v (a.val v) * WithZero.exp (-(e v : ℤ))} := by
+          have heq : {y : LocField v | Valued.v (a.val v - y) <
+              Valued.v (a.val v) * WithZero.exp (-(e v : ℤ))} =
+              (fun y ↦ a.val v - y) ⁻¹' {z : LocField v | Valued.v.restrict z < r} := by
+            ext y
+            simp [Valuation.restrict_lt_iff_lt_embedding, hr_emb]
+          rw [heq]
+          exact (Valued.isOpen_ball (R := LocField v) r).preimage (continuous_const.sub continuous_id)
+        have hnhds : {y : LocField v | Valued.v (a.val v - y) <
+            Valued.v (a.val v) * WithZero.exp (-(e v : ℤ))} ∈ nhds (a.val v) :=
+          hopen.mem_nhds (by simp [pos_iff_ne_zero.mpr hpos])
+        obtain ⟨t, ht⟩ := (v.denseRange_algebraMap K).exists_mem_open
+          hopen ⟨a.val v, mem_of_mem_nhds hnhds⟩
+        exact ⟨t, ht⟩
+      choose t ht using h_rat
+      -- Approximate `t` at `T` by a totally positive `x : Kˣ`.
+      obtain ⟨x, hx_fin, hx_sign⟩ := exists_fieldUnit_valuation_sub_lt_and_signHom_eq (S := T) t
+        (fun v ↦ Valued.v (a.val v) * WithZero.exp (-(e v : ℤ)))
+        (fun v _ ↦ mul_ne_zero (Valued.v.ne_zero_iff.mpr (Units.ne_zero (ideleAt v a)))
+          WithZero.exp_ne_zero)
+        (fun _ ↦ 1)
+      have hx_pos : IsTotallyPositive x.val := by
+        intro φ
+        let w : NumberField.InfinitePlace K := .mk (ofRealHom.comp φ)
+        have hw : w.IsReal := NumberField.InfinitePlace.isReal_mk_iff.mpr (by ext a; simp)
+        have hs := congrFun hx_sign ⟨w, hw⟩
+        rw [signHom_apply_eq_one_iff] at hs
+        have hemb : NumberField.InfinitePlace.embedding_of_isReal hw x.val = φ x.val := by
+          apply Complex.ofReal_injective
+          rw [NumberField.InfinitePlace.embedding_of_isReal_apply,
+            NumberField.InfinitePlace.embedding_mk_eq_of_isReal (by ext a; simp)]
+          rfl
+        rwa [hemb] at hs
+      have hx_mem : principalIdele x ∈ ψ.ker := hW_le (hW_pos x hx_pos)
+      let b : (𝔸f K)ˣ := a * (principalIdele x)⁻¹
+      have hb_at (v : FinPlace K) (hv : v ∈ T) :
+          Valued.v ((ideleAt v b : (LocField v)ˣ).val - 1) ≤ WithZero.exp (-(e v : ℤ)) := by
+        have hdiff : Valued.v (a.val v - algebraMap K (LocField v) x.val) <
+            Valued.v (a.val v) * WithZero.exp (-(e v : ℤ)) := by
+          have h1 : a.val v - algebraMap K (LocField v) x.val =
+              (a.val v - algebraMap K (LocField v) (t v)) -
+                algebraMap K (LocField v) (x.val - t v) := by
+            simp [map_sub]
+          rw [h1]
+          refine (Valued.v.map_sub _ _).trans_lt (max_lt (ht v) ?_)
+          rw [v_algebraMap_eq_valuation]
+          exact hx_fin v hv
+        have hlt1 : WithZero.exp (-(e v : ℤ)) < 1 :=
+          WithZero.exp_lt_one_iff.mpr (by have := he1 v; omega)
+        have hval_eq : Valued.v (algebraMap K (LocField v) x.val) = Valued.v (a.val v) := by
+          have hlt : Valued.v (a.val v - algebraMap K (LocField v) x.val) < Valued.v (a.val v) :=
+            hdiff.trans_le (mul_le_of_le_one_right' hlt1.le)
+          have := Valuation.map_sub_eq_of_lt_left Valued.v hlt
+          simpa using this
+        have hsub : ((ideleAt v b : (LocField v)ˣ) : LocField v) - 1 =
+            (a.val v - algebraMap K (LocField v) x.val) * (algebraMap K (LocField v) x.val)⁻¹ := by
+          have hx0 : algebraMap K (LocField v) x.val ≠ 0 := by simp
+          have h_id : ((ideleAt v b : (LocField v)ˣ) : LocField v) =
+              a.val v * (algebraMap K (LocField v) x.val)⁻¹ := by
+            simp only [b, map_mul, map_inv, Units.val_mul, Units.val_inv_eq_inv_val]
+            rfl
+          rw [h_id, sub_mul, mul_inv_cancel₀ hx0]
+        rw [hsub, map_mul, map_inv₀, hval_eq]
+        have ha0 : Valued.v (a.val v) ≠ 0 := Valued.v.ne_zero_iff.mpr (Units.ne_zero (ideleAt v a))
+        exact le_of_lt (by rwa [mul_inv_lt_iff₀ (pos_iff_ne_zero.mpr ha0), mul_comm])
+      have hb_primeTo : d b ∈ idealsPrimeTo 𝔪 := by
+        intro v hv
+        have hvT : v ∈ T := (h𝔪_supp v).mp hv
+        have hv1 : Valued.v (b.val v) = 1 := by
+          have hlt : Valued.v ((ideleAt v b : (LocField v)ˣ).val - 1) < 1 :=
+            (hb_at v hvT).trans_lt (WithZero.exp_lt_one_iff.mpr (by have := he1 v; omega))
+          simpa [ideleAt] using Valuation.map_one_add_of_lt Valued.v hlt
+        have hle := (hd_int b v).mp hv1.le
+        have hge : 0 ≤ FractionalIdeal.count K v (d b⁻¹).val :=
+          (hd_int b⁻¹ v).mp (by
+            have hbv : Valued.v (b⁻¹.val v) = 1 := by
+              have : b⁻¹.val v = (b.val v)⁻¹ :=
+                (congrArg Units.val (map_inv (ideleAt v) b)).trans
+                  (Units.val_inv_eq_inv_val (ideleAt v b))
+              rw [this, map_inv₀, hv1, inv_one]
+            exact hbv.le)
+        rw [map_inv, Units.val_inv_eq_inv_val, FractionalIdeal.count_inv] at hge
+        omega
+      let I : idealsPrimeTo 𝔪 := ⟨d b, hb_primeTo⟩
+      have hI_ker : ideleOfIdeal I ∈ ψ.ker := by
+        have := DFunLike.congr_fun hχ1 (rayClassMk 𝔪 I)
+        simpa [χ] using this
+      have hb_u : b * (ideleOfIdeal I)⁻¹ ∈ idelesUnitOff ∅ := by
+        rw [← hd_ker, MonoidHom.mem_ker, map_mul, map_inv, h_d_ideleOfIdeal, mul_inv_cancel]
+      have hb_diff : b * (ideleOfIdeal I)⁻¹ ∈ ψ.ker := by
+        refine mem_of_locIdele_mem (Subgroup.isClosed_of_isOpen ψ.ker hker_open) fun v ↦ ?_
+        by_cases hv : v ∈ T
+        · have hv_supp : v ∈ 𝔪.support := (h𝔪_supp v).mpr hv
+          have hcnt : FractionalIdeal.count K v (I.1 : FractionalIdeal _ K) = 0 := I.2 v hv_supp
+          have hat : ideleAt v (b * (ideleOfIdeal I)⁻¹) = ideleAt v b := by
+            simp [h_at_ideleOfIdeal, hcnt]
+          rw [hat]
+          exact hW_le (heW v _ (hb_at v hv))
+        · exact hW_le (hW_unram v hv _ (mem_idelesUnitOff.mp hb_u v (Set.notMem_empty v)))
+      have hb_mem : b ∈ ψ.ker := by
+        simpa using ψ.ker.mul_mem hb_diff hI_ker
+      simpa [b] using ψ.ker.mul_mem hb_mem hx_mem
+    -- Now `χ ≠ 1` gives cancellation and analyticity of `L(s, χ)` at `s = 1`.
+    have hC : HasCancellation χ.toUnitaryIdealWeight :=
+      RayClassCharacter.hasCancellation_toUnitaryIdealWeight hχ_ne
+    have hDiff : DifferentiableOn ℂ (continuedLFunctionOfWeight χ.toUnitaryIdealWeight)
+        {s | 1 - 1 / (Module.finrank ℚ K : ℝ) < s.re} :=
+      differentiableOn_continuedLFunctionOfWeight hC
+    let F : ℝ → ℂ := fun s ↦ continuedLFunctionOfWeight χ.toUnitaryIdealWeight (s : ℂ)
+    have hF_an : AnalyticAt ℝ F 1 := by
+      have hAnC : AnalyticAt ℂ (continuedLFunctionOfWeight χ.toUnitaryIdealWeight) 1 :=
+        hDiff.analyticAt ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds
+          (by simpa using cancellationExponent_lt_one (K := K)))
+      have hAnR : AnalyticAt ℝ (continuedLFunctionOfWeight χ.toUnitaryIdealWeight)
+          (Complex.ofRealCLM 1) := by
+        simpa using hAnC.restrictScalars (𝕜 := ℝ)
+      exact hAnR.comp (Complex.ofRealCLM.analyticAt 1)
+    let wFun : Ideal (𝓞 K) →* ℂ := χ.toMultiplicativeIdealWeight.toMonoidWithZeroHom.toMonoidHom
+    have hwFun_norm (I : Ideal (𝓞 K)) : ‖wFun I‖ ≤ 1 := by
+      by_cases hI : I = ⊥
+      · simp [wFun, hI]
+      · exact χ.toUnitaryIdealWeight.norm_le_one (⟨I, mem_nonZeroDivisors_of_ne_zero hI⟩ : (Ideal (𝓞 K))⁰)
+    have hF_eq {s : ℝ} (hs : 1 < s) : F s = eulerProd (fun v : FinPlace K ↦ wFun v.asIdeal) s := by
+      have hsC : 1 < (s : ℂ).re := by simpa using hs
+      rw [show F s = LSeries (normCoeff K χ.toUnitaryIdealWeight.toIdealArithmeticFunction) s from
+        continuedLFunctionOfWeight_eq_LSeries _ hsC]
+      rw [LSeries_normCoeff K (summable_idealTerm_of_unitary_of_one_lt_re _ hsC)]
+      have hsum := hasSum_eulerProd wFun hwFun_norm hs
+      rw [← hsum.tsum_eq]
+      symm
+      refine tsum_eq_tsum_of_ne_zero_bij (fun I ↦ (I.1 : Ideal (𝓞 K)))
+        (fun _ _ h ↦ Subtype.ext (Subtype.ext h)) ?_ fun I ↦ ?_
+      · intro I hI
+        have hI0 : I ≠ ⊥ := fun hbot ↦ by simp [hbot, wFun] at hI
+        refine ⟨⟨⟨I, mem_nonZeroDivisors_of_ne_zero hI0⟩, ?_⟩, rfl⟩
+        simpa [Function.mem_support, idealTerm, wFun, cpow_neg, div_eq_mul_inv] using hI
+      · simp [idealTerm, wFun, cpow_neg, div_eq_mul_inv]
+    -- Order of vanishing `m` of `F` at `1` gives `HasPrimeDensity (fun v ↦ wFun v.asIdeal) (-m)`.
+    have hF_ne : ¬∀ᶠ s in nhds (1 : ℝ), F s = 0 := by
+      intro h_zero
+      obtain ⟨s, hs, hs_zero⟩ := ((frequently_gt_nhds (1 : ℝ)).and_eventually h_zero).exists
+      have hne : eulerProd (fun v : FinPlace K ↦ wFun v.asIdeal) s ≠ 0 := by
+        rw [(eulerProd_eq_exp (fun v ↦ hwFun_norm v.asIdeal) hs).1]
+        exact exp_ne_zero _
+      exact hne ((hF_eq hs).symm.trans hs_zero)
+    obtain ⟨m, g, hg_an, hg_ne, hF_fac⟩ := hF_an.exists_eventuallyEq_pow_smul_ne_zero_iff.mpr hF_ne
+    have hdens_w : HasPrimeDensity (fun v : FinPlace K ↦ wFun v.asIdeal) (-(m : ℂ)) := by
+      refine hasPrimeDensity_of_tendsto (fun v ↦ hwFun_norm v.asIdeal) hg_ne ?_
+      refine hg_an.continuousAt.continuousWithinAt.congr' (eventually_nhdsWithin_iff.mpr ?_)
+      filter_upwards [hF_fac] with s h_fac hs
+      have hs_ne : (s : ℂ) - 1 ≠ 0 := mod_cast sub_ne_zero.mpr (Set.mem_Ioi.mp hs).ne'
+      rw [← hF_eq hs, h_fac]
+      simp [cpow_neg, hs_ne]
+    -- `wFun v.asIdeal` agrees with `f (.ofMul ⟦locIdele v (uniformizer v)⟧)` outside the finite set `T`.
+    have hwFun_eq (v : FinPlace K) (hv : v ∉ T) :
+        wFun v.asIdeal = f (Additive.ofMul ⟦locIdele v (uniformizer v)⟧) := by
+      have hv_primeTo : Ideal.IsPrimeTo v.asIdeal 𝔪.support := by
+        rw [Ideal.isPrimeTo_iff]
+        refine ⟨v.ne_bot, fun w hw hdvd ↦ hv ?_⟩
+        have hwT : w ∈ T := (h𝔪_supp w).mp hw
+        exact (HeightOneSpectrum.ext (v.isMaximal.eq_of_le w.isPrime.ne_top
+          (Ideal.dvd_iff_le.mp hdvd))) ▸ hwT
+      have hval : wFun v.asIdeal =
+          (χ.onIdeals ⟨v.asIdeal, NumberFieldArithmetic.mem_integralIdealsAway_iff.mpr
+            (Ideal.isPrimeTo_iff.mp hv_primeTo)⟩ : ℂ) :=
+        RayClassCharacter.toMultiplicativeIdealWeight_apply_of_isPrimeTo χ hv_primeTo
+      rw [hval, RayClassCharacter.onIdeals_apply, idealClass_apply]
+      change (ψ (ideleOfIdeal (NumberFieldArithmetic.integralIdealsAwayHom K 𝔪.support _)) : ℂ) = _
+      rw [hψ_val]
+      congr 2
+      have h_id : ideleOfIdeal (NumberFieldArithmetic.integralIdealsAwayHom K 𝔪.support
+          ⟨v.asIdeal, NumberFieldArithmetic.mem_integralIdealsAway_iff.mpr
+            (Ideal.isPrimeTo_iff.mp hv_primeTo)⟩) = locIdele v (uniformizer v) := by
+        change (∏ᶠ w : FinPlace K, locIdele w (uniformizer w ^
+          FractionalIdeal.count K w (v.asIdeal : FractionalIdeal _ K))) = locIdele v (uniformizer v)
+        rw [finprod_eq_single _ v]
+        · simp [FractionalIdeal.count_maximal]
+        · intro w hw
+          simp [FractionalIdeal.count_maximal, hw.symm]
+      rw [h_id]
+    -- Adding the finitely many terms in `T` changes the Dirichlet series by `O(1)`.
+    obtain ⟨err, herr_bdd, herr_sum⟩ := hdens_w
+    let diff (v : FinPlace K) : ℂ :=
+      f (Additive.ofMul ⟦locIdele v (uniformizer v)⟧) - wFun v.asIdeal
+    refine ⟨m, fun s ↦ err s + ∑ v ∈ T, ite v.q.Prime (diff v) 0 * v.q ^ (-s : ℂ), ?_, ?_⟩
+    · refine herr_bdd.add ?_
+      have hcont : ContinuousAt (fun s : ℝ ↦ ∑ v ∈ T, ite v.q.Prime (diff v) 0 * v.q ^ (-s : ℂ)) 1 :=
+        by fun_prop (disch := simp)
+      exact hcont.continuousWithinAt.isBigO_one ℝ
+    · filter_upwards [herr_sum] with s hs
+      have hfin : HasSum (fun v : FinPlace K ↦ ite v.q.Prime (diff v) 0 * v.q ^ (-s : ℂ))
+          (∑ v ∈ T, ite v.q.Prime (diff v) 0 * v.q ^ (-s : ℂ)) :=
+        hasSum_sum_of_ne_finset_zero fun v hv ↦ by simp [diff, hwFun_eq v hv]
+      convert hs.add hfin using 1
+      · funext v
+        by_cases hq : v.q.Prime <;> simp [diff, hq, sub_mul]
+      · ring
+  simpa using h_res
 
 omit hW_pos in
 /-- Let `L / K` be Galois and `W` an open subgroup of finite index of the finite ideles of `K` that
