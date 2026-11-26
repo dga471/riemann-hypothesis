@@ -9,8 +9,8 @@ import Mathlib.RingTheory.TotallySplit
 public import Lib.GaloisRep.Pseudocharacter.SemisimpleRepresentations
 import Lib.General.LinearAlgebra.Eigenvalues
 import Lib.General.NumberTheory.PadicLimitsValuation
-import TauCeti.Algebra.Group.Semiconj
 import Lib.PadicComparison.Descent.TestCategory
+import TauCeti.Algebra.Group.Semiconj
 import TauCeti.LinearAlgebra.Matrix.Spanning
 import TauCeti.RepresentationTheory.Irreducible.ConjugatePow
 
