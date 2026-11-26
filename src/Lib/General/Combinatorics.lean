@@ -1,6 +1,7 @@
 module
 
 public import Lib.Base
+import TauCeti.LinearAlgebra.Submodule.CardFinrank
 
 /-!
 # The q-binomial theorem, fibre sums, and Schur polynomials in the coefficients
@@ -56,39 +57,6 @@ noncomputable abbrev New.heckePolyCoeff {n k : Type*} [Field k] (X : ℂ) (U : S
     ℂ :=
   (-X) ^ finrank k U * (Nat.card k : ℂ) ^ (finrank k U).choose 2
 
-/-- If `W` covers `H` in the lattice of subspaces, then a subspace `U ≤ W` is spanned by `U ⊓ H` and
-any vector of `U` outside `H`. -/
-lemma New.inf_sup_span_singleton_of_covBy {k V : Type*} [Field k] [AddCommGroup V] [Module k V]
-    {H W U : Submodule k V} (hHW : H ⋖ W) (hU : U ≤ W) {v : V} (hv : v ∈ U) (hvH : v ∉ H) :
-    U ⊓ H ⊔ k ∙ v = U := by
-  have span_le : k ∙ v ≤ U := by simpa
-  have lt_sup : H < H ⊔ k ∙ v := left_lt_sup.2 (by simpa)
-  have sup_eq : H ⊔ k ∙ v = W :=
-    (hHW.eq_or_eq lt_sup.le (sup_le hHW.le (span_le.trans hU))).resolve_left lt_sup.ne'
-  rw [inf_sup_assoc_of_le _ span_le, sup_eq, inf_of_le_left hU]
-
-/-- If `W` covers `H` in the lattice of subspaces, then `U ⊓ H` has codimension one in every
-subspace `U ≤ W` that is not contained in `H`. -/
-lemma New.finrank_eq_finrank_inf_add_one_of_covBy {k V : Type*} [Field k] [AddCommGroup V]
-    [Module k V] [FiniteDimensional k V] {H W U : Submodule k V} (hHW : H ⋖ W) (hU : U ≤ W)
-    (hUH : ¬U ≤ H) : finrank k U = finrank k ↥(U ⊓ H) + 1 := by
-  obtain ⟨v, hv, hvH⟩ : ∃ v ∈ U, v ∉ H := Set.not_subset.1 hUH
-  rw [← finrank_sup_span_singleton (show v ∉ U ⊓ H by simp [hvH]),
-    inf_sup_span_singleton_of_covBy hHW hU hv hvH]
-
-open scoped Classical in
-/-- If `W` covers `H` and `v` is a vector of `W` outside `H`, then `U ↦ U ⊓ H` is a bijection from
-the subspaces `U ≤ W` containing `v` onto the subspaces of `H`; stated for sums of a function. -/
-lemma New.sum_inf_eq_sum_of_covBy {k V : Type*} [Field k] [AddCommGroup V] [Module k V]
-    [Fintype (Submodule k V)] {H W : Submodule k V} (hHW : H ⋖ W) {v : V} (hvW : v ∈ W)
-    (hvH : v ∉ H) (f : Submodule k V → ℂ) :
-    ∑ U : Submodule k V with v ∈ U ∧ U ≤ W, f (U ⊓ H) = ∑ U : Submodule k V with U ≤ H, f U := by
-  refine sum_nbij' (fun U ↦ U ⊓ H) (fun U ↦ U ⊔ k ∙ v) ?_ ?_ ?_ ?_ fun U _ ↦ rfl
-  · simp
-  · simp +contextual [hvW, hHW.le.trans', mem_sup_right]
-  · simp +contextual [inf_sup_span_singleton_of_covBy hHW, hvH]
-  · simp +contextual [sup_inf_assoc_of_le, (disjoint_span_singleton_of_notMem hvH).symm.eq_bot]
-
 open scoped Classical in
 /-- The q-binomial theorem for subspaces: for a subspace `W` of `k^n`, with `n` finite and `k` a
 field with `q` elements, and for `X : ℂ`, the sum of `(-X) ^ dim U * q ^ (dim U choose 2)`
@@ -101,59 +69,37 @@ lemma New.q_binomial_submodule (n k : Type*) [Finite n] [Field k] [Finite k]
     (W : Submodule k (n → k)) (X : ℂ) :
     ∑ U : Submodule k (n → k) with U ≤ W, heckePolyCoeff X U =
       SiegelWeil.qPochhammer (Nat.card k) (finrank k W) X := by
-  -- Induction along a chain of hyperplanes H ⋖ W. A subspace U ≤ W not contained in H is
-  -- (U ⊓ H) ⊔ k v for every v in U outside H; count such pairs (U, v) in two ways.
-  let q : ℂ := Nat.card k
-  have q_ne : q - 1 ≠ 0 := by simp [q, sub_eq_zero, Fintype.one_lt_card.ne']
-  let : LocallyFiniteOrder (Submodule k (n → k)) := Fintype.toLocallyFiniteOrder
-  induction le_iff_reflTransGen_covBy.1 (OrderBot.bot_le W) with
-  | refl => simp [filter_eq', heckePolyCoeff]
-  | @tail H W _ hHW ih =>
-    -- The vectors of U outside H number q ^ (d + 1) - q ^ d, where d is the rank of U ⊓ H.
-    let outsideH (U : Submodule k (n → k)) : Finset (n → k) := Set.toFinset (U \ ↑(U ⊓ H))
-    have card_eq (U : Submodule k (n → k)) :
-        (#(U : Set (n → k)).toFinset : ℂ) = q ^ finrank k U := by
-      simp [q, card_eq_pow_finrank (K := k) (V := U)]
-    have card_outsideH {U : Submodule k (n → k)} (hU : U ≤ W) (hUH : ¬U ≤ H) :
-        (#(outsideH U) : ℂ) = q ^ finrank k ↥(U ⊓ H) * (q - 1) := by
-      simp only [outsideH]
-      rw [Set.toFinset_sdiff, cast_card_sdiff (Set.toFinset_mono (SetLike.coe_mono inf_le_left)),
-        card_eq, card_eq, finrank_eq_finrank_inf_add_one_of_covBy hHW hU hUH]
-      ring
-    -- The coefficient of U is -X q ^ d times that of U ⊓ H; spread it evenly over these vectors.
-    let weight : ℂ := -X / (q - 1)
-    let notInH : Finset (Submodule k (n → k)) := univ.filter (· ≤ W) \ univ.filter (· ≤ H)
-    have coeff_eq_sum (U : Submodule k (n → k)) (hU : U ∈ notInH) :
-        heckePolyCoeff X U = ∑ v ∈ outsideH U, weight * heckePolyCoeff X (U ⊓ H) := by
-      have ⟨hUW, hUH⟩ : U ≤ W ∧ ¬U ≤ H := by simpa [notInH] using hU
-      rw [sum_const, nsmul_eq_mul, card_outsideH hUW hUH, heckePolyCoeff, heckePolyCoeff,
-        finrank_eq_finrank_inf_add_one_of_covBy hHW hUW hUH, Nat.choose_succ_succ',
-        Nat.choose_one_right]
-      simp only [weight, q] at q_ne ⊢
-      field
-    -- For fixed v, the map U ↦ U ⊓ H is a bijection from the U ≤ W containing v onto the U ≤ H.
-    have sum_fibre (v : n → k) (hv : v ∈ outsideH W) :
-        ∑ U with v ∈ U ∧ U ≤ W, weight * heckePolyCoeff X (U ⊓ H) =
-          weight * ∑ U with U ≤ H, heckePolyCoeff X U := by
-      obtain ⟨hvW, hvH⟩ : v ∈ W ∧ v ∉ H := by simp_all [outsideH]
-      rw [← mul_sum, sum_inf_eq_sum_of_covBy hHW hvW hvH]
-    have mem_pairs_iff (U : Submodule k (n → k)) (v : n → k) : U ∈ notInH ∧ v ∈ outsideH U ↔
-        U ∈ univ.filter (fun U ↦ v ∈ U ∧ U ≤ W) ∧ v ∈ outsideH W := by
-      grind [IsConcreteLE.le_iff, Submodule.mem_inf, SetLike.mem_coe]
-    calc ∑ U with U ≤ W, heckePolyCoeff X U
-      _ = ∑ v ∈ outsideH W, ∑ U with v ∈ U ∧ U ≤ W, weight * heckePolyCoeff X (U ⊓ H) +
-          ∑ U with U ≤ H, heckePolyCoeff X U := by
-        rw [← sum_comm' mem_pairs_iff, ← sum_congr rfl coeff_eq_sum,
-          sum_sdiff (monotone_filter_right univ fun U _ hU ↦ hU.trans hHW.le)]
-      _ = (1 - q ^ finrank k H * X) * ∑ U with U ≤ H, heckePolyCoeff X U := by
-        rw [sum_congr rfl sum_fibre, sum_const, nsmul_eq_mul, card_outsideH le_rfl hHW.lt.not_ge,
-          inf_of_le_right hHW.le]
-        simp only [weight]
-        field
-      _ = SiegelWeil.qPochhammer (Nat.card k) (finrank k W) X := by
-        rw [finrank_eq_finrank_inf_add_one_of_covBy hHW le_rfl hHW.lt.not_ge,
-          inf_of_le_right hHW.le, ih, mul_comm, SiegelWeil.qPochhammer, SiegelWeil.qPochhammer,
-          prod_range_succ]
+  have : Fintype k := .ofFinite k
+  let coeff (d : ℕ) : ℂ := (-X) ^ d * (Nat.card k : ℂ) ^ d.choose 2
+  -- Subspaces of `k ^ n` below `W` are the images of the subspaces of `W`.
+  have h_sub : ∑ U : Submodule k (n → k) with U ≤ W, heckePolyCoeff X U =
+      ∑ U : Submodule k W, coeff (finrank k U) := by
+    refine sum_nbij' (fun U ↦ U.comap W.subtype) (fun U ↦ U.map W.subtype) ?_ ?_ ?_ ?_ ?_
+    · simp
+    · simp [Submodule.map_subtype_le]
+    · simp +contextual [Submodule.map_comap_subtype, inf_of_le_right]
+    · exact fun U _ ↦ Submodule.comap_map_eq_of_injective W.injective_subtype U
+    · intro U hU
+      simp only [mem_filter, mem_univ, true_and] at hU
+      have h_rank : finrank k (U.comap W.subtype) = finrank k U := by
+        rw [← finrank_map_subtype_eq, Submodule.map_comap_subtype, inf_of_le_right hU]
+      simp [heckePolyCoeff, coeff, h_rank]
+  -- Group the subspaces of `W` by dimension and count them by the Gaussian binomial coefficients.
+  rw [h_sub, ← sum_fiberwise_of_maps_to (g := fun U : Submodule k W ↦ finrank k U)
+    (t := range (finrank k W + 1)) fun U _ ↦ mem_range.2 (Nat.lt_succ_of_le (finrank_le U))]
+  have h_card (d : ℕ) : (#{U : Submodule k W | finrank k U = d} : ℂ) =
+      TauCeti.gaussianBinomial (Nat.card k : ℂ) (finrank k W) d := by
+    rw [← Fintype.card_subtype, ← Nat.card_eq_fintype_card,
+      TauCeti.card_submodule_finrank_eq_gaussianBinomial, Nat.card_eq_fintype_card (α := k)]
+    exact TauCeti.map_gaussianBinomial (Nat.castRingHom ℂ) _ _ _
+  have := TauCeti.prod_one_add_pow_mul_eq_sum_gaussianBinomial (Nat.card k : ℂ) (-X) (finrank k W)
+  simp only [SiegelWeil.qPochhammer]
+  rw [show ∏ l ∈ range (finrank k W), (1 - (Nat.card k : ℂ) ^ l * X) =
+    ∏ l ∈ range (finrank k W), (1 + (Nat.card k : ℂ) ^ l * -X) by simp [sub_eq_add_neg], this]
+  refine sum_congr rfl fun d _ ↦ ?_
+  rw [sum_congr rfl fun U hU ↦ by rw [(mem_filter.1 hU).2], sum_const, nsmul_eq_mul, h_card]
+  simp [coeff]
+  ring
 
 end QBinomial
 
